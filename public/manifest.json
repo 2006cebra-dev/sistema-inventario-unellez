@@ -1,0 +1,17 @@
+{
+  "name": "OSWA-INV",
+  "short_name": "OSWA",
+  "description": "Sistema de Inventario",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1e293b",
+  "theme_color": "#3b82f6",
+  "icons": [
+    {
+      "src": "https://raw.githubusercontent.com/twbs/icons/main/icons/box-seam-fill.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
