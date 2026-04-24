@@ -1,16 +1,16 @@
 {
-  "name": "OSWA-INV",
-  "short_name": "OSWA",
-  "description": "Sistema de Inventario",
+  "name": "OSWA-INV Sistema Inteligente",
+  "short_name": "OSWA-INV",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#1e293b",
+  "background_color": "#0f172a",
   "theme_color": "#3b82f6",
+  "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "https://raw.githubusercontent.com/twbs/icons/main/icons/box-seam-fill.svg",
+      "src": "https://cdn-icons-png.flaticon.com/512/1174/1174466.png",
       "sizes": "512x512",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ]

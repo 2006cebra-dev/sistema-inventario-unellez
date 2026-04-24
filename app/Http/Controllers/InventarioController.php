@@ -154,7 +154,6 @@ class InventarioController extends Controller
     private function registrarAuditoria($codigo, $tipo, $cantidad, $motivo, $usuario) {
         $fechaStr = now()->toDateTimeString();
         
-        // Creamos la Cadena Criptográfica Secreta
         $cadenaSecreta = $codigo . $tipo . $cantidad . $fechaStr . 'OSWA2026';
         $firmaHash = hash('sha256', $cadenaSecreta);
 
@@ -180,7 +179,6 @@ class InventarioController extends Controller
             $nuevoStock = $producto->stock + 1;
             DB::table('productos')->where('id', $producto->id)->update(['stock' => $nuevoStock, 'updated_at' => now()]);
             
-            // Reemplazamos el Insert normal por el Criptográfico
             $this->registrarAuditoria($codigo, 'Entrada', 1, 'Escáner Móvil', Auth::user()->name ?? 'Sistema');
 
             $imagen = $producto->descripcion ?? 'https://cdn-icons-png.flaticon.com/512/1174/1174466.png';
@@ -205,7 +203,6 @@ class InventarioController extends Controller
                         'descripcion' => $fotoGlobal, 'created_at' => now(), 'updated_at' => now()
                     ]);
 
-                    // Registro Criptográfico
                     $this->registrarAuditoria($codigo, 'Entrada', 1, 'Auto-Registro Global (API)', Auth::user()->name ?? 'API Externa');
 
                     return response()->json(['status' => 'success', 'nombre' => $nombreGlobal, 'marca' => $marcaGlobal, 'stock' => 1, 'foto' => $fotoGlobal, 'mensaje' => '¡Detectado y Registrado por API!']);
@@ -249,7 +246,6 @@ class InventarioController extends Controller
         $nuevoStock = ($request->accion == 'sumar') ? $producto->stock + 1 : $producto->stock - 1;
         DB::table('productos')->where('id', $id)->update(['stock' => $nuevoStock, 'updated_at' => now()]);
 
-        // Guardado Criptográfico Seguro
         $tipoMovimiento = $request->accion == 'sumar' ? 'Entrada' : 'Salida';
         $motivoMovimiento = $request->has('forzar_fefo') ? 'Salida Forzada (FEFO Ignorado)' : 'Ajuste rápido';
         $this->registrarAuditoria($producto->codigo, $tipoMovimiento, 1, $motivoMovimiento, Auth::user()->name);
@@ -277,20 +273,17 @@ class InventarioController extends Controller
         DB::table('productos')->where('id', $id)->update(['stock' => $producto->stock - $cantidad, 'updated_at' => now()]);
         $costoFlete = $ruta['distancia'] * 0.15;
 
-        // Auditoría de Transferencia
         $motivoTxt = "Transferencia a Sucursal " . strtoupper(str_replace('_', ' ', $destino)) . " (Distancia: {$ruta['distancia']} Km | Flete: $\$$costoFlete)";
         $this->registrarAuditoria($producto->codigo, 'Salida', $cantidad, $motivoTxt, Auth::user()->name);
 
         return response()->json(['status' => 'success', 'msg' => "Transferencia completada. {$cantidad} unidades enviadas.", 'costo_flete' => number_format($costoFlete, 2), 'distancia' => $ruta['distancia']]);
     }
 
-    // 🔒 LÓGICA DE COMPROBACIÓN EN EL HISTORIAL
     public function historial() {
         if (Auth::user()->role !== 'admin') abort(403);
         $movimientos = DB::table('movimientos')->join('productos', 'movimientos.codigo_producto', '=', 'productos.codigo')
             ->select('movimientos.*', 'productos.nombre as producto_nombre', 'productos.marca')->orderBy('movimientos.created_at', 'desc')->get();
         
-        // Verificamos la integridad matemática de cada fila
         foreach ($movimientos as $m) {
             if (!empty($m->firma_digital)) {
                 $fechaGuardada = \Carbon\Carbon::parse($m->created_at)->toDateTimeString();
@@ -298,7 +291,7 @@ class InventarioController extends Controller
                 $hashCalculado = hash('sha256', $cadenaSecreta);
                 $m->es_valido = ($hashCalculado === $m->firma_digital);
             } else {
-                $m->es_valido = 'sin_firma'; // Para los viejos
+                $m->es_valido = 'sin_firma'; 
             }
         }
         
@@ -342,6 +335,40 @@ class InventarioController extends Controller
         fputcsv($output, ['Código', 'Nombre', 'Marca', 'Categoría', 'Stock', 'Precio ($)', 'Última Actualización'], ';');
         foreach ($productos as $p) { fputcsv($output, [$p->codigo, $p->nombre, $p->marca, $p->categoria, $p->stock, $p->precio ?? 0, $p->updated_at], ';'); }
         fclose($output);
+    }
+
+    // 💿 --- NUEVO: FUNCIÓN PARA RESPALDAR LA BASE DE DATOS (.SQL) ---
+    public function respaldarDB() {
+        if (Auth::user()->role !== 'admin') abort(403);
+
+        $tables = DB::select('SHOW TABLES');
+        $sql = "-- Respaldo de Base de Datos OSWA-INV\n";
+        $sql .= "-- Fecha: " . now()->format('Y-m-d H:i:s') . "\n";
+        $sql .= "-- Generado automáticamente\n\n";
+
+        foreach ($tables as $tableObj) {
+            $tableArray = (array) $tableObj;
+            $tableName = array_values($tableArray)[0];
+
+            $create = DB::select("SHOW CREATE TABLE `$tableName`");
+            $sql .= "\n\nDROP TABLE IF EXISTS `$tableName`;\n";
+            $sql .= ((array) $create[0])['Create Table'] . ";\n\n";
+
+            $rows = DB::table($tableName)->get();
+            foreach ($rows as $row) {
+                $rowArray = (array) $row;
+                $values = array_map(function($val) {
+                    return is_null($val) ? "NULL" : "'" . addslashes($val) . "'";
+                }, array_values($rowArray));
+                $sql .= "INSERT INTO `$tableName` VALUES(" . implode(", ", $values) . ");\n";
+            }
+        }
+
+        $filename = "Respaldo_OSWA_" . date('d_m_Y_His') . ".sql";
+        return response($sql, 200, [
+            'Content-Type' => 'application/sql',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"'
+        ]);
     }
 
     public function generarOrdenCompra($id) {
