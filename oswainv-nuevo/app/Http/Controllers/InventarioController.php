@@ -9,7 +9,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Http; // <-- NECESARIO PARA BUSCAR LA TASA EN INTERNET
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use PDF; 
 
 class InventarioController extends Controller
@@ -23,13 +24,11 @@ class InventarioController extends Controller
     private function obtenerTasaBcv()
     {
         try {
-            // Se conecta a la API para traer el dólar oficial de Venezuela
             $response = Http::timeout(3)->get('https://ve.dolarapi.com/v1/dolares/oficial');
             if ($response->successful()) {
-                return $response->json()['promedio']; // Retorna la tasa real del día
+                return $response->json()['promedio'];
             }
         } catch (\Exception $e) {
-            // Si no hay internet o la API falla, no se cae el sistema, usa esta de respaldo
             return 39.50; 
         }
         return 39.50;
@@ -44,7 +43,6 @@ class InventarioController extends Controller
         $alertasStock = $productos->where('stock', '<=', 5)->count();
         $capitalInvertido = $productos->sum(fn($p) => $p->stock * $p->precio);
         
-        // CÁLCULO BCV REAL
         $tasaBcv = $this->obtenerTasaBcv();
         $capitalInvertidoBs = $capitalInvertido * $tasaBcv;
 
@@ -101,7 +99,6 @@ class InventarioController extends Controller
             ]);
         }
 
-        // --- DEVUELVE LOS DATOS EN DÓLARES Y BOLÍVARES AL JAVASCRIPT ---
         $capitalInvertidoNuevo = Producto::all()->sum(function ($p) { return $p->stock * $p->precio; });
         $tasaBcv = $this->obtenerTasaBcv();
 
@@ -116,7 +113,7 @@ class InventarioController extends Controller
         ]);
     }
 
-    // --- TRANSFERENCIA (GRAFOS Y GOOGLE MAPS) ---
+    // --- TRANSFERENCIA ---
     public function transferirProducto(Request $request)
     {
         $request->validate(['producto_id' => 'required|integer', 'cantidad' => 'required|integer|min:1', 'sucursal' => 'required|string']);
@@ -125,7 +122,6 @@ class InventarioController extends Controller
         $producto = Producto::find($request->producto_id);
         if (!$producto || $producto->stock < $request->cantidad) return response()->json(['success' => false, 'message' => 'Stock insuficiente'], 400);
 
-        // --- NODOS: TODA VENEZUELA ---
         $sucursales = [
             'Caracas' => ['lat' => 10.4806, 'lng' => -66.8983, 'dist' => 500],
             'Maracaibo' => ['lat' => 10.6427, 'lng' => -71.6125, 'dist' => 450],
@@ -181,7 +177,7 @@ class InventarioController extends Controller
         ]);
     }
 
-    // --- GENERADOR DE PDF DE TRANSFERENCIA ---
+    // --- GENERADOR DE PDF ---
     public function generarPdfTransferencia(Request $request)
     {
         $datos = $request->all();
@@ -189,7 +185,7 @@ class InventarioController extends Controller
         return $pdf->download('Guia_Despacho_'.time().'.pdf');
     }
 
-    // --- GUARDAR NUEVO PRODUCTO ---
+    // --- GUARDAR PRODUCTO ---
     public function guardarProducto(Request $request)
     {
         $request->validate(['codigo' => 'required|unique:productos', 'nombre' => 'required', 'precio' => 'required|numeric', 'stock' => 'required|integer']);
@@ -258,32 +254,100 @@ class InventarioController extends Controller
         return response()->json(['success' => true, 'producto' => $p, 'nuevo_stock' => $p->stock]);
     }
 
-    // --- OSWA-BOT COMPLETO ---
+    // --- OSWA-BOT HÍBRIDO (GEMINI + RESPALDO INTELIGENTE) ---
     public function oswaBot(Request $request)
     {
-        $pregunta = strtolower($request->pregunta);
-        $respuesta = '';
+        $preguntaRaw = $request->pregunta;
+        $p = mb_strtolower($preguntaRaw, 'UTF-8');
+        $usuario = Auth::user();
 
-        if (strpos($pregunta, 'último') !== false || strpos($pregunta, 'quien hizo') !== false) {
-            $mov = Movimiento::latest()->first();
-            $respuesta = $mov ? "El último movimiento fue una {$mov->tipo} de {$mov->cantidad} unidades de {$mov->codigo_producto} por {$mov->usuario_accion}." : "No hay movimientos.";
-        } 
-        elseif (strpos($pregunta, 'vencen') !== false || strpos($pregunta, 'vencimiento') !== false) {
-            $vencen = Producto::whereNotNull('fecha_vencimiento')->where('fecha_vencimiento', '<=', now()->addDays(30))->count();
-            $respuesta = "Tienes {$vencen} productos próximos a vencer (30 días).";
+        // --- LÓGICA DE RESPALDO (PALABRAS CLAVE Y REGEX) ---
+        $respuestaRespaldo = function($p) use ($usuario) {
+            // Saludos y cortesía
+            if (preg_match('/hola|buenos|epa|saludos|que tal/', $p)) {
+                return "¡Epa! Soy OSWA-Bot. ¿En qué te ayudo hoy con el inventario?";
+            }
+
+            // Perfil del usuario conectado
+            if (preg_match('/quien soy|mi perfil|mi rol|mi nombre/', $p)) {
+                return "Estás conectado como **{$usuario->name}** con privilegios de **{$usuario->rol}**.";
+            }
+
+            // Búsqueda de PRECIO de un producto específico
+            if (preg_match('/precio de (.+)|cuanto cuesta (.+)/', $p, $matches)) {
+                $nombreBusqueda = trim($matches[1] ?? $matches[2]);
+                $producto = Producto::where('nombre', 'LIKE', "%{$nombreBusqueda}%")->first();
+                return $producto ? "El precio de **{$producto->nombre}** es de **$" . number_format($producto->precio, 2) . "**." : "No conseguí ningún producto llamado '{$nombreBusqueda}'.";
+            }
+
+            // Búsqueda de STOCK de un producto específico
+            if (preg_match('/cuanto queda de (.+)|stock de (.+)|cuantos (.+) hay/', $p, $matches)) {
+                $nombreBusqueda = trim($matches[1] ?? $matches[2] ?? $matches[3]);
+                $producto = Producto::where('nombre', 'LIKE', "%{$nombreBusqueda}%")->first();
+                return $producto ? "Quedan **{$producto->stock}** unidades de **{$producto->nombre}** en el depósito." : "No encuentro ese producto para darte el stock.";
+            }
+
+            // Reportes generales (Stock, Vencimientos, Capital)
+            if (preg_match('/vencen|vence|vencimiento|caduca/', $p)) {
+                $vencen = Producto::whereNotNull('fecha_vencimiento')->where('fecha_vencimiento', '<=', now()->addDays(30))->count();
+                return "Tienes **{$vencen}** productos próximos a vencer (en los próximos 30 días).";
+            }
+
+            if (preg_match('/bajo stock|falta|alertas|critico/', $p)) {
+                $bajo = Producto::where('stock', '<=', 5)->count();
+                return "Atención: tienes **{$bajo}** productos con stock crítico (5 o menos unidades).";
+            }
+
+            if (preg_match('/total|invertido|capital|dinero/', $p)) {
+                $capital = Producto::all()->sum(fn($prod) => $prod->stock * $prod->precio);
+                return "El capital total invertido es de **$" . number_format($capital, 2) . "**.";
+            }
+
+            if (preg_match('/cuanto producto|cantidad|cuantos hay/', $p)) {
+                return "Actualmente tienes **" . Producto::count() . "** productos diferentes registrados.";
+            }
+
+            if (preg_match('/tasa|bcv|dolar|precio del dolar/', $p)) {
+                return "La tasa oficial del BCV actual es de **" . $this->obtenerTasaBcv() . " Bs/USD**.";
+            }
+
+            // Ayuda
+            if (preg_match('/ayuda|comandos|que haces/', $p)) {
+                return "Puedo decirte el 'capital', 'vencimientos', 'bajo stock', 'tasa BCV' o el precio/stock de un producto si escribes 'precio de [nombre]'.";
+            }
+
+            return "Oye, no capté bien la idea. Intenta preguntarme por el capital, vencimientos o el precio de algo específico.";
+        };
+
+        // --- INTENTO CON GEMINI ---
+        try {
+            $apiKey = env('GEMINI_API_KEY');
+            if (!empty($apiKey)) {
+                $totalP = Producto::count();
+                $bajoS = Producto::where('stock', '<=', 5)->count();
+                $capitalT = Producto::all()->sum(fn($prod) => $prod->stock * $prod->precio);
+                $vencenP = Producto::whereNotNull('fecha_vencimiento')->where('fecha_vencimiento', '<=', now()->addDays(30))->count();
+                $ultimoM = Movimiento::latest()->first();
+                $txtM = $ultimoM ? "Ult. Mov: {$ultimoM->tipo} ({$ultimoM->cantidad} unds) de {$ultimoM->codigo_producto}." : "Sin movs.";
+
+                $prompt = "Eres OSWA-Bot. Contexto: {$totalP} productos, {$bajoS} bajo stock, {$vencenP} vencen pronto. Capital: $" . number_format($capitalT, 2) . ". {$txtM}. Responde corto a: '{$preguntaRaw}'";
+
+                $response = Http::timeout(8)->post("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={$apiKey}", [
+                    'contents' => [['parts' => [['text' => $prompt]]]]
+                ]);
+
+                if ($response->successful()) {
+                    $data = $response->json();
+                    $resIA = $data['candidates'][0]['content']['parts'][0]['text'] ?? null;
+                    if ($resIA) return response()->json(['success' => true, 'respuesta' => $resIA]);
+                }
+            }
+        } catch (\Exception $e) {
+            Log::info("Error Gemini: " . $e->getMessage());
         }
-        elseif (strpos($pregunta, 'bajo stock') !== false || strpos($pregunta, 'alertas') !== false) {
-            $bajo = Producto::where('stock', '<=', 5)->count();
-            $respuesta = "Atención: tienes {$bajo} productos con stock crítico.";
-        }
-        elseif (strpos($pregunta, 'total') !== false || strpos($pregunta, 'invertido') !== false) {
-            $capital = Producto::all()->sum(fn($p) => $p->stock * $p->precio);
-            $respuesta = "El capital total invertido es de $" . number_format($capital, 2);
-        }
-        else {
-            $respuesta = "No entiendo esa pregunta. Prueba con: '¿Último movimiento?' o '¿Capital total?'";
-        }
-        return response()->json(['success' => true, 'respuesta' => $respuesta]);
+
+        // --- SIEMPRE RESPONDE EL RESPALDO SI LA IA FALLA ---
+        return response()->json(['success' => true, 'respuesta' => $respuestaRespaldo($p)]);
     }
 
     // --- AUDITORÍA Y VENCIMIENTOS ---
