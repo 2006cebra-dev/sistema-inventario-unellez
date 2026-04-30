@@ -17,16 +17,18 @@
             --text-secondary: #b3b3b3;
             --accent-primary: #E50914;
             --accent-success: #10b981;
+            --accent-danger: #e74c3c;
         }
         * { font-family: 'Inter', sans-serif; }
         body {
             background: linear-gradient(rgba(0,0,0,0.85), rgba(0,0,0,0.9)), url('https://images.unsplash.com/photo-1553413077-190dd305871c?w=1920') center/cover no-repeat fixed;
             min-height: 100vh;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
         }
-        .register-card {
+        .auth-card {
             background: var(--bg-card);
             border: none;
             border-radius: 4px;
@@ -35,17 +37,17 @@
             max-width: 480px;
             width: 100%;
         }
-        .register-logo {
+        .auth-logo {
             text-align: center;
             margin-bottom: 2rem;
         }
-        .register-logo h1 {
+        .auth-logo h1 {
             color: var(--accent-primary);
             font-size: 2rem;
             font-weight: 700;
             letter-spacing: 2px;
         }
-        .register-logo p {
+        .auth-logo p {
             color: var(--text-secondary);
             font-size: 0.9rem;
             margin-top: 0.5rem;
@@ -75,20 +77,19 @@
         .form-control::placeholder {
             color: #777;
         }
-        .btn-primary {
+        .btn-primary-custom {
             background: var(--accent-primary);
+            color: #fff;
             border: none;
             padding: 0.85rem 1.5rem;
             border-radius: 4px;
             font-weight: 600;
             font-size: 1rem;
             transition: background 0.2s ease;
-            width: 100%;
         }
-        .btn-primary:hover {
+        .btn-primary-custom:hover {
             background: #c10711;
-            transform: none;
-            box-shadow: none;
+            color: #fff;
         }
         .btn-link {
             color: var(--text-secondary);
@@ -135,17 +136,37 @@
             transform: scale(1.1);
             filter: brightness(0) invert(1) drop-shadow(0 0 15px rgba(255, 255, 255, 0.7));
         }
+        .auth-footer {
+            text-align: center;
+            padding: 1.5rem 4%;
+            margin-top: auto;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+        .auth-footer span.highlight {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+        .auth-footer .heart-icon {
+            color: var(--accent-danger);
+            animation: heartbeat 1.5s infinite;
+            display: inline-block;
+        }
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
     </style>
 </head>
 <body>
-    <div class="register-card">
-        <div class="register-logo">
+    <div class="auth-card">
+        <div class="auth-logo">
             <img src="{{ asset('img/logo-unellez.png') }}" alt="UNELLEZ" class="logo-auth-clean">
             <h1>OSWA Inv</h1>
             <p>Crear Cuenta Nueva</p>
         </div>
         
-        <form method="POST" action="{{ route('register') }}">
+        <form method="POST" action="{{ route('register') }}" class="text-start">
             @csrf
             
             <div class="mb-3">
@@ -187,17 +208,29 @@
             </div>
             
             <div class="d-grid">
-                <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-person-plus me-2"></i>Crear Cuenta
-                </button>
+                <button type="submit" class="btn btn-primary-custom w-100 mb-3"><i class="bi bi-person-plus me-2"></i> Registrarse</button>
             </div>
         </form>
         
         <div class="divider"></div>
         
         <div class="login-link">
-            ¿Ya tienes cuenta? <a href="{{ route('login') }}">Inicia Sesión</a>
+            ¿Ya tienes cuenta? <a href="{{ route('login') }}" class="text-white text-decoration-none fw-bold">Inicia Sesión</a>
         </div>
     </div>
+
+    <footer class="auth-footer">
+        <div class="mb-1">
+            &copy; <script>document.write(new Date().getFullYear())</script> <strong>OSWA Inv</strong>. Todos los derechos reservados.
+        </div>
+        <div>
+            Desarrollado con <i class="bi bi-code-slash text-primary"></i> y <i class="bi bi-heart-fill heart-icon"></i> por <span class="highlight">Carlos Braca & Yorgelis Blanco</span>
+        </div>
+        <div class="mt-2 d-flex align-items-center justify-content-center" style="font-size: 0.75rem; opacity: 0.8;">
+            <span>Ingeniería en Informática — V Semestre |</span>
+            <img src="{{ asset('img/logo-unellez.png') }}" alt="UNELLEZ" style="height: 18px; margin-left: 8px; margin-right: 4px; filter: brightness(0) invert(1);">
+            <strong style="letter-spacing: 0.5px;">UNELLEZ</strong>
+        </div>
+    </footer>
 </body>
 </html>

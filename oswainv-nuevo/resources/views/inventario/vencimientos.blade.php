@@ -70,19 +70,32 @@
         
         .topbar-right { display: flex; align-items: center; gap: 1rem; }
         
-        .menu-toggle { display: none; background: none; border: none; color: var(--text-primary); font-size: 1.5rem; cursor: pointer; }
         @media (max-width: 768px) {
+            .topbar { padding: 0 5%; }
+            .topbar-left { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 0; }
+            .topbar-logo { font-size: 1.3rem; }
+            .topbar-logo .logo-text { display: none; }
+            .menu-toggle { display: block !important; margin-left: auto; font-size: 2rem; padding: 0; }
+            .topbar-right { display: none !important; }
+
             .topbar-nav { display: none; }
-            .topbar-nav.show { display: flex; flex-direction: column; position: absolute; top: var(--topbar-height); left: 0; right: 0; background: rgba(0,0,0,0.97); padding: 1rem 4%; gap: 1rem; border-bottom: 1px solid var(--border-color); }
-            .menu-toggle { display: block; }
+            .topbar-nav.show { 
+                display: flex; flex-direction: column; position: absolute; 
+                top: var(--topbar-height); left: 0; right: 0; 
+                background: #141414; padding: 1.5rem 5%; gap: 1rem; 
+                border-bottom: 1px solid var(--border-color); height: calc(100vh - var(--topbar-height));
+                overflow-y: auto; z-index: 1000;
+            }
+            .mobile-user-section { 
+                display: flex; flex-direction: column; gap: 10px; 
+                padding-top: 15px; margin-top: auto; border-top: 1px solid var(--border-color); 
+            }
         }
-        
-        .user-info { display: flex; align-items: center; gap: 10px; }
-        .user-avatar { width: 32px; height: 32px; background: var(--accent-primary); border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 0.85rem; }
-        
-        .logout-btn { background: none; border: none; color: var(--text-secondary); font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: color 0.2s ease; }
-        .logout-btn:hover { color: var(--accent-primary); }
-        
+        @media (min-width: 769px) {
+            .menu-toggle { display: none !important; }
+            .mobile-user-section { display: none !important; }
+        }
+
         .main-content { padding-top: calc(var(--topbar-height) + 2rem); padding-left: 4%; padding-right: 4%; padding-bottom: 2rem; min-height: 100vh; }
         
         .vencimiento-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 1.5rem; }
@@ -107,12 +120,20 @@
         
         .theme-toggle { background: var(--bg-input); border: none; border-radius: 50%; width: 36px; height: 36px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-primary); }
         
-        #status-indicator { display: flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 20px; background: #222; border: 1px solid #2b2b2b; font-size: 0.75rem; font-weight: 500; }
-        #status-indicator .status-dot { width: 8px; height: 8px; border-radius: 50%; transition: background 0.3s ease; }
-        #status-indicator .status-text { color: var(--text-secondary); transition: color 0.3s ease; }
-        #status-indicator.online .status-dot { background: #00b894; box-shadow: 0 0 6px rgba(0,184,148,0.6); }
-        #status-indicator.offline .status-dot { background: #e74c3c; box-shadow: 0 0 6px rgba(231,76,60,0.6); }
-        #status-indicator.offline .status-text { color: #e74c3c; }
+        .user-info { display: flex; align-items: center; gap: 10px; }
+        .user-avatar { width: 32px; height: 32px; background: var(--accent-primary); border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 0.85rem; }
+        
+        .status-indicator { 
+    display: flex; align-items: center; gap: 6px; 
+    padding: 4px 12px; border-radius: 20px; 
+    background: #222; border: 1px solid #2b2b2b; 
+    white-space: nowrap; flex-shrink: 0; height: fit-content;
+}
+        .status-indicator .status-dot { width: 8px; height: 8px; border-radius: 50%; transition: background 0.3s ease; }
+        .status-indicator .status-text { color: var(--text-secondary); transition: color 0.3s ease; }
+        .status-indicator.online .status-dot { background: #00b894; box-shadow: 0 0 6px rgba(0,184,148,0.6); }
+        .status-indicator.offline .status-dot { background: #e74c3c; box-shadow: 0 0 6px rgba(231,76,60,0.6); }
+        .status-indicator.offline .status-text { color: #e74c3c; }
         
         .logo-nav-unellez {
             height: 35px;
@@ -153,48 +174,76 @@
 <body data-theme="dark">
     
     <nav class="topbar" id="topbar">
-        <div class="topbar-left">
-            <div class="topbar-logo"><img src="{{ asset('img/logo-unellez.png') }}" class="logo-nav-unellez" alt="Logo"> <span class="logo-text">OSWA Inv</span></div>
-            <button class="menu-toggle" onclick="toggleSidebar()"><i class="bi bi-list"></i></button>
-            <div class="topbar-nav" id="topbarNav">
-                <a href="{{ route('inventario') }}">Dashboard</a>
-                <a href="{{ route('vencimientos') }}" class="active">Vencimientos</a>
-                <a href="{{ route('auditoria') }}">Auditoría</a>
-                <div class="nav-dropdown">
-                    <a href="#" class="dropdown-toggle" onclick="event.preventDefault(); this.parentElement.classList.toggle('show')">
-                        Reportes
-                    </a>
-                    <div class="dropdown-menu-custom">
-                        <a href="{{ route('exportar.pdf') }}" target="_blank" class="dropdown-item-custom">
-                            <i class="bi bi-file-earmark-pdf-fill text-danger"></i> Inventario General (PDF)
-                        </a>
-                        <a href="#" class="dropdown-item-custom text-muted" onclick="event.preventDefault()">
-                            <i class="bi bi-file-earmark-excel-fill text-success"></i> Exportar a Excel (Próximamente)
-                        </a>
-                    </div>
-                </div>
+        <div class="topbar-left d-flex align-items-center gap-3">
+            <div class="topbar-logo d-flex align-items-center gap-2">
+                <img src="{{ asset('img/logo-unellez.png') }}" class="logo-nav-unellez" alt="Logo"> 
+                <span class="logo-text">OSWA Inv</span>
+            </div>
+            <div class="status-indicator online d-none d-md-flex ms-2">
+                <span class="status-dot" style="width: 8px; height: 8px; border-radius: 50%; background: #00b894; box-shadow: 0 0 6px rgba(0,184,148,0.6);"></span>
+                <span class="status-text text-white" style="font-size: 0.75rem;">En línea</span>
             </div>
         </div>
-        <div class="topbar-right">
-            <div id="status-indicator" class="online">
-                <span class="status-dot"></span>
-                <span class="status-text" id="statusText">En línea</span>
+
+        <div class="topbar-nav" id="topbarNav">
+            <a href="{{ route('inventario') }}">Dashboard</a>
+            <a href="{{ route('vencimientos') }}" class="active">Vencimientos</a>
+            
+            <div class="nav-dropdown">
+                <a href="#" class="dropdown-toggle" onclick="event.preventDefault(); this.parentElement.classList.toggle('show')">Reportes</a>
+                <div class="dropdown-menu-custom">
+                    <a href="{{ route('exportar.pdf') }}" target="_blank" class="dropdown-item-custom">
+                        <i class="bi bi-file-earmark-pdf-fill text-danger"></i> Inventario (PDF)
+                    </a>
+                </div>
             </div>
+
+            @if(auth()->check() && auth()->user()->rol === 'admin')
+                <a href="{{ route('auditoria') }}" class="text-warning"><i class="bi bi-shield-lock"></i> Auditoría</a>
+                <a href="#" class="text-info"><i class="bi bi-people"></i> Administrar Usuarios</a>
+            @endif
+
+            <div class="mobile-user-section d-md-none mt-auto pt-4 border-top border-secondary">
+                <div class="status-indicator online mb-3" style="width: fit-content;">
+                    <span class="status-dot" style="width: 8px; height: 8px; border-radius: 50%; background: #00b894; box-shadow: 0 0 6px rgba(0,184,148,0.6);"></span>
+                    <span class="status-text text-white" style="font-size: 0.8rem;">En línea</span>
+                </div>
+                <div class="user-info mb-3 d-flex align-items-center gap-2">
+                    <div class="user-avatar">{{ strtoupper(substr(auth()->user()?->name ?? 'U', 0, 1)) }}</div>
+                    <div>
+                        <div class="text-white fw-bold" style="font-size: 0.9rem;">{{ auth()->user()?->name ?? 'Usuario' }}</div>
+                        <div class="text-secondary" style="font-size: 0.8rem;">{{ auth()->user()?->rol ?? 'empleado' }}</div>
+                    </div>
+                </div>
+                <form method="POST" action="{{ route('logout') }}" class="m-0">
+                    @csrf
+                    <button type="submit" class="btn btn-danger w-100 d-flex align-items-center justify-content-center gap-2">
+                        <i class="bi bi-box-arrow-right"></i> Salir del Sistema
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="topbar-right d-none d-md-flex align-items-center gap-3">
             <button class="theme-toggle" onclick="toggleTheme()"><i class="bi bi-moon"></i></button>
-            <div class="user-info">
+            <div class="user-info d-flex align-items-center gap-2">
                 <div class="user-avatar">{{ strtoupper(substr(auth()->user()?->name ?? 'U', 0, 1)) }}</div>
                 <div>
-                    <div style="font-weight: 600; font-size: 0.85rem;">{{ auth()->user()?->name ?? 'Usuario' }}</div>
+                    <div style="font-weight: 600; font-size: 0.85rem; color: white;">{{ auth()->user()?->name ?? 'Usuario' }}</div>
                     <div style="font-size: 0.7rem; color: var(--text-secondary);">{{ auth()->user()?->rol ?? 'empleado' }}</div>
                 </div>
             </div>
             <form method="POST" action="{{ route('logout') }}" class="m-0">
                 @csrf
-                <button type="submit" class="logout-btn">
-                    <i class="bi bi-box-arrow-right"></i> <span style="font-size: 0.8rem;">Salir</span>
+                <button type="submit" class="logout-btn d-flex align-items-center gap-1" style="background: none; border: none; color: var(--text-secondary);">
+                    <i class="bi bi-box-arrow-right"></i> <span style="font-size: 0.85rem;">Salir</span>
                 </button>
             </form>
         </div>
+
+        <button class="menu-toggle d-md-none" onclick="toggleSidebar()" style="background: transparent; border: none; color: white; font-size: 2rem; padding: 0;">
+            <i class="bi bi-list"></i>
+        </button>
     </nav>
     
     <main class="main-content">
@@ -300,15 +349,23 @@
             document.body.setAttribute('data-theme', saved);
             
             function updateStatusIndicator() {
-                const indicator = document.getElementById('status-indicator');
-                const statusText = document.getElementById('statusText');
-                if (navigator.onLine) {
-                    indicator.className = 'online';
-                    statusText.textContent = 'En línea';
-                } else {
-                    indicator.className = 'offline';
-                    statusText.textContent = 'Sin conexión';
-                }
+                const indicators = document.querySelectorAll('.status-indicator');
+                indicators.forEach(indicator => {
+                    const dot = indicator.querySelector('.status-dot');
+                    const text = indicator.querySelector('.status-text');
+
+                    if (navigator.onLine) {
+                        indicator.classList.replace('offline', 'online');
+                        dot.style.background = '#00b894';
+                        dot.style.boxShadow = '0 0 6px rgba(0,184,148,0.6)';
+                        if(text) text.textContent = 'En línea';
+                    } else {
+                        indicator.classList.replace('online', 'offline');
+                        dot.style.background = '#e74c3c';
+                        dot.style.boxShadow = '0 0 6px rgba(231,76,60,0.6)';
+                        if(text) text.textContent = 'Sin red';
+                    }
+                });
             }
             window.addEventListener('online', updateStatusIndicator);
             window.addEventListener('offline', updateStatusIndicator);

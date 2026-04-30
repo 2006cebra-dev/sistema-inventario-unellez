@@ -77,12 +77,18 @@
         .topbar-search input:focus { outline: none; background: rgba(255,255,255,0.12); border-color: var(--accent-primary); width: 280px; box-shadow: 0 0 12px rgba(229,9,20,0.15); }
         .topbar-search i { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.6); font-size: 0.85rem; }
 
-        #status-indicator { display: flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 20px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); font-size: 0.72rem; font-weight: 500; transition: all 0.3s; }
-        #status-indicator .status-dot { width: 7px; height: 7px; border-radius: 50%; transition: background 0.3s ease; }
-        #status-indicator.online .status-dot { background: #00b894; box-shadow: 0 0 8px rgba(0,184,148,0.7); }
-        #status-indicator.online .status-text { color: #ccc; }
-        #status-indicator.offline .status-dot { background: #e74c3c; box-shadow: 0 0 8px rgba(231,76,60,0.7); }
-        #status-indicator.offline .status-text { color: #e74c3c; }
+        .status-indicator { 
+    display: flex; align-items: center; gap: 6px; 
+    padding: 5px 12px; border-radius: 20px; 
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); 
+    font-size: 0.72rem; font-weight: 500; transition: all 0.3s;
+    white-space: nowrap; flex-shrink: 0; height: fit-content;
+}
+        .status-indicator .status-dot { width: 7px; height: 7px; border-radius: 50%; transition: background 0.3s ease; }
+        .status-indicator.online .status-dot { background: #00b894; box-shadow: 0 0 8px rgba(0,184,148,0.7); }
+        .status-indicator.online .status-text { color: #ccc; }
+        .status-indicator.offline .status-dot { background: #e74c3c; box-shadow: 0 0 8px rgba(231,76,60,0.7); }
+        .status-indicator.offline .status-text { color: #e74c3c; }
         
         .main-content { padding-top: calc(var(--topbar-height) + 2rem); padding-left: 4%; padding-right: 4%; padding-bottom: 2rem; min-height: 100vh; }
         
@@ -206,20 +212,30 @@
         .stat-item .stat-label { font-size: 0.7rem; color: var(--text-secondary); display: block; text-transform: uppercase; }
         .stat-item .stat-value { font-size: 1.1rem; font-weight: 700; color: var(--text-primary); }
 
-        @media (max-width: 767px) {
-            .topbar { justify-content: flex-start; padding: 0 15px; overflow-x: auto; -webkit-overflow-scrolling: touch; gap: 20px; }
-            .topbar-nav { display: flex !important; gap: 15px !important; flex-shrink: 0; }
-            .topbar-search input { width: 130px; padding-left: 30px; font-size: 0.8rem; }
-            .topbar-search input:focus { width: 130px; }
-            .topbar-right { gap: 8px; }
-            .floating-bot-window { width: calc(100vw - 40px); left: 20px; right: 20px; bottom: 80px; }
-            .main-content > .d-flex:first-child { flex-wrap: wrap !important; gap: 10px; }
-            .stats-grid { display: flex; flex-wrap: nowrap; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 10px; gap: 1rem; margin-bottom: 1rem; }
-            .stats-grid::-webkit-scrollbar { display: none; }
-            .stat-card { min-width: 240px; flex-shrink: 0; scroll-snap-align: start; padding: 1rem; }
-            .products-grid { grid-template-columns: 1fr; }
-            .product-card { gap: 10px; padding: 12px; }
-            .scanner-fab { width: 50px; height: 50px; font-size: 1.2rem; bottom: 20px; right: 20px; z-index: 9999; }
+        @media (max-width: 768px) {
+            .topbar { padding: 0 5%; }
+            .topbar-left { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 0; }
+            .topbar-logo { font-size: 1.3rem; }
+            .topbar-logo .logo-text { display: none; }
+            .menu-toggle { display: block !important; margin-left: auto; font-size: 2rem; padding: 0; }
+            .topbar-right { display: none !important; }
+
+            .topbar-nav { display: none; }
+            .topbar-nav.show { 
+                display: flex; flex-direction: column; position: absolute; 
+                top: var(--topbar-height); left: 0; right: 0; 
+                background: #141414; padding: 1.5rem 5%; gap: 1rem; 
+                border-bottom: 1px solid var(--border-color); height: calc(100vh - var(--topbar-height));
+                overflow-y: auto; z-index: 1000;
+            }
+            .mobile-user-section { 
+                display: flex; flex-direction: column; gap: 10px; 
+                padding-top: 15px; margin-top: auto; border-top: 1px solid var(--border-color); 
+            }
+        }
+        @media (min-width: 769px) {
+            .menu-toggle { display: none !important; }
+            .mobile-user-section { display: none !important; }
         }
         .professional-footer {
             text-align: center;
@@ -244,42 +260,230 @@
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.2); }
         }
+
+        /* HERO VIDEO NETFLIX */
+        .netflix-hero { 
+            position: relative; 
+            height: 55vh; 
+            min-height: 400px; 
+            width: 100%; 
+            border-radius: 12px; 
+            overflow: hidden; 
+            margin-top: 1.5rem; 
+            margin-bottom: 2.5rem; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            
+            background-color: #141414;
+            background-image: url('https://images.unsplash.com/photo-1586528116311-ad8ed7c80a30?q=80&w=2000&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        .hero-vignette { 
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0; 
+            background: linear-gradient(90deg, rgba(20,20,20,0.95) 0%, rgba(20,20,20,0.5) 50%, transparent 100%), linear-gradient(to top, #141414 0%, transparent 20%);
+            z-index: 1; 
+        }
+        .hero-content { 
+            position: absolute; 
+            top: 50%; 
+            transform: translateY(-50%);
+            left: 5%; 
+            z-index: 2; 
+            max-width: 600px; 
+        }
+        .hero-logo-small { height: 25px; filter: brightness(0) invert(1); }
+        .hero-title { 
+            font-size: 4rem; font-weight: 800; color: white; margin-bottom: 1rem; 
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        .hero-description { 
+            font-size: 1.1rem; color: #fff; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); 
+            margin-bottom: 1.5rem; line-height: 1.4;
+        }
+        .hero-buttons { display: flex; gap: 15px; }
+
+        .btn-play { 
+            display: flex; align-items: center; justify-content: center; 
+            background: white; color: black; border: none; border-radius: 4px; 
+            padding: 8px 24px; font-weight: 600; font-size: 1.1rem; transition: all 0.2s; 
+        }
+        .btn-play:hover { background: rgba(255,255,255,0.75); }
+
+        .btn-more { 
+            display: flex; align-items: center; justify-content: center; 
+            background: rgba(109, 109, 110, 0.7); color: white; border: none; 
+            border-radius: 4px; padding: 8px 24px; font-weight: 600; font-size: 1.1rem; 
+            transition: all 0.2s; 
+        }
+        .btn-more:hover { background: rgba(109, 109, 110, 0.4); }
+
+        @media (max-width: 768px) {
+            .netflix-hero { height: 50vh; }
+            .hero-title { font-size: 2.5rem; }
+            .hero-description { font-size: 0.95rem; }
+            .btn-play, .btn-more { padding: 6px 16px; font-size: 0.95rem; }
+        }
+
+        /* ANIMACIONES PREMIUM PARA EL HERO */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Cascada de animaciones con retrasos (delays) */
+        .hero-content > .d-flex {
+            opacity: 0;
+            animation: fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        }
+
+        .hero-content .hero-title {
+            opacity: 0;
+            animation: fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.2s forwards;
+        }
+
+        .hero-content .hero-description {
+            opacity: 0;
+            animation: fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.4s forwards;
+        }
+
+        .hero-content .hero-buttons {
+            opacity: 0;
+            animation: fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.6s forwards;
+        }
+
+        /* Nuevo estilo animado RGB para el subtítulo del Hero */
+        .hero-subtitle-rgb {
+            background: linear-gradient(90deg, #E50914, #ff6b6b, #B20710, #E50914);
+            background-size: 300% 100%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: rgbText 4s ease infinite;
+            letter-spacing: 2px;
+            font-size: 0.9rem;
+            font-weight: 800;
+            margin-left: 8px;
+            text-transform: uppercase;
+        }
+
+        /* ESTILOS DE LA ENTRADA CINEMÁTICA */
+        .cinematic-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: #000000; z-index: 99999;
+            display: flex; justify-content: center; align-items: center;
+            transition: opacity 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .cinematic-content { text-align: center; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+
+        /* Animación del Logo */
+        .intro-logo {
+            width: 180px; filter: brightness(0) invert(1) drop-shadow(0 0 15px rgba(255,255,255,0.5));
+            opacity: 0; animation: pulseGlow 3s forwards;
+        }
+
+        /* Animación de la Frase */
+        .intro-quote { opacity: 0; transform: scale(0.9); }
+        .intro-quote.show { animation: textExplosion 3.5s forwards; }
+
+        .quote-text { color: var(--text-secondary); font-size: 1.5rem; font-weight: 300; margin-bottom: 10px; letter-spacing: 2px; }
+        .quote-highlight { 
+            color: #ffffff; font-size: 3rem; font-weight: 800; text-transform: uppercase; letter-spacing: 4px;
+            text-shadow: 0 0 20px rgba(229, 9, 20, 0.8), 0 0 40px rgba(229, 9, 20, 0.4); /* Brillo rojo intenso */
+        }
+
+        /* Keyframes */
+        @keyframes pulseGlow {
+            0% { opacity: 0; transform: scale(0.8); }
+            30% { opacity: 1; transform: scale(1.05); filter: brightness(0) invert(1) drop-shadow(0 0 30px rgba(255,255,255,1)); }
+            80% { opacity: 1; transform: scale(1); filter: brightness(0) invert(1) drop-shadow(0 0 10px rgba(255,255,255,0.3)); }
+            100% { opacity: 0; transform: scale(1.1); }
+        }
+
+        @keyframes textExplosion {
+            0% { opacity: 0; transform: scale(0.8); filter: blur(10px); }
+            20% { opacity: 1; transform: scale(1.1); filter: blur(0); }
+            80% { opacity: 1; transform: scale(1); filter: blur(0); }
+            100% { opacity: 0; transform: scale(1.2); filter: blur(10px); }
+        }
+
+        /* Clase para desaparecer el overlay */
+        .cinematic-overlay.fade-out { opacity: 0; pointer-events: none; }
     </style>
 </head>
 <body data-theme="dark">
     
-    <nav class="topbar" id="topbar">
-        <div class="topbar-left">
-            <div class="topbar-logo d-flex align-items-center"><img src="{{ asset('img/logo-unellez.png') }}" class="logo-nav-unellez" alt="Logo"> <span class="logo-text">OSWA Inv</span></div>
-            <div class="topbar-nav" id="topbarNav">
-                <a href="{{ route('inventario') }}" class="active">Dashboard</a>
-                <a href="{{ route('vencimientos') }}">Vencimientos</a>
-                <a href="{{ route('auditoria') }}">Auditoría</a>
-                <div class="nav-dropdown">
-                    <a href="#" class="dropdown-toggle" onclick="event.preventDefault(); this.parentElement.classList.toggle('show')">
-                        Reportes
-                    </a>
-                    <div class="dropdown-menu-custom">
-                        <a href="{{ route('exportar.pdf') }}" target="_blank" class="dropdown-item-custom">
-                            <i class="bi bi-file-earmark-pdf-fill text-danger"></i> Inventario General (PDF)
-                        </a>
-                        @if($esAdmin)
-                        <a href="{{ route('respaldo.db') }}" class="dropdown-item-custom">
-                            <i class="bi bi-database-down text-warning"></i> Respaldo de BD (.sql)
-                        </a>
-                        @endif
-                        <a href="#" class="dropdown-item-custom text-muted" onclick="event.preventDefault()">
-                            <i class="bi bi-file-earmark-excel-fill text-success"></i> Exportar a Excel (Próximamente)
-                        </a>
-                    </div>
-                </div>
+    <!-- OVERLAY DE ENTRADA CINEMÁTICA -->
+    <div id="cinematic-intro" class="cinematic-overlay">
+        <div class="cinematic-content">
+            <!-- Fase 1: Logo -->
+            <img src="{{ asset('img/logo-unellez.png') }}" id="intro-logo" class="intro-logo" alt="UNELLEZ">
+            
+            <!-- Fase 2: Frase Motivacional -->
+            <div id="intro-quote" class="intro-quote d-none">
+                <h2 class="quote-text">La ingeniería no es solo código.</h2>
+                <h1 class="quote-highlight">Es diseñar el futuro.</h1>
             </div>
         </div>
-        <div class="topbar-right">
-            <div id="status-indicator" class="online">
-                <span class="status-dot"></span>
-                <span class="status-text" id="statusText">En línea</span>
+    </div>
+    
+    <nav class="topbar" id="topbar">
+        <div class="topbar-left d-flex align-items-center gap-3">
+            <div class="topbar-logo d-flex align-items-center gap-2">
+                <img src="{{ asset('img/logo-unellez.png') }}" class="logo-nav-unellez" alt="Logo"> 
+                <span class="logo-text">OSWA Inv</span>
             </div>
+            <div class="status-indicator online d-none d-md-flex ms-2">
+                <span class="status-dot" style="width: 8px; height: 8px; border-radius: 50%; background: #00b894; box-shadow: 0 0 6px rgba(0,184,148,0.6);"></span>
+                <span class="status-text text-white" style="font-size: 0.75rem;">En línea</span>
+            </div>
+        </div>
+
+        <div class="topbar-nav" id="topbarNav">
+            <a href="{{ route('inventario') }}" class="active">Dashboard</a>
+            <a href="{{ route('vencimientos') }}">Vencimientos</a>
+            
+            <div class="nav-dropdown">
+                <a href="#" class="dropdown-toggle" onclick="event.preventDefault(); this.parentElement.classList.toggle('show')">Reportes</a>
+                <div class="dropdown-menu-custom">
+                    <a href="{{ route('exportar.pdf') }}" target="_blank" class="dropdown-item-custom">
+                        <i class="bi bi-file-earmark-pdf-fill text-danger"></i> Inventario (PDF)
+                    </a>
+                </div>
+            </div>
+
+            @if(auth()->check() && auth()->user()->rol === 'admin')
+                <a href="{{ route('auditoria') }}">Auditoría</a>
+            @endif
+
+            <div class="mobile-user-section d-md-none mt-auto pt-4 border-top border-secondary">
+                <div class="status-indicator online mb-3" style="width: fit-content;">
+                    <span class="status-dot" style="width: 8px; height: 8px; border-radius: 50%; background: #00b894; box-shadow: 0 0 6px rgba(0,184,148,0.6);"></span>
+                    <span class="status-text text-white" style="font-size: 0.8rem;">En línea</span>
+                </div>
+                <div class="user-info mb-3 d-flex align-items-center gap-2">
+                    <div class="user-avatar">{{ strtoupper(substr(auth()->user()?->name ?? 'U', 0, 1)) }}</div>
+                    <div>
+                        <div class="text-white fw-bold" style="font-size: 0.9rem;">{{ auth()->user()?->name ?? 'Usuario' }}</div>
+                        <div class="text-secondary" style="font-size: 0.8rem;">{{ auth()->user()?->rol ?? 'empleado' }}</div>
+                    </div>
+                </div>
+                <form method="POST" action="{{ route('logout') }}" class="m-0">
+                    @csrf
+                    <button type="submit" class="btn btn-danger w-100 d-flex align-items-center justify-content-center gap-2">
+                        <i class="bi bi-box-arrow-right"></i> Salir del Sistema
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="topbar-right d-none d-md-flex align-items-center gap-3">
             <button class="theme-toggle" onclick="toggleTheme()" title="Modo claro/oscuro"><i class="bi bi-moon-fill"></i></button>
             <div class="topbar-search">
                 <i class="bi bi-search"></i>
@@ -305,9 +509,40 @@
                 </div>
             </div>
         </div>
+
+        <button class="menu-toggle d-md-none" onclick="toggleSidebar()" style="background: transparent; border: none; color: white; font-size: 2rem; padding: 0;">
+            <i class="bi bi-list"></i>
+        </button>
     </nav>
     
     <main class="main-content">
+        <div class="netflix-hero" style="background: url('{{ asset('img/refrigeracion_centros_datos.jpg') }}') center/cover no-repeat; background-color: #141414;">
+            
+            <div class="hero-vignette" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(90deg, rgba(20,20,20,0.95) 0%, rgba(20,20,20,0.6) 50%, transparent 100%), linear-gradient(to top, #141414 0%, transparent 20%); z-index: 1;"></div>
+            
+            <div class="hero-content" style="position: relative; z-index: 2;">
+                <div class="d-flex align-items-center mb-2">
+                    <img src="{{ asset('img/logo-unellez.png') }}" class="hero-logo-small" alt="UNELLEZ">
+                    <span class="hero-subtitle-rgb">SISTEMA DE INVENTARIO</span>
+                </div>
+                
+                <h1 class="hero-title">OSWA Inv</h1>
+                <p class="hero-description text-light">
+                    Control total y auditoría en tiempo real. Supervisa entradas, salidas y mantén el flujo de inventario optimizado con seguridad criptográfica.
+                </p>
+                
+                <div class="hero-buttons">
+                    <button class="btn-play" data-bs-toggle="modal" data-bs-target="#presentacionModal">
+                        <i class="bi bi-rocket-takeoff-fill fs-4 me-2"></i> Explorar
+                    </button>
+                    <button class="btn-more" data-bs-toggle="modal" data-bs-target="#powerPointModal">
+                        <i class="bi bi-file-earmark-slides fs-5 me-2"></i> Más info
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="panel-estadisticas" class="mt-4 pt-2">
         <div class="d-flex justify-content-between align-items-center mb-4" style="flex-wrap: wrap; gap: 10px;">
             <h4 class="mb-0 fw-bold">Panel de Control</h4>
             <button class="btn-nuevo" data-bs-toggle="modal" data-bs-target="#nuevoProductoModal">
@@ -483,6 +718,7 @@
                     </div>
                 </div>
             </div>
+        </div>
         </div>
     </main>
     
@@ -826,13 +1062,23 @@
         
         // ESTADO DE RED
         function updateStatusIndicator() {
-            const indicator = document.getElementById('status-indicator');
-            const statusText = document.getElementById('statusText');
-            if (navigator.onLine) {
-                indicator.className = 'online'; statusText.textContent = 'En línea';
-            } else {
-                indicator.className = 'offline'; statusText.textContent = 'Sin conexión';
-            }
+            const indicators = document.querySelectorAll('.status-indicator');
+            indicators.forEach(indicator => {
+                const dot = indicator.querySelector('.status-dot');
+                const text = indicator.querySelector('.status-text');
+
+                if (navigator.onLine) {
+                    indicator.classList.replace('offline', 'online');
+                    dot.style.background = '#00b894';
+                    dot.style.boxShadow = '0 0 6px rgba(0,184,148,0.6)';
+                    if(text) text.textContent = 'En línea';
+                } else {
+                    indicator.classList.replace('online', 'offline');
+                    dot.style.background = '#e74c3c';
+                    dot.style.boxShadow = '0 0 6px rgba(231,76,60,0.6)';
+                    if(text) text.textContent = 'Sin red';
+                }
+            });
         }
         window.addEventListener('online', updateStatusIndicator);
         window.addEventListener('offline', updateStatusIndicator);
@@ -1188,7 +1434,6 @@
             });
         }
     </script>
-    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDnxMWZA56z9F_4RsHWVEnx2wWnvilMA0Q"></script>
 
     <footer class="professional-footer">
         <div class="mb-1">
@@ -1203,7 +1448,207 @@
             <strong style="letter-spacing: 0.5px;">UNELLEZ</strong>
         </div>
     </footer>
+
+    <!-- MODAL DE PRESENTACIÓN DEL PROYECTO -->
+    <div class="modal fade" id="presentacionModal" tabindex="-1" aria-labelledby="presentacionModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content" style="background-color: #1a1a1a; border: 1px solid rgba(229, 9, 20, 0.3); border-radius: 15px; overflow: hidden;">
+
+                <div class="modal-header border-0" style="background: linear-gradient(90deg, #E50914, #8B0000);">
+                    <h5 class="modal-title text-white fw-bold d-flex align-items-center gap-2" id="presentacionModalLabel">
+                        <i class="bi bi-box-seam"></i> Descubre OSWA Inv
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body p-4 p-md-5 text-white">
+                    <div class="text-center mb-5">
+                        <img src="{{ asset('img/logo-unellez.png') }}" alt="UNELLEZ" style="height: 70px; filter: brightness(0) invert(1);" class="mb-3">
+                        <h3 class="fw-bold">Ingeniería Aplicada al Inventario</h3>
+                        <p class="text-secondary">Diseñado para optimizar, asegurar y registrar cada movimiento en el almacén.</p>
+                    </div>
+
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="d-flex gap-3">
+                                <div class="text-danger"><i class="bi bi-boxes fs-1"></i></div>
+                                <div>
+                                    <h5 class="fw-bold mb-1">Gestión de Stock</h5>
+                                    <p class="text-secondary" style="font-size: 0.9rem;">Control exacto de unidades, cálculo de capital invertido e indicadores de alerta para productos con bajo inventario.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex gap-3">
+                                <div class="text-warning"><i class="bi bi-clock-history fs-1"></i></div>
+                                <div>
+                                    <h5 class="fw-bold mb-1">Control de Vencimientos</h5>
+                                    <p class="text-secondary" style="font-size: 0.9rem;">Monitoreo en tiempo real de lotes próximos a caducar para evitar pérdidas de mercancía y optimizar la rotación.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex gap-3">
+                                <div class="text-info"><i class="bi bi-shield-lock-fill fs-1"></i></div>
+                                <div>
+                                    <h5 class="fw-bold mb-1">Auditoría Criptográfica</h5>
+                                    <p class="text-secondary" style="font-size: 0.9rem;">Registro inmutable de movimientos protegidos con firma digital (SHA-256) para garantizar la transparencia del usuario.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex gap-3">
+                                <div class="text-success"><i class="bi bi-file-earmark-pdf-fill fs-1"></i></div>
+                                <div>
+                                    <h5 class="fw-bold mb-1">Reportes Automatizados</h5>
+                                    <p class="text-secondary" style="font-size: 0.9rem;">Generación instantánea de reportes en PDF listos para imprimir, firmar y entregar a gerencia.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer border-0 justify-content-center pb-4 pt-0">
+                    <button type="button" class="btn btn-danger px-5 py-2 fw-bold" data-bs-dismiss="modal">¡Comenzar a usar!</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL ESTILO POWERPOINT (CARRUSEL ADAPTABLE) -->
+    <div class="modal fade" id="powerPointModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <!-- Fondo y borde dinámico -->
+            <div class="modal-content" style="background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; box-shadow: 0 15px 40px rgba(0,0,0,0.5);">
+                
+                <div class="modal-body p-0">
+                    <div id="carouselOSWA" class="carousel slide" data-bs-ride="false">
+                        
+                        <!-- Indicadores -->
+                        <div class="carousel-indicators" style="margin-bottom: 10px;">
+                            <button type="button" data-bs-target="#carouselOSWA" data-bs-slide-to="0" class="active" style="background-color: var(--text-secondary);"></button>
+                            <button type="button" data-bs-target="#carouselOSWA" data-bs-slide-to="1" style="background-color: var(--text-secondary);"></button>
+                            <button type="button" data-bs-target="#carouselOSWA" data-bs-slide-to="2" style="background-color: var(--text-secondary);"></button>
+                            <button type="button" data-bs-target="#carouselOSWA" data-bs-slide-to="3" style="background-color: var(--text-secondary);"></button>
+                        </div>
+
+                        <!-- Diapositivas -->
+                        <div class="carousel-inner" style="height: 450px;">
+                            
+                            <!-- Slide 1: Portada -->
+                            <div class="carousel-item active h-100">
+                                <div class="d-flex flex-column justify-content-center align-items-center h-100 text-center p-5">
+                                    <img src="{{ asset('img/logo-unellez.png') }}" alt="UNELLEZ" style="height: 80px;" class="mb-4 logo-nav-unellez">
+                                    <h2 class="fw-bold mb-2" style="color: #E50914;">OSWA Inv v1.0</h2>
+                                    <h5 style="color: var(--text-secondary);" class="mb-4">Sistema Gestor de Inventario</h5>
+                                    <p style="font-size: 0.95rem; max-width: 80%; color: var(--text-primary);">Proyecto académico de Ingeniería en Informática enfocado en la optimización, seguridad y control de almacenes.</p>
+                                    <div class="mt-4 pt-3 border-top w-75" style="border-color: var(--border-color) !important;">
+                                        <span style="color: var(--text-secondary); display: block; margin-bottom: 5px; font-size: 0.9rem;">Desarrollado por:</span>
+                                        <span class="fw-bold" style="color: var(--text-primary); font-size: 1.1rem;">Carlos Braca & Yorgelis Blanco</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Slide 2: Stock -->
+                            <div class="carousel-item h-100">
+                                <div class="d-flex flex-column justify-content-center align-items-center h-100 text-center p-5">
+                                    <i class="bi bi-boxes mb-3" style="font-size: 4rem; color: #E50914;"></i>
+                                    <h3 class="fw-bold mb-3" style="color: var(--text-primary);">1. Control de Stock</h3>
+                                    <p style="font-size: 1.1rem; max-width: 85%; color: var(--text-secondary);">Monitoreo en tiempo real de entradas y salidas. El sistema calcula automáticamente el capital invertido y genera alertas visuales cuando un producto alcanza su nivel mínimo de inventario.</p>
+                                </div>
+                            </div>
+
+                            <!-- Slide 3: Vencimientos -->
+                            <div class="carousel-item h-100">
+                                <div class="d-flex flex-column justify-content-center align-items-center h-100 text-center p-5">
+                                    <i class="bi bi-calendar-x mb-3" style="font-size: 4rem; color: #ffc107;"></i>
+                                    <h3 class="fw-bold mb-3" style="color: var(--text-primary);">2. Gestión de Vencimientos</h3>
+                                    <p style="font-size: 1.1rem; max-width: 85%; color: var(--text-secondary);">Seguimiento estricto de la vida útil de los productos. Algoritmos de alerta temprana notifican a los administradores sobre lotes próximos a caducar, evitando pérdidas económicas.</p>
+                                </div>
+                            </div>
+
+                            <!-- Slide 4: Auditoría -->
+                            <div class="carousel-item h-100">
+                                <div class="d-flex flex-column justify-content-center align-items-center h-100 text-center p-5">
+                                    <i class="bi bi-shield-lock mb-3" style="font-size: 4rem; color: #0dcaf0;"></i>
+                                    <h3 class="fw-bold mb-3" style="color: var(--text-primary);">3. Auditoría Criptográfica</h3>
+                                    <p style="font-size: 1.1rem; max-width: 85%; color: var(--text-secondary);">Registro inmutable de acciones. Cada movimiento importante en el sistema es sellado utilizando encriptación SHA-256, garantizando la transparencia y la trazabilidad de los usuarios.</p>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- Flechas de navegación -->
+                        <button class="carousel-control-prev" type="button" data-bs-target="#carouselOSWA" data-bs-slide="prev" style="width: 10%;">
+                            <span class="carousel-control-prev-icon" aria-hidden="true" style="width: 3rem; height: 3rem; filter: drop-shadow(0 0 5px rgba(0,0,0,0.5));"></span>
+                            <span class="visually-hidden">Anterior</span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#carouselOSWA" data-bs-slide="next" style="width: 10%;">
+                            <span class="carousel-control-next-icon" aria-hidden="true" style="width: 3rem; height: 3rem; filter: drop-shadow(0 0 5px rgba(0,0,0,0.5));"></span>
+                            <span class="visually-hidden">Siguiente</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Pie de página dinámico -->
+                <div class="modal-footer border-0 justify-content-end p-3" style="background-color: transparent;">
+                    <button type="button" class="btn btn-outline-danger btn-sm px-4" data-bs-dismiss="modal">Cerrar Presentación</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
     
     <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">@csrf</form>
+    
+    <script>
+        function toggleSidebar() {
+            const nav = document.getElementById('topbarNav');
+            nav.classList.toggle('show');
+        }
+
+        // Secuencia de entrada cinemática
+        document.addEventListener('DOMContentLoaded', () => {
+            const overlay = document.getElementById('cinematic-intro');
+            
+            // Si la intro ya se reprodujo en esta sesión, la quitamos inmediatamente
+            if (sessionStorage.getItem('oswaIntroPlayed') === 'true') {
+                if(overlay) overlay.remove();
+                return;
+            }
+
+            const logo = document.getElementById('intro-logo');
+            const quote = document.getElementById('intro-quote');
+            
+            // 1. Reproducir Sonido
+            try {
+                const cinematicSound = new Audio('{{ asset("sounds/intro.mp3") }}');
+                cinematicSound.volume = 0.8;
+                cinematicSound.play();
+            } catch (e) {
+                console.log("El navegador bloqueó el autoplay del audio.", e);
+            }
+
+            // 2. Secuencia de tiempos (Timeouts)
+            // A los 3 segundos: Ocultar logo, mostrar frase
+            setTimeout(() => {
+                logo.classList.add('d-none');
+                quote.classList.remove('d-none');
+                quote.classList.add('show');
+            }, 3000);
+
+            // A los 6.5 segundos: Desvanecer la pantalla negra completa
+            setTimeout(() => {
+                overlay.classList.add('fade-out');
+                sessionStorage.setItem('oswaIntroPlayed', 'true');
+            }, 6500);
+
+            // A los 8 segundos: Eliminar el código HTML del overlay para que no estorbe
+            setTimeout(() => {
+                overlay.remove();
+            }, 8000);
+        });
+    </script>
 </body>
 </html>
