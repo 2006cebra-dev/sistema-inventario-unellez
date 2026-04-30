@@ -59,6 +59,15 @@
             height: 2px; background: var(--accent-primary); border-radius: 1px;
         }
         
+        .nav-dropdown { position: relative; }
+        .nav-dropdown .dropdown-toggle { cursor: pointer; }
+        .dropdown-menu-custom { position: absolute; top: 100%; left: 0; min-width: 220px; background: #1a1a1a; border: 1px solid var(--border-color); border-radius: 8px; box-shadow: 0 8px 30px rgba(0,0,0,0.6); padding: 6px 0; z-index: 1000; display: none; }
+        .nav-dropdown.show .dropdown-menu-custom { display: block; }
+        .dropdown-item-custom { display: flex; align-items: center; gap: 8px; padding: 10px 16px; color: #ccc; font-size: 0.85rem; text-decoration: none; transition: all 0.2s; }
+        .dropdown-item-custom:hover { background: rgba(229,9,20,0.1); color: #fff; }
+        .dropdown-item-custom.text-muted { color: #666; cursor: default; }
+        .dropdown-item-custom.text-muted:hover { background: transparent; color: #666; }
+        
         .topbar-right { display: flex; align-items: center; gap: 1rem; }
         
         .menu-toggle { display: none; background: none; border: none; color: var(--text-primary); font-size: 1.5rem; cursor: pointer; }
@@ -145,6 +154,19 @@
                 <a href="{{ route('inventario') }}">Dashboard</a>
                 <a href="{{ route('vencimientos') }}">Vencimientos</a>
                 <a href="{{ route('auditoria') }}" class="active">Auditoría</a>
+                <div class="nav-dropdown">
+                    <a href="#" class="dropdown-toggle" onclick="event.preventDefault(); this.parentElement.classList.toggle('show')">
+                        Reportes
+                    </a>
+                    <div class="dropdown-menu-custom">
+                        <a href="{{ route('exportar.pdf') }}" target="_blank" class="dropdown-item-custom">
+                            <i class="bi bi-file-earmark-pdf-fill text-danger"></i> Inventario General (PDF)
+                        </a>
+                        <a href="#" class="dropdown-item-custom text-muted" onclick="event.preventDefault()">
+                            <i class="bi bi-file-earmark-excel-fill text-success"></i> Exportar a Excel (Próximamente)
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="topbar-right">
