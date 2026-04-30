@@ -31,5 +31,13 @@ Route::middleware(['auth'])->group(function () {
     // --- ADMINISTRACIÓN DE USUARIOS ---
     Route::get('/usuarios', [InventarioController::class, 'indexUsuarios'])->name('usuarios.index');
     Route::post('/usuarios/guardar', [InventarioController::class, 'guardarUsuario'])->name('usuarios.guardar');
-    Route::post('/usuarios/eliminar', [InventarioController::class, 'eliminarUsuario'])->name('usuarios.eliminar');
+    Route::post('/usuarios/estatus', [InventarioController::class, 'cambiarEstatusUsuario'])->name('usuarios.cambiarEstatus');
+    
+    // --- SISTEMA DE REQUISICIONES ---
+    Route::post('/requisiciones/solicitar', [InventarioController::class, 'solicitarRequisicion'])->name('requisiciones.solicitar');
+    Route::post('/requisiciones/aprobar', [InventarioController::class, 'aprobarRequisicion'])->name('requisiciones.aprobar');
+    Route::post('/requisiciones/rechazar', [InventarioController::class, 'rechazarRequisicion'])->name('requisiciones.rechazar');
+    
+    // --- RESPALDO DE BASE DE DATOS (Solo Admin) ---
+    Route::get('/respaldo-db', [InventarioController::class, 'respaldarBaseDatos'])->name('respaldo.db');
 });

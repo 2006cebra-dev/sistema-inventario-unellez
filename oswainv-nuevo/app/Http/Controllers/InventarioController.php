@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\Producto;
 use App\Models\Movimiento;
 use App\Models\User;
+use App\Models\Requisicion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -38,6 +40,22 @@ class InventarioController extends Controller
     public function index()
     {
         $productos = Producto::orderBy('created_at', 'desc')->get();
+        
+        // --- BI: PREDICCIÓN DE DÍAS ESTIMADOS DE STOCK ---
+        $treintaDiasAtras = now()->subDays(30);
+        foreach ($productos as $producto) {
+            $salidasRecientes = Movimiento::where('codigo_producto', $producto->codigo)
+                ->where('tipo', 'Salida')
+                ->where('created_at', '>=', $treintaDiasAtras)
+                ->sum('cantidad');
+            $promedioDiario = $salidasRecientes / 30;
+            if ($promedioDiario > 0) {
+                $producto->dias_estimados = round($producto->stock / $promedioDiario);
+            } else {
+                $producto->dias_estimados = null;
+            }
+        }
+        
         $totalProductos = $productos->count();
         $stockTotal = $productos->sum('stock');
         $alertasStock = $productos->where('stock', '<=', 5)->count();
@@ -51,11 +69,16 @@ class InventarioController extends Controller
         $categorias = $productos->groupBy('categoria')->map(fn($group) => $group->count());
         $ultimoMovimiento = Movimiento::with('producto')->latest()->first();
         $esAdmin = Auth::check() && Auth::user()->rol === 'admin';
+        
+        $requisicionesPendientes = [];
+        if ($esAdmin) {
+            $requisicionesPendientes = Requisicion::with(['user', 'producto'])->where('estado', 'Pendiente')->latest()->get();
+        }
 
         return view('inventario.index', compact(
             'productos', 'totalProductos', 'stockTotal', 'alertasStock',
             'capitalInvertido', 'tasaBcv', 'capitalInvertidoBs', 'stockSaludable', 'stockCritico',
-            'categorias', 'ultimoMovimiento', 'esAdmin'
+            'categorias', 'ultimoMovimiento', 'esAdmin', 'requisicionesPendientes'
         ));
     }
 
@@ -84,6 +107,16 @@ class InventarioController extends Controller
         }
 
         $producto->save();
+
+        if ($request->filled('soporte_base64')) {
+            $image_parts = explode(";base64,", $request->soporte_base64);
+            if (isset($image_parts[1])) {
+                $image_base64 = base64_decode($image_parts[1]);
+                $nameSoporte = time() . '_soporte_' . $producto->codigo . '.jpg';
+                Storage::disk('public')->put('soportes/' . $nameSoporte, $image_base64);
+                $motivo .= " | Soporte: " . $nameSoporte;
+            }
+        }
 
         if ($diferencia != 0) {
             $fecha = now()->format('Y-m-d H:i:s');
@@ -151,6 +184,18 @@ class InventarioController extends Controller
         $costoFlete = $destino['dist'] * 0.25;
 
         $producto->decrement('stock', $request->cantidad);
+        
+        $motivoTransfer = 'Transferencia a ' . $request->sucursal;
+        if ($request->filled('soporte_base64')) {
+            $image_parts = explode(";base64,", $request->soporte_base64);
+            if (isset($image_parts[1])) {
+                $image_base64 = base64_decode($image_parts[1]);
+                $nameSoporte = time() . '_soporte_' . $producto->codigo . '.jpg';
+                Storage::disk('public')->put('soportes/' . $nameSoporte, $image_base64);
+                $motivoTransfer .= " | Soporte: " . $nameSoporte;
+            }
+        }
+
         $fecha = now()->format('Y-m-d H:i:s');
         $firma = hash('sha256', $producto->codigo . 'Salida' . $request->cantidad . $fecha);
 
@@ -158,7 +203,7 @@ class InventarioController extends Controller
             'codigo_producto' => $producto->codigo,
             'tipo' => 'Salida',
             'cantidad' => $request->cantidad,
-            'motivo' => 'Transferencia a ' . $request->sucursal,
+            'motivo' => $motivoTransfer,
             'usuario_accion' => Auth::user()->name,
             'firma_digital' => $firma,
             'created_at' => $fecha
@@ -177,7 +222,7 @@ class InventarioController extends Controller
         ]);
     }
 
-    // --- GENERADOR DE PDF ---
+    // --- GENERADOR DE PDF TRANSFERENCIA ---
     public function generarPdfTransferencia(Request $request)
     {
         $datos = $request->all();
@@ -191,7 +236,15 @@ class InventarioController extends Controller
         $request->validate(['codigo' => 'required|unique:productos', 'nombre' => 'required', 'precio' => 'required|numeric', 'stock' => 'required|integer']);
         
         $imagenPath = null;
-        if ($request->hasFile('imagen')) {
+        if ($request->filled('imagen_base64')) {
+            $image_parts = explode(";base64,", $request->imagen_base64);
+            if (isset($image_parts[1])) {
+                $image_base64 = base64_decode($image_parts[1]);
+                $name = time() . '_camara_' . $request->codigo . '.jpg';
+                Storage::disk('public')->put('productos/' . $name, $image_base64);
+                $imagenPath = 'productos/' . $name;
+            }
+        } elseif ($request->hasFile('imagen')) {
             $name = time() . '_' . $request->file('imagen')->getClientOriginalName();
             $request->file('imagen')->storeAs('productos', $name, 'public');
             $imagenPath = 'productos/' . $name;
@@ -374,12 +427,26 @@ class InventarioController extends Controller
     public function exportarPdf() { $productos = Producto::all(); return view('inventario.pdf', compact('productos')); }
     public function eliminarProducto(Request $request) { Producto::destroy($request->id); return response()->json(['success' => true]); }
     public function vistaEscaner() { return view('inventario.escaner'); }
-    public function generarOrdenCompra($id) { $producto = Producto::findOrFail($id); return view('inventario.orden_compra', compact('producto')); }
+    
+    // --- GENERAR ORDEN DE COMPRA (CORREGIDO DE NUEVO Y CON LÓGICA MATEMÁTICA) ---
+    public function generarOrdenCompra($id) 
+    { 
+        $producto = Producto::findOrFail($id); 
+        $fecha = now()->format('d/m/Y h:i A'); 
+        
+        // Lógica de inventario:
+        $stockIdeal = 100; // Asumimos que el número ideal de mercancía en el depósito es 100
+        $cantidadSugerida = max(0, $stockIdeal - $producto->stock); // Si tienes 20, te sugiere comprar 80. Si tienes más de 100, sugiere 0.
+        
+        $pdf = PDF::loadView('inventario.orden_compra', compact('producto', 'fecha', 'cantidadSugerida', 'stockIdeal')); 
+        return $pdf->download('Orden_Compra_' . $producto->codigo . '.pdf'); 
+    }
     
     public function indexUsuarios()
     {
         $usuarios = User::orderBy('created_at', 'desc')->get();
-        return view('usuarios.index', compact('usuarios'));
+        $logs = \App\Models\BitacoraAcceso::with('user')->latest()->take(20)->get();
+        return view('usuarios.index', compact('usuarios', 'logs'));
     }
     
     public function guardarUsuario(Request $request)
@@ -401,15 +468,138 @@ class InventarioController extends Controller
         return response()->json(['success' => true, 'message' => 'Empleado registrado correctamente']);
     }
     
-    public function eliminarUsuario(Request $request)
+    public function cambiarEstatusUsuario(Request $request)
     {
         $request->validate(['id' => 'required|integer']);
         
         if (Auth::id() == $request->id) {
-            return response()->json(['success' => false, 'message' => 'No puedes eliminar tu propia cuenta']);
+            return response()->json(['success' => false, 'message' => 'No puedes cambiar tu propio estatus']);
         }
         
-        User::destroy($request->id);
+        $usuario = User::findOrFail($request->id);
+        $usuario->is_active = !$usuario->is_active;
+        $usuario->save();
+        
+        $accion = $usuario->is_active ? 'activado' : 'suspendido';
+        return response()->json(['success' => true, 'message' => "Usuario {$accion}", 'is_active' => $usuario->is_active]);
+    }
+
+    // --- SISTEMA DE REQUISICIONES ---
+    public function solicitarRequisicion(Request $request)
+    {
+        $request->validate([
+            'producto_id' => 'required|integer',
+            'cantidad' => 'required|integer|min:1'
+        ]);
+
+        if (!Auth::check()) return response()->json(['success' => false], 401);
+
+        Requisicion::create([
+            'user_id' => Auth::id(),
+            'producto_id' => $request->producto_id,
+            'cantidad' => $request->cantidad,
+            'estado' => 'Pendiente'
+        ]);
+
         return response()->json(['success' => true]);
+    }
+
+    public function aprobarRequisicion(Request $request)
+    {
+        $request->validate(['id' => 'required|integer']);
+        if (!Auth::check() || Auth::user()->rol !== 'admin') return response()->json(['success' => false, 'message' => 'No autorizado'], 403);
+
+        $requisicion = Requisicion::with('producto')->findOrFail($request->id);
+        $requisicion->estado = 'Aprobada';
+        $requisicion->save();
+
+        $producto = $requisicion->producto;
+        if ($producto && $producto->stock >= $requisicion->cantidad) {
+            $producto->decrement('stock', $requisicion->cantidad);
+            $fecha = now()->format('Y-m-d H:i:s');
+            $firma = hash('sha256', $producto->codigo . 'Salida' . $requisicion->cantidad . $fecha);
+            Movimiento::create([
+                'codigo_producto' => $producto->codigo,
+                'tipo' => 'Salida',
+                'cantidad' => $requisicion->cantidad,
+                'motivo' => 'Requisición Aprobada #' . $requisicion->id,
+                'usuario_accion' => Auth::user()->name,
+                'firma_digital' => $firma,
+                'created_at' => $fecha
+            ]);
+            return response()->json(['success' => true, 'message' => 'Requisición aprobada y stock actualizado']);
+        }
+
+        return response()->json(['success' => false, 'message' => 'Stock insuficiente para aprobar esta requisición']);
+    }
+
+    public function rechazarRequisicion(Request $request)
+    {
+        $request->validate(['id' => 'required|integer']);
+        if (!Auth::check() || Auth::user()->rol !== 'admin') return response()->json(['success' => false, 'message' => 'No autorizado'], 403);
+
+        $requisicion = Requisicion::findOrFail($request->id);
+        $requisicion->estado = 'Rechazada';
+        $requisicion->save();
+
+        return response()->json(['success' => true, 'message' => 'Requisición rechazada']);
+    }
+
+    public function respaldarBaseDatos()
+    {
+        if (Auth::user()->rol !== 'admin') {
+            abort(403, 'No autorizado');
+        }
+
+        $sql = "-- Respaldo de Base de Datos OSWA Inv\n";
+        $sql .= "-- Generado: " . now()->format('Y-m-d H:i:s') . "\n\n";
+        $sql .= "SET SQL_MODE = \"NO_AUTO_VALUE_ON_ZERO\";\n";
+        $sql .= "SET time_zone = \"+00:00\";\n\n";
+        $sql .= "START TRANSACTION;\n\n";
+
+        $pdo = DB::connection()->getPdo();
+        $pdo->setAttribute(\PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, false);
+
+        $tables = DB::select('SHOW TABLES');
+        $dbName = DB::getDatabaseName();
+        $key = "Tables_in_{$dbName}";
+
+        foreach ($tables as $tableRow) {
+            $tableName = $tableRow->$key;
+
+            $createStatement = DB::select("SHOW CREATE TABLE `{$tableName}`");
+            $sql .= "-- Estructura de tabla: {$tableName}\n";
+            $sql .= $createStatement[0]->{'Create Table'} . ";\n\n";
+
+            $rows = DB::table($tableName)->get();
+            if ($rows->isEmpty()) {
+                continue;
+            }
+
+            $sql .= "-- Datos de tabla: {$tableName}\n";
+            foreach ($rows as $row) {
+                $rowArray = (array) $row;
+                $columns = array_keys($rowArray);
+                $values = array_map(function ($value) use ($pdo) {
+                    if ($value === null) {
+                        return 'NULL';
+                    }
+                    return $pdo->quote($value);
+                }, $rowArray);
+
+                $columnList = implode(', ', array_map(fn($col) => "`{$col}`", $columns));
+                $valueList = implode(', ', $values);
+                $sql .= "INSERT INTO `{$tableName}` ({$columnList}) VALUES ({$valueList});\n";
+            }
+            $sql .= "\n";
+        }
+
+        $sql .= "COMMIT;\n";
+
+        $fileName = 'respaldo_inventario_' . now()->format('Ymd_His') . '.sql';
+        $tempPath = storage_path('app/' . $fileName);
+        file_put_contents($tempPath, $sql);
+
+        return response()->download($tempPath)->deleteFileAfterSend(true);
     }
 }

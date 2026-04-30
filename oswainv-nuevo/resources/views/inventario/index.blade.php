@@ -228,6 +228,11 @@
                         <a href="{{ route('exportar.pdf') }}" target="_blank" class="dropdown-item-custom">
                             <i class="bi bi-file-earmark-pdf-fill text-danger"></i> Inventario General (PDF)
                         </a>
+                        @if($esAdmin)
+                        <a href="{{ route('respaldo.db') }}" class="dropdown-item-custom">
+                            <i class="bi bi-database-down text-warning"></i> Respaldo de BD (.sql)
+                        </a>
+                        @endif
                         <a href="#" class="dropdown-item-custom text-muted" onclick="event.preventDefault()">
                             <i class="bi bi-file-earmark-excel-fill text-success"></i> Exportar a Excel (Próximamente)
                         </a>
@@ -324,6 +329,40 @@
             </div>
         </div>
         
+        @if($esAdmin && count($requisicionesPendientes) > 0)
+        <div class="d-flex justify-content-between align-items-center mt-5 mb-2">
+            <h5 class="mb-0"><i class="bi bi-clipboard-check me-2" style="color: var(--accent-warning);"></i>Requisiciones Pendientes</h5>
+            <span style="color:var(--accent-warning);font-weight:500;">{{ count($requisicionesPendientes) }} pendientes</span>
+        </div>
+        <div class="table-responsive" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem;">
+            <table class="table mb-0" style="color: var(--text-primary);">
+                <thead>
+                    <tr style="border-bottom: 1px solid var(--border-color);">
+                        <th>Empleado</th>
+                        <th>Producto</th>
+                        <th>Cantidad</th>
+                        <th>Fecha</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($requisicionesPendientes as $req)
+                    <tr style="border-bottom: 1px solid var(--border-color);">
+                        <td>{{ $req->user->name }}</td>
+                        <td>{{ $req->producto->nombre }}</td>
+                        <td><span class="badge bg-warning text-dark">{{ $req->cantidad }}</span></td>
+                        <td style="color: var(--text-secondary); font-size: 0.85rem;">{{ $req->created_at->format('d/m/Y H:i') }}</td>
+                        <td>
+                            <button class="btn btn-sm btn-success me-1" onclick="aprobarRequisicion({{ $req->id }})"><i class="bi bi-check-lg"></i></button>
+                            <button class="btn btn-sm btn-danger" onclick="rechazarRequisicion({{ $req->id }})"><i class="bi bi-x-lg"></i></button>
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+        @endif
+        
         <div class="d-flex justify-content-between align-items-center mt-5 mb-2">
             <h5 class="mb-0"><i class="bi bi-grid me-2"></i>Catálogo de Productos</h5>
             <span style="color:var(--text-secondary);font-weight:500;">{{ $productos->count() }} productos</span>
@@ -347,6 +386,15 @@
                     <div class="product-card-meta">{{ $producto->marca ?? 'Sin marca' }} • {{ $producto->categoria }}</div>
                     <div class="product-card-code"><i class="bi bi-upc-scan"></i> {{ $producto->codigo }}</div>
                     <div class="mt-1" style="font-weight: 700; font-size: 0.95rem; color: var(--accent-success);">${{ number_format($producto->precio, 2) }}</div>
+                    @if($producto->dias_estimados !== null)
+                        <div class="mt-1" style="font-size: 0.75rem; color: {{ $producto->dias_estimados <= 7 ? '#e74c3c' : '#b3b3b3' }};">
+                            <i class="bi bi-calendar-check me-1"></i>~{{ $producto->dias_estimados }} días de stock
+                        </div>
+                    @else
+                        <div class="mt-1" style="font-size: 0.75rem; color: #777;">
+                            <i class="bi bi-dash-circle me-1"></i>Sin datos de salida
+                        </div>
+                    @endif
                 </div>
                 
                 <div class="product-card-controls">
@@ -361,6 +409,10 @@
                         <button class="card-action-btn card-action-btn-order" title="Orden de Compra" onclick="generarOrden({{ $producto->id }}, '{{ $producto->nombre }}')"><i class="bi bi-cart"></i></button>
                         <button class="card-action-btn card-action-btn-edit" title="Editar" onclick="editarProducto({{ $producto->id }})"><i class="bi bi-pencil"></i></button>
                         <button class="card-action-btn card-action-btn-delete" title="Eliminar" onclick="eliminarProducto({{ $producto->id }})"><i class="bi bi-trash"></i></button>
+                    </div>
+                    @else
+                    <div class="product-card-actions">
+                        <button class="card-action-btn" style="background: rgba(0,184,148,0.15); color: #00b894;" title="Pedir Material" onclick="abrirRequisicion({{ $producto->id }}, '{{ $producto->nombre }}')"><i class="bi bi-hand-index"></i></button>
                     </div>
                     @endif
                 </div>
@@ -411,6 +463,24 @@
         </div>
     </div>
 
+    <div class="modal fade" id="modalCamaraUniversal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--accent-primary);">
+                <div class="modal-header" style="border-bottom: 1px solid var(--border-color);">
+                    <h5 class="modal-title">📷 Captura de Imagen</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" style="filter: invert(1);"></button>
+                </div>
+                <div class="modal-body text-center p-0" style="background: #000;">
+                    <video id="videoElementUniversal" width="100%" height="auto" autoplay playsinline muted style="display: block;"></video>
+                    <canvas id="canvasHiddenUniversal" style="display:none;"></canvas>
+                </div>
+                <div class="modal-footer justify-content-center" style="border-top: 1px solid var(--border-color);">
+                    <button type="button" class="btn btn-danger" id="btnCapturarUniversal"><i class="bi bi-camera-fill"></i> Capturar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <a href="{{ route('escaner') }}" class="scanner-fab" title="Escáner (Alt+E)"><i class="bi bi-upc-scan"></i></a>
     
     <div class="modal fade" id="nuevoProductoModal" tabindex="-1">
@@ -453,6 +523,9 @@
                             <div class="col-md-6" id="cajaFotoPc">
                                 <label class="form-label">Foto del Producto</label>
                                 <input type="file" class="form-control" name="imagen" accept="image/*">
+                                <input type="hidden" name="imagen_base64" id="imagen_base64">
+                                <button type="button" class="btn btn-outline-secondary btn-sm mt-2" onclick="abrirCamara('producto')">📷 Tomar Foto</button>
+                                <img id="previewCamaraProducto" style="display:none; max-width:100%; margin-top:8px; border-radius:8px;">
                             </div>
                         </div>
                     </div>
@@ -557,6 +630,13 @@
                             <input type="number" class="form-control" id="transferCantidad" name="cantidad" min="1" required>
                         </div>
                         <div class="mb-3">
+                            <label class="form-label">Foto de Factura/Soporte</label>
+                            <input type="file" class="form-control" id="soporteFile" accept="image/*">
+                            <input type="hidden" name="soporte_base64" id="soporte_base64">
+                            <button type="button" class="btn btn-outline-secondary btn-sm mt-2" onclick="abrirCamara('soporte')">📷 Foto de Factura/Soporte</button>
+                            <img id="previewCamaraSoporte" style="display:none; max-width:100%; margin-top:8px; border-radius:8px;">
+                        </div>
+                        <div class="mb-3">
                             <div class="map-label" style="color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 5px;"><i class="bi bi-geo-alt"></i> Ruta de transferencia (Origen: Barinas)</div>
                             <div id="map"></div>
                             <div id="route-stats" class="route-stats" style="display:none;">
@@ -587,6 +667,35 @@
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
                     <button type="button" class="btn btn-info" onclick="descargarOrden()"><i class="bi bi-download me-1"></i>Descargar PDF</button>
                 </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal fade" id="requisicionModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px;">
+                <div class="modal-header" style="border-bottom: 1px solid var(--border-color);">
+                    <h5 class="modal-title" style="color: var(--text-primary);"><i class="bi bi-hand-index me-2" style="color: var(--accent-success);"></i>Solicitar Material</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="requisicionForm">
+                    @csrf
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Producto</label>
+                            <input type="text" class="form-control" id="requisicionProducto" readonly>
+                            <input type="hidden" id="requisicionProductoId" name="producto_id">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Cantidad a Solicitar</label>
+                            <input type="number" class="form-control" id="requisicionCantidad" name="cantidad" min="1" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer" style="border-top: 1px solid var(--border-color);">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-success" style="background: var(--accent-success); border: none;"><i class="bi bi-send me-1"></i>Enviar Solicitud</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -884,7 +993,7 @@
             try {
                 const response = await fetch('{{ route('transferir.producto') }}', {
                     method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
-                    body: JSON.stringify({ producto_id: document.getElementById('transferProductoId').value, cantidad: cantidad, sucursal: document.getElementById('sucursalDestino').value })
+                    body: JSON.stringify({ producto_id: document.getElementById('transferProductoId').value, cantidad: cantidad, sucursal: document.getElementById('sucursalDestino').value, soporte_base64: document.getElementById('soporte_base64').value })
                 });
                 const data = await response.json();
                 if (data.success) {
@@ -895,6 +1004,121 @@
         });
 
         function generarOrden(id, nombre) { window.location.href = '/orden-compra/' + id; }
+        
+        // REQUISICIONES
+        function abrirRequisicion(productoId, nombre) {
+            document.getElementById('requisicionProducto').value = nombre;
+            document.getElementById('requisicionProductoId').value = productoId;
+            document.getElementById('requisicionCantidad').value = '';
+            new bootstrap.Modal(document.getElementById('requisicionModal')).show();
+        }
+        
+        document.getElementById('requisicionForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            try {
+                const formData = new FormData(this);
+                const response = await fetch('{{ route('requisiciones.solicitar') }}', {
+                    method: 'POST',
+                    headers: { 'X-CSRF-TOKEN': csrfToken },
+                    body: new URLSearchParams(Object.fromEntries(formData))
+                });
+                const data = await response.json();
+                if (data.success) {
+                    Swal.fire({ icon: 'success', title: 'Solicitud enviada', text: 'El administrador revisará tu pedido', timer: 2000, showConfirmButton: false });
+                    bootstrap.Modal.getInstance(document.getElementById('requisicionModal')).hide();
+                }
+            } catch (e) { showNotification('error', 'Error al enviar', true); }
+        });
+        
+        async function aprobarRequisicion(id) {
+            Swal.fire({ title: '¿Aprobar requisición?', text: 'Se descontará el stock del producto', icon: 'question', showCancelButton: true, confirmButtonText: 'Aprobar', cancelButtonText: 'Cancelar', confirmButtonColor: '#00b894' }).then(async (result) => {
+                if (result.isConfirmed) {
+                    try {
+                        const response = await fetch('{{ route('requisiciones.aprobar') }}', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
+                            body: JSON.stringify({ id: id })
+                        });
+                        const data = await response.json();
+                        if (data.success) {
+                            Swal.fire({ icon: 'success', title: 'Aprobada', text: data.message, timer: 2000, showConfirmButton: false });
+                            setTimeout(() => location.reload(), 1500);
+                        } else {
+                            Swal.fire({ icon: 'error', title: 'Error', text: data.message });
+                        }
+                    } catch (e) { showNotification('error', 'Error de conexión', true); }
+                }
+            });
+        }
+        
+        async function rechazarRequisicion(id) {
+            Swal.fire({ title: '¿Rechazar requisición?', icon: 'warning', showCancelButton: true, confirmButtonText: 'Rechazar', cancelButtonText: 'Cancelar', confirmButtonColor: '#e74c3c' }).then(async (result) => {
+                if (result.isConfirmed) {
+                    try {
+                        const response = await fetch('{{ route('requisiciones.rechazar') }}', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
+                            body: JSON.stringify({ id: id })
+                        });
+                        const data = await response.json();
+                        if (data.success) {
+                            Swal.fire({ icon: 'success', title: 'Rechazada', text: data.message, timer: 2000, showConfirmButton: false });
+                            setTimeout(() => location.reload(), 1500);
+                        }
+                    } catch (e) { showNotification('error', 'Error de conexión', true); }
+                }
+            });
+        }
+        
+        // CAMARA UNIVERSAL ROBUSTA
+        let camaraStream = null;
+        let camaraTarget = null;
+        const videoUniversal = document.getElementById('videoElementUniversal');
+        const canvasUniversal = document.getElementById('canvasHiddenUniversal');
+
+        function abrirCamara(tipo) {
+            if (camaraStream) return;
+            camaraTarget = tipo;
+            navigator.mediaDevices.getUserMedia({ 
+                video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } } 
+            })
+            .then(stream => {
+                camaraStream = stream;
+                videoUniversal.srcObject = stream;
+                const modalEl = document.getElementById('modalCamaraUniversal');
+                const modal = new bootstrap.Modal(modalEl);
+                modal.show();
+            })
+            .catch(err => Swal.fire('Error', 'No se pudo acceder a la cámara: ' + err.message, 'error'));
+        }
+
+        document.getElementById('modalCamaraUniversal').addEventListener('hidden.bs.modal', function () {
+            if (camaraStream) {
+                camaraStream.getTracks().forEach(track => track.stop());
+                camaraStream = null;
+                videoUniversal.srcObject = null;
+            }
+            camaraTarget = null;
+        });
+
+        document.getElementById('btnCapturarUniversal').addEventListener('click', function() {
+            if (!camaraStream || !camaraTarget) return;
+            canvasUniversal.width = videoUniversal.videoWidth;
+            canvasUniversal.height = videoUniversal.videoHeight;
+            canvasUniversal.getContext('2d').drawImage(videoUniversal, 0, 0);
+            const base64 = canvasUniversal.toDataURL('image/jpeg', 0.85);
+            
+            if (camaraTarget === 'producto') {
+                document.getElementById('imagen_base64').value = base64;
+                const preview = document.getElementById('previewCamaraProducto');
+                preview.src = base64; preview.style.display = 'block';
+            } else if (camaraTarget === 'soporte') {
+                document.getElementById('soporte_base64').value = base64;
+                const preview = document.getElementById('previewCamaraSoporte');
+                preview.src = base64; preview.style.display = 'block';
+            }
+            bootstrap.Modal.getInstance(document.getElementById('modalCamaraUniversal')).hide();
+        });
     </script>
     
     <script>

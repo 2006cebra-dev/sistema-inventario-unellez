@@ -65,8 +65,14 @@
         .badge-rol { padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
         .badge-admin { background: rgba(229,9,20,0.15); color: var(--accent-primary); }
         .badge-empleado { background: rgba(0,184,148,0.15); color: var(--accent-success); }
-        .btn-eliminar { background: none; border: 1px solid rgba(231,76,60,0.3); color: var(--accent-danger); padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; transition: all 0.2s; }
-        .btn-eliminar:hover { background: rgba(231,76,60,0.1); border-color: var(--accent-danger); }
+        .btn-accion { background: none; border: 1px solid rgba(231,76,60,0.3); color: var(--accent-danger); padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; transition: all 0.2s; }
+        .btn-accion.activo { border-color: rgba(0,184,148,0.3); color: var(--accent-success); }
+        .btn-accion:hover { background: rgba(231,76,60,0.1); border-color: var(--accent-danger); }
+        .btn-accion.activo:hover { background: rgba(0,184,148,0.1); border-color: var(--accent-success); }
+
+        .logs-table { margin-top: 2rem; }
+        .logs-table .table-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 1rem; display: flex; align-items: center; gap: 10px; }
+        .logs-table .table-title i { color: var(--accent-primary); }
 
         .modal-content { background: var(--bg-card); border: 1px solid var(--border-color); }
         .modal-header { border-bottom: 1px solid var(--border-color); }
@@ -146,9 +152,13 @@
                         <td><span class="badge-rol {{ $user->rol === 'admin' ? 'badge-admin' : 'badge-empleado' }}">{{ ucfirst($user->rol) }}</span></td>
                         <td style="color:#666;font-size:0.8rem;">{{ $user->created_at->format('d/m/Y') }}</td>
                         <td class="text-center">
-                            <button class="btn-eliminar" onclick="eliminarUsuario({{ $user->id }}, '{{ $user->name }}')">
-                                <i class="bi bi-trash"></i> Eliminar
+                            @if($user->id !== auth()->id())
+                            <button class="btn-accion {{ $user->is_active ? 'activo' : '' }}" onclick="cambiarEstatus({{ $user->id }}, '{{ $user->name }}', {{ $user->is_active }})">
+                                <i class="bi bi-{{ $user->is_active ? 'pause-circle' : 'check-circle' }}"></i> {{ $user->is_active ? 'Suspender' : 'Activar' }}
                             </button>
+                            @else
+                            <span style="color:#666;font-size:0.8rem;">Tú</span>
+                            @endif
                         </td>
                     </tr>
                     @empty
@@ -156,6 +166,36 @@
                     @endforelse
                 </tbody>
             </table>
+        </div>
+
+        <div class="logs-table">
+            <div class="table-title"><i class="bi bi-clock-history"></i> Últimos 20 Accesos al Sistema</div>
+            <div class="card-netflix">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Usuario</th>
+                            <th>Correo</th>
+                            <th>Dirección IP</th>
+                            <th>Fecha y Hora</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($logs as $index => $log)
+                        <tr>
+                            <td>{{ $index + 1 }}</td>
+                            <td style="font-weight:600;">{{ $log->user?->name ?? 'Desconocido' }}</td>
+                            <td style="color:#888;">{{ $log->user?->email ?? 'N/A' }}</td>
+                            <td style="color:#aaa;font-family:monospace;">{{ $log->ip_address }}</td>
+                            <td style="color:#666;font-size:0.8rem;">{{ $log->login_at->format('d/m/Y H:i:s') }}</td>
+                        </tr>
+                        @empty
+                        <tr><td colspan="5" class="text-center py-5" style="color:#666;"><i class="bi bi-shield-lock" style="font-size:2rem;"></i><p class="mt-2">No hay registros de acceso recientes</p></td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
         </div>
     </main>
     
@@ -288,13 +328,14 @@
             }
         });
         
-        function eliminarUsuario(id, nombre) {
+        function cambiarEstatus(id, nombre, is_active) {
+            const accion = is_active ? 'suspender' : 'activar';
             Swal.fire({
-                title: '¿Eliminar usuario?',
-                html: `Estás a punto de eliminar a <strong style="color:#E50914;">${nombre}</strong>. Esta acción no se puede deshacer.`,
+                title: `¿${accion.charAt(0).toUpperCase() + accion.slice(1)} usuario?`,
+                html: `Estás a punto de ${accion} a <strong style="color:#E50914;">${nombre}</strong>.`,
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonText: 'Sí, eliminar',
+                confirmButtonText: `Sí, ${accion}`,
                 cancelButtonText: 'Cancelar',
                 confirmButtonColor: '#E50914',
                 cancelButtonColor: '#333',
@@ -303,7 +344,7 @@
             }).then(async (result) => {
                 if (result.isConfirmed) {
                     try {
-                        const response = await fetch('{{ route('usuarios.eliminar') }}', {
+                        const response = await fetch('{{ route('usuarios.cambiarEstatus') }}', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
                             body: JSON.stringify({ id: id })
@@ -312,8 +353,8 @@
                         if (data.success) {
                             Swal.fire({
                                 icon: 'success',
-                                title: 'Eliminado',
-                                text: 'Usuario eliminado correctamente',
+                                title: 'Actualizado',
+                                text: data.message,
                                 confirmButtonColor: '#E50914',
                                 background: '#141414',
                                 color: '#fff',
@@ -325,7 +366,7 @@
                             Swal.fire({
                                 icon: 'error',
                                 title: 'Error',
-                                text: data.message || 'No se pudo eliminar',
+                                text: data.message || 'No se pudo actualizar el estatus',
                                 confirmButtonColor: '#E50914',
                                 background: '#141414',
                                 color: '#fff'
