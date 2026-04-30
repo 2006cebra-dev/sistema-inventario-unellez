@@ -221,6 +221,29 @@
             .product-card { gap: 10px; padding: 12px; }
             .scanner-fab { width: 50px; height: 50px; font-size: 1.2rem; bottom: 20px; right: 20px; z-index: 9999; }
         }
+        .professional-footer {
+            text-align: center;
+            padding: 1.5rem 4%;
+            margin-top: 2rem;
+            border-top: 1px solid var(--border-color);
+            background-color: var(--bg-dark);
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+        }
+        .professional-footer span.highlight {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+        .professional-footer .heart-icon {
+            color: var(--accent-danger);
+            animation: heartbeat 1.5s infinite;
+            display: inline-block;
+        }
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
     </style>
 </head>
 <body data-theme="dark">
@@ -1166,6 +1189,20 @@
         }
     </script>
     <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDnxMWZA56z9F_4RsHWVEnx2wWnvilMA0Q"></script>
+
+    <footer class="professional-footer">
+        <div class="mb-1">
+            &copy; <script>document.write(new Date().getFullYear())</script> <strong>OSWA Inv</strong>. Todos los derechos reservados.
+        </div>
+        <div>
+            Desarrollado con <i class="bi bi-code-slash text-primary"></i> y <i class="bi bi-heart-fill heart-icon"></i> por <span class="highlight">Carlos Braca & Yorgelis Blanco</span>
+        </div>
+        <div class="mt-2 d-flex align-items-center justify-content-center" style="font-size: 0.75rem; opacity: 0.8;">
+            <span>Ingeniería en Informática — V Semestre |</span>
+            <img src="{{ asset('img/logo-unellez.png') }}" alt="UNELLEZ" style="height: 18px; margin-left: 8px; margin-right: 4px; filter: brightness(0) invert(1);">
+            <strong style="letter-spacing: 0.5px;">UNELLEZ</strong>
+        </div>
+    </footer>
     
     <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">@csrf</form>
 </body>
