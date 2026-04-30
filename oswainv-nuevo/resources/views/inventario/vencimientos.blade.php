@@ -113,13 +113,25 @@
         #status-indicator.online .status-dot { background: #00b894; box-shadow: 0 0 6px rgba(0,184,148,0.6); }
         #status-indicator.offline .status-dot { background: #e74c3c; box-shadow: 0 0 6px rgba(231,76,60,0.6); }
         #status-indicator.offline .status-text { color: #e74c3c; }
+        
+        .logo-nav-unellez {
+            height: 35px;
+            filter: brightness(0) invert(1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        .logo-nav-unellez:hover {
+            transform: scale(1.2);
+            filter: brightness(0) invert(1) drop-shadow(0 0 8px rgba(255, 255, 255, 0.8));
+        }
     </style>
 </head>
 <body data-theme="dark">
     
     <nav class="topbar" id="topbar">
         <div class="topbar-left">
-            <div class="topbar-logo"><i class="bi bi-box-seam"></i> <span class="logo-text">OSWA Inv</span></div>
+            <div class="topbar-logo"><img src="{{ asset('img/logo-unellez.png') }}" class="logo-nav-unellez" alt="Logo"> <span class="logo-text">OSWA Inv</span></div>
             <button class="menu-toggle" onclick="toggleSidebar()"><i class="bi bi-list"></i></button>
             <div class="topbar-nav" id="topbarNav">
                 <a href="{{ route('inventario') }}">Dashboard</a>
@@ -163,7 +175,13 @@
     </nav>
     
     <main class="main-content">
-        <h4 class="mb-4" style="font-weight: 700; font-size: 1.5rem;"><i class="bi bi-calendar-x me-2" style="color: var(--accent-danger);"></i>Control de Vencimientos</h4>
+        
+        <div class="d-flex align-items-center mb-4 pb-3 border-bottom border-secondary border-opacity-50">
+            <div class="bg-danger bg-opacity-10 p-2 rounded-3 me-3 text-danger d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
+                <i class="bi bi-calendar-x fs-4"></i>
+            </div>
+            <h2 class="mb-0 fw-bold text-white" style="letter-spacing: 0.5px;">Control de Vencimientos</h2>
+        </div>
         
         <div class="row g-4">
             <div class="col-md-4">

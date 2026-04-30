@@ -44,6 +44,18 @@
         }
         @keyframes rgbText { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
         
+        .logo-nav-unellez {
+            height: 35px;
+            filter: brightness(0) invert(1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        .logo-nav-unellez:hover {
+            transform: scale(1.2);
+            filter: brightness(0) invert(1) drop-shadow(0 0 8px rgba(255, 255, 255, 0.8));
+        }
+        
         .topbar-nav { display: flex; align-items: center; gap: 1.5rem; }
         .topbar-nav a { color: #b3b3b3; text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: color 0.2s ease; position: relative; padding: 4px 0; }
         .topbar-nav a:hover, .topbar-nav a.active { color: #ffffff; }
@@ -215,7 +227,7 @@
     
     <nav class="topbar" id="topbar">
         <div class="topbar-left">
-            <div class="topbar-logo"><i class="bi bi-box-seam"></i> <span class="logo-text">OSWA Inv</span></div>
+            <div class="topbar-logo d-flex align-items-center"><img src="{{ asset('img/logo-unellez.png') }}" class="logo-nav-unellez" alt="Logo"> <span class="logo-text">OSWA Inv</span></div>
             <div class="topbar-nav" id="topbarNav">
                 <a href="{{ route('inventario') }}" class="active">Dashboard</a>
                 <a href="{{ route('vencimientos') }}">Vencimientos</a>

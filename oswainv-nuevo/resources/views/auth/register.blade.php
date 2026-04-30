@@ -122,12 +122,26 @@
         .login-link a:hover {
             text-decoration: underline;
         }
+        .logo-auth-clean {
+            height: 80px;
+            width: auto;
+            filter: brightness(0) invert(1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: block;
+            margin: 0 auto 20px auto;
+            cursor: pointer;
+        }
+        .logo-auth-clean:hover {
+            transform: scale(1.1);
+            filter: brightness(0) invert(1) drop-shadow(0 0 15px rgba(255, 255, 255, 0.7));
+        }
     </style>
 </head>
 <body>
     <div class="register-card">
         <div class="register-logo">
-            <h1><i class="bi bi-box-seam"></i> OSWA Inv</h1>
+            <img src="{{ asset('img/logo-unellez.png') }}" alt="UNELLEZ" class="logo-auth-clean">
+            <h1>OSWA Inv</h1>
             <p>Crear Cuenta Nueva</p>
         </div>
         
