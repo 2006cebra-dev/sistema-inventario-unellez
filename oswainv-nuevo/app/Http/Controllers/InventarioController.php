@@ -81,11 +81,27 @@ class InventarioController extends Controller
             ->where('fecha_vencimiento', '<=', \Carbon\Carbon::now()->addDays(30))
             ->get();
 
+        // Top 5 Productos Más Vendidos (por Salidas)
+        $topVentas = Movimiento::select('codigo_producto', DB::raw('SUM(cantidad) as total_salidas'))
+            ->where('tipo', 'Salida')
+            ->groupBy('codigo_producto')
+            ->orderByDesc('total_salidas')
+            ->take(5)
+            ->get();
+
+        $nombresProductos = [];
+        $ventasProductos = [];
+        foreach ($topVentas as $venta) {
+            $prod = Producto::where('codigo', $venta->codigo_producto)->first();
+            $nombresProductos[] = $prod ? $prod->nombre : $venta->codigo_producto;
+            $ventasProductos[] = (int) $venta->total_salidas;
+        }
+
         return view('inventario.index', compact(
             'productos', 'totalProductos', 'stockTotal', 'alertasStock',
             'capitalInvertido', 'tasaBcv', 'capitalInvertidoBs', 'stockSaludable', 'stockCritico',
             'categorias', 'ultimoMovimiento', 'esAdmin', 'requisicionesPendientes',
-            'productosBajoStock', 'productosPorVencer'
+            'productosBajoStock', 'productosPorVencer', 'nombresProductos', 'ventasProductos'
         ));
     }
 

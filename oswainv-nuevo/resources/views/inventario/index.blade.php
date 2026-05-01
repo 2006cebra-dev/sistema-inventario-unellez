@@ -676,6 +676,16 @@
             </div>
         </div>
         
+        <!-- Gráfico Top 5 Productos Más Vendidos -->
+        <div class="row mt-4">
+            <div class="col-md-8 offset-md-2">
+                <div class="card stat-card">
+                    <h5 class="text-white mb-3 fw-bold"><i class="bi bi-bar-chart-fill text-danger me-2"></i> Top 5: Productos Más Vendidos</h5>
+                    <canvas id="graficoVentas" height="100"></canvas>
+                </div>
+            </div>
+        </div>
+        
         <!-- Panel de Alertas Críticas -->
         <div class="row mt-4">
             <div class="col-12">
@@ -1528,6 +1538,47 @@
                 overlay.remove();
             }, 8000);
         });
+
+        // Gráfico Top 5 Productos Más Vendidos
+        const ventasLabels = {!! json_encode($nombresProductos ?? []) !!};
+        const ventasData = {!! json_encode($ventasProductos ?? []) !!};
+
+        if (ventasLabels.length > 0) {
+            const ctx = document.getElementById('graficoVentas').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ventasLabels,
+                    datasets: [{
+                        label: 'Unidades Vendidas',
+                        data: ventasData,
+                        backgroundColor: '#E50914',
+                        borderColor: '#ff0f1b',
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            labels: { color: '#e5e5e5', font: { family: 'Inter' } }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: '#2b2b2b' },
+                            ticks: { color: '#888', font: { family: 'Consolas', size: 12 } }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#e5e5e5', font: { family: 'Inter', size: 13 } }
+                        }
+                    }
+                }
+            });
+        }
     </script>
 </body>
 </html>
