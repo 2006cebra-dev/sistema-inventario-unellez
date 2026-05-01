@@ -415,6 +415,26 @@
 
         /* Clase para desaparecer el overlay */
         .cinematic-overlay.fade-out { opacity: 0; pointer-events: none; }
+
+        /* =========================================
+           SCROLLBAR HACKER VIP (Estilo Gaming)
+           ========================================= */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0a0a0a;
+            border-left: 1px solid #1a1a1a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #B20710, #E50914);
+            border-radius: 10px;
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, #E50914, #ff6b6b);
+        }
     </style>
 </head>
 <body data-theme="dark">
@@ -439,15 +459,16 @@
                 <img src="{{ asset('img/logo-unellez.png') }}" class="logo-nav-unellez" alt="Logo"> 
                 <span class="logo-text">OSWA Inv</span>
             </div>
-            <div class="status-indicator online d-none d-md-flex ms-2">
+            <div class="status-indicator online d-none d-md-flex ms-2 me-4">
                 <span class="status-dot" style="width: 8px; height: 8px; border-radius: 50%; background: #00b894; box-shadow: 0 0 6px rgba(0,184,148,0.6);"></span>
                 <span class="status-text text-white" style="font-size: 0.75rem;">En línea</span>
             </div>
         </div>
 
         <div class="topbar-nav" id="topbarNav">
-            <a href="{{ route('inventario') }}" class="active">Dashboard</a>
-            <a href="{{ route('vencimientos') }}">Vencimientos</a>
+            <a href="{{ route('inventario') }}" class="{{ request()->routeIs('inventario') ? 'active' : '' }}">Dashboard</a>
+            <a href="{{ route('catalogo') }}" class="{{ request()->routeIs('catalogo') ? 'active' : '' }}">Catálogo</a>
+            <a href="{{ route('proveedores') }}" class="{{ request()->routeIs('proveedores') ? 'active' : '' }}">Proveedores</a>
             
             <div class="nav-dropdown">
                 <a href="#" class="dropdown-toggle" onclick="event.preventDefault(); this.parentElement.classList.toggle('show')">Reportes</a>
@@ -457,10 +478,6 @@
                     </a>
                 </div>
             </div>
-
-            @if(auth()->check() && auth()->user()->rol === 'admin')
-                <a href="{{ route('auditoria') }}">Auditoría</a>
-            @endif
 
             <div class="mobile-user-section d-md-none mt-auto pt-4 border-top border-secondary">
                 <div class="status-indicator online mb-3" style="width: fit-content;">
@@ -545,9 +562,7 @@
         <div id="panel-estadisticas" class="mt-4 pt-2">
         <div class="d-flex justify-content-between align-items-center mb-4" style="flex-wrap: wrap; gap: 10px;">
             <h4 class="mb-0 fw-bold">Panel de Control</h4>
-            <button class="btn-nuevo" data-bs-toggle="modal" data-bs-target="#nuevoProductoModal">
-                <i class="bi bi-plus-lg me-2"></i>Nuevo Producto
-            </button>
+            <a href="{{ route('catalogo') }}" class="btn-nuevo"><i class="bi bi-grid me-2"></i>Ir al Catálogo</a>
         </div>
         
         <div class="stats-grid">
@@ -599,6 +614,49 @@
             </div>
         </div>
         
+        <!-- Panel de Alertas Críticas -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card" style="background: var(--bg-card); border: 1px solid #ff475740;">
+                    <div class="card-header border-bottom border-danger border-opacity-25 py-3">
+                        <h6 class="mb-0 text-white fw-bold"><i class="bi bi-exclamation-triangle text-danger me-2"></i> Alertas Críticas de Inventario</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <!-- Columna Stock -->
+                            <div class="col-md-6 mb-3 mb-md-0">
+                                <h6 class="text-secondary mb-3"><i class="bi bi-box-seam me-1"></i> Bajo Stock (Menos de 5 unidades)</h6>
+                                <ul class="list-group list-group-flush bg-transparent">
+                                    @forelse($productosBajoStock as $prod)
+                                        <li class="list-group-item bg-transparent text-white border-secondary border-opacity-25 px-0 d-flex justify-content-between align-items-center">
+                                            {{ $prod->nombre }}
+                                            <span class="badge bg-danger bg-opacity-25 text-danger border border-danger rounded-pill">Quedan {{ $prod->stock }}</span>
+                                        </li>
+                                    @empty
+                                        <li class="list-group-item bg-transparent text-success px-0"><i class="bi bi-check-circle me-1"></i> Stock en niveles óptimos.</li>
+                                    @endforelse
+                                </ul>
+                            </div>
+                            <!-- Columna Vencimientos -->
+                            <div class="col-md-6">
+                                <h6 class="text-secondary mb-3"><i class="bi bi-calendar-x me-1"></i> Próximos a Vencer (30 días o menos)</h6>
+                                <ul class="list-group list-group-flush bg-transparent">
+                                    @forelse($productosPorVencer as $prod)
+                                        <li class="list-group-item bg-transparent text-white border-secondary border-opacity-25 px-0 d-flex justify-content-between align-items-center">
+                                            {{ $prod->nombre }}
+                                            <span class="badge bg-warning bg-opacity-25 text-warning border border-warning rounded-pill">Vence: {{ \Carbon\Carbon::parse($prod->fecha_vencimiento)->format('d/m/Y') }}</span>
+                                        </li>
+                                    @empty
+                                        <li class="list-group-item bg-transparent text-success px-0"><i class="bi bi-check-circle me-1"></i> Ningún producto por vencer.</li>
+                                    @endforelse
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
         @if($esAdmin && count($requisicionesPendientes) > 0)
         <div class="d-flex justify-content-between align-items-center mt-5 mb-2">
             <h5 class="mb-0"><i class="bi bi-clipboard-check me-2" style="color: var(--accent-warning);"></i>Requisiciones Pendientes</h5>
@@ -633,88 +691,38 @@
         </div>
         @endif
         
-        <div class="d-flex justify-content-between align-items-center mt-5 mb-2">
-            <h5 class="mb-0"><i class="bi bi-grid me-2"></i>Catálogo de Productos</h5>
-            <span style="color:var(--text-secondary);font-weight:500;">{{ $productos->count() }} productos</span>
+        <div class="row mt-4">
+            <div class="col-12 col-lg-6 mb-4">
+                <div class="p-4 h-100" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
+                    <h5 class="text-white mb-4"><i class="bi bi-pie-chart me-2"></i> Distribución por Categorías</h5>
+                    <div class="chart-container">
+                        <canvas id="categoriaChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-12 col-lg-6 mb-4"> 
+                <div class="p-4 h-100" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
+                    <h5 class="text-white mb-4"><i class="bi bi-pie-chart-fill me-2 text-danger"></i> Estado del Inventario</h5>
+                    
+                    <div style="position: relative; height: 250px; width: 100%; display: flex; justify-content: center;">
+                        <canvas id="inventarioChart"></canvas>
+                    </div>
+                </div>
+            </div>
         </div>
         
-        <div class="products-grid" id="productsGrid">
-            @forelse($productos as $producto)
-            <div class="product-card {{ $producto->stock <= 2 ? 'stock-critical' : ($producto->stock <= 5 ? 'stock-low' : 'stock-normal') }}" data-producto-id="{{ $producto->id }}" data-stock="{{ $producto->stock }}" data-nombre="{{ $producto->nombre }}" data-codigo="{{ $producto->codigo }}">
-                @if($producto->imagen)
-                    @if(filter_var($producto->imagen, FILTER_VALIDATE_URL))
-                        <img src="{{ $producto->imagen }}" alt="{{ $producto->nombre }}" class="product-card-img">
-                    @else
-                        <img src="{{ asset('storage/' . $producto->imagen) }}" alt="{{ $producto->nombre }}" class="product-card-img">
-                    @endif
-                @else
-                    <div class="product-card-img-placeholder"><i class="bi bi-image"></i></div>
-                @endif
-                
-                <div class="product-card-info">
-                    <div class="product-card-title">{{ $producto->nombre }}</div>
-                    <div class="product-card-meta">{{ $producto->marca ?? 'Sin marca' }} • {{ $producto->categoria }}</div>
-                    <div class="product-card-code"><i class="bi bi-upc-scan"></i> {{ $producto->codigo }}</div>
-                    <div class="mt-1" style="font-weight: 700; font-size: 0.95rem; color: var(--accent-success);">${{ number_format($producto->precio, 2) }}</div>
-                    @if($producto->dias_estimados !== null)
-                        <div class="mt-1" style="font-size: 0.75rem; color: {{ $producto->dias_estimados <= 7 ? '#e74c3c' : '#b3b3b3' }};">
-                            <i class="bi bi-calendar-check me-1"></i>~{{ $producto->dias_estimados }} días de stock
-                        </div>
-                    @else
-                        <div class="mt-1" style="font-size: 0.75rem; color: #777;">
-                            <i class="bi bi-dash-circle me-1"></i>Sin datos de salida
-                        </div>
-                    @endif
-                </div>
-                
-                <div class="product-card-controls">
-                    <div class="stock-pill">
-                        <button class="stock-pill-btn stock-pill-minus" onclick="ajustarStock({{ $producto->id }}, 'restar')"><i class="bi bi-dash"></i></button>
-                        <input type="number" class="stock-pill-value" value="{{ $producto->stock }}" min="0" id="stock-{{ $producto->id }}" onchange="ajustarStockDirecto({{ $producto->id }}, this.value)">
-                        <button class="stock-pill-btn stock-pill-plus" onclick="ajustarStock({{ $producto->id }}, 'sumar')"><i class="bi bi-plus"></i></button>
+        <!-- GRÁFICO DE TENDENCIAS: VENTAS / SALIDAS RECIENTES -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <div class="p-4" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="text-white m-0"><i class="bi bi-graph-up-arrow me-2 text-success"></i> Tendencia de Salidas (Últimos 7 días)</h5>
+                        <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-3 py-2">Datos en Tiempo Real</span>
                     </div>
-                    @if($esAdmin)
-                    <div class="product-card-actions">
-                        <button class="card-action-btn card-action-btn-transfer" title="Transferir" onclick="abrirTransferencia({{ $producto->id }}, '{{ $producto->nombre }}', document.getElementById('stock-{{ $producto->id }}').value)"><i class="bi bi-truck"></i></button>
-                        <button class="card-action-btn card-action-btn-order" title="Orden de Compra" onclick="generarOrden({{ $producto->id }}, '{{ $producto->nombre }}')"><i class="bi bi-cart"></i></button>
-                        <button class="card-action-btn card-action-btn-edit" title="Editar" onclick="editarProducto({{ $producto->id }})"><i class="bi bi-pencil"></i></button>
-                        <button class="card-action-btn card-action-btn-delete" title="Eliminar" onclick="eliminarProducto({{ $producto->id }})"><i class="bi bi-trash"></i></button>
-                    </div>
-                    @else
-                    <div class="product-card-actions">
-                        <button class="card-action-btn" style="background: rgba(0,184,148,0.15); color: #00b894;" title="Pedir Material" onclick="abrirRequisicion({{ $producto->id }}, '{{ $producto->nombre }}')"><i class="bi bi-hand-index"></i></button>
-                    </div>
-                    @endif
-                </div>
-            </div>
-            @empty
-            <div style="grid-column: 1 / -1; text-align:center; padding:4rem 0; color:var(--text-secondary);">
-                <i class="bi bi-inbox" style="font-size:3rem;"></i>
-                <p class="mt-3">Aún no hay productos registrados en el inventario.</p>
-            </div>
-            @endforelse
-        </div>
-        
-        <div class="charts-grid">
-            <div class="chart-card">
-                <h5><i class="bi bi-pie-chart me-2"></i>Distribución por Categorías</h5>
-                <div class="chart-container">
-                    <canvas id="categoriaChart"></canvas>
-                </div>
-            </div>
-            <div class="chart-card">
-                <h5><i class="bi bi-pie-chart me-2"></i>Estado del Inventario</h5>
-                <div class="chart-container">
-                    <canvas id="stockChart"></canvas>
-                </div>
-                <div class="d-flex justify-content-around mt-3 text-center">
-                    <div>
-                        <div style="font-size: 1.5rem; font-weight: 700; color: var(--accent-success);" id="chartSaludable">{{ $stockSaludable }}</div>
-                        <div style="font-size: 0.8rem; color: var(--text-secondary);">Saludable</div>
-                    </div>
-                    <div>
-                        <div style="font-size: 1.5rem; font-weight: 700; color: var(--accent-danger);" id="chartCritico">{{ $stockCritico }}</div>
-                        <div style="font-size: 0.8rem; color: var(--text-secondary);">Crítico</div>
+                    
+                    <div style="position: relative; height: 300px; width: 100%;">
+                        <canvas id="ventasChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -754,194 +762,24 @@
 
     <a href="{{ route('escaner') }}" class="scanner-fab" title="Escáner (Alt+E)"><i class="bi bi-upc-scan"></i></a>
     
-    <div class="modal fade" id="nuevoProductoModal" tabindex="-1">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header"><h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i>Nuevo Producto</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
-                <form id="nuevoProductoForm" enctype="multipart/form-data">
-                    @csrf
-                    <input type="hidden" name="imagen_url" id="imagenUrlInput">
-                    <div class="modal-body">
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label">Código de Barras</label>
-                                <input type="text" class="form-control" name="codigo" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Nombre del Producto</label>
-                                <input type="text" class="form-control" name="nombre" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Marca</label>
-                                <input type="text" class="form-control" name="marca">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Categoría</label>
-                                <input type="text" class="form-control" name="categoria" value="General">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Precio ($)</label>
-                                <input type="number" class="form-control" name="precio" step="0.01" value="0" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Stock Inicial</label>
-                                <input type="number" class="form-control" name="stock" value="0" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Fecha de Vencimiento</label>
-                                <input type="date" class="form-control" name="fecha_vencimiento">
-                            </div>
-                            <div class="col-md-6" id="cajaFotoPc">
-                                <label class="form-label">Foto del Producto</label>
-                                <input type="file" class="form-control" name="imagen" accept="image/*">
-                                <input type="hidden" name="imagen_base64" id="imagen_base64">
-                                <button type="button" class="btn btn-outline-secondary btn-sm mt-2" onclick="abrirCamara('producto')">📷 Tomar Foto</button>
-                                <img id="previewCamaraProducto" style="display:none; max-width:100%; margin-top:8px; border-radius:8px;">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-primary" style="background: var(--accent-primary); border: none;">Guardar</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-    
-    <div class="modal fade" id="editarProductoModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content">
-                <div class="modal-header"><h5 class="modal-title"><i class="bi bi-pencil-square me-2"></i>Editar Producto</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
-                <form id="editarProductoForm">
-                    @csrf
-                    <div class="modal-body">
-                        <input type="hidden" id="editId" name="id">
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Nombre</label>
-                                <input type="text" class="form-control" id="editNombre" name="nombre" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Código</label>
-                                <input type="text" class="form-control" id="editCodigo" name="codigo" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Marca</label>
-                                <input type="text" class="form-control" id="editMarca" name="marca">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Categoría</label>
-                                <input type="text" class="form-control" id="editCategoria" name="categoria">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Precio</label>
-                                <input type="number" step="0.01" class="form-control" id="editPrecio" name="precio" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Fecha Vencimiento</label>
-                                <input type="date" class="form-control" id="editVencimiento" name="fecha_vencimiento">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-    
-    <div class="modal fade" id="transferenciaModal" tabindex="-1">
+    <div class="modal fade" id="modalCamaraUniversal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header"><h5 class="modal-title"><i class="bi bi-truck me-2"></i>Transferir a Sucursal</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
-                <form id="transferenciaForm">
-                    @csrf
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label class="form-label">Producto</label>
-                            <input type="text" class="form-control" id="transferProducto" readonly>
-                            <input type="hidden" id="transferProductoId" name="producto_id">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Stock Actual</label>
-                            <input type="text" class="form-control" id="transferStock" readonly>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Sucursal Destino</label>
-                            <select class="form-select" id="sucursalDestino" name="sucursal" required>
-                                <option value="">Seleccionar...</option>
-                                <option value="Caracas">Caracas</option>
-                                <option value="Maracaibo">Maracaibo</option>
-                                <option value="Valencia">Valencia</option>
-                                <option value="Barquisimeto">Barquisimeto</option>
-                                <option value="San Cristóbal">San Cristóbal</option>
-                                <option value="Mérida">Mérida</option>
-                                <option value="Puerto La Cruz">Puerto La Cruz</option>
-                                <option value="Maturín">Maturín</option>
-                                <option value="Ciudad Guayana">Ciudad Guayana</option>
-                                <option value="Coro">Coro</option>
-                                <option value="Cumaná">Cumaná</option>
-                                <option value="Guanare">Guanare</option>
-                                <option value="San Juan de los Morros">San Juan de los Morros</option>
-                                <option value="Trujillo">Trujillo</option>
-                                <option value="San Felipe">San Felipe</option>
-                                <option value="Barcelona">Barcelona</option>
-                                <option value="Porlamar">Porlamar</option>
-                                <option value="La Guaira">La Guaira</option>
-                                <option value="San Fernando de Apure">San Fernando de Apure</option>
-                                <option value="Puerto Ayacucho">Puerto Ayacucho</option>
-                                <option value="Tucupita">Tucupita</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Cantidad a Enviar</label>
-                            <input type="number" class="form-control" id="transferCantidad" name="cantidad" min="1" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Foto de Factura/Soporte</label>
-                            <input type="file" class="form-control" id="soporteFile" accept="image/*">
-                            <input type="hidden" name="soporte_base64" id="soporte_base64">
-                            <button type="button" class="btn btn-outline-secondary btn-sm mt-2" onclick="abrirCamara('soporte')">📷 Foto de Factura/Soporte</button>
-                            <img id="previewCamaraSoporte" style="display:none; max-width:100%; margin-top:8px; border-radius:8px;">
-                        </div>
-                        <div class="mb-3">
-                            <div class="map-label" style="color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 5px;"><i class="bi bi-geo-alt"></i> Ruta de transferencia (Origen: Barinas)</div>
-                            <div id="map"></div>
-                            <div id="route-stats" class="route-stats" style="display:none;">
-                                <div class="stat-item"><span class="stat-label">Distancia</span><span class="stat-value" id="stat-distancia">0 km</span></div>
-                                <div class="stat-item"><span class="stat-label">Costo Flete</span><span class="stat-value" style="color: var(--accent-success);" id="stat-flete">$0.00</span></div>
-                                <div class="stat-item"><span class="stat-label">Tiempo Est.</span><span class="stat-value" id="stat-tiempo">0 h</span></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-warning"><i class="bi bi-truck me-1"></i>Procesar Transferencia</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-    
-    <div class="modal fade" id="ordenCompraModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header"><h5 class="modal-title"><i class="bi bi-cart me-2"></i>Orden de Compra</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
-                <div class="modal-body text-center">
-                    <i class="bi bi-file-earmark-pdf" style="font-size: 4rem; color: var(--accent-info);"></i>
-                    <p class="mt-3">Generando PDF de reorder...</p>
+            <div class="modal-content" style="background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--accent-primary);">
+                <div class="modal-header" style="border-bottom: 1px solid var(--border-color);">
+                    <h5 class="modal-title">📷 Captura de Imagen</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" style="filter: invert(1);"></button>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                    <button type="button" class="btn btn-info" onclick="descargarOrden()"><i class="bi bi-download me-1"></i>Descargar PDF</button>
+                <div class="modal-body text-center p-0" style="background: #000;">
+                    <video id="videoElementUniversal" width="100%" height="auto" autoplay playsinline muted style="display: block;"></video>
+                    <canvas id="canvasHiddenUniversal" style="display:none;"></canvas>
+                </div>
+                <div class="modal-footer justify-content-center" style="border-top: 1px solid var(--border-color);">
+                    <button type="button" class="btn btn-danger" id="btnCapturarUniversal"><i class="bi bi-camera-fill"></i> Capturar</button>
                 </div>
             </div>
         </div>
     </div>
-    
+
     <div class="modal fade" id="requisicionModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px;">
@@ -970,7 +808,7 @@
             </div>
         </div>
     </div>
-    
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const csrfToken = '{{ csrf_token() }}';
@@ -1031,7 +869,6 @@
                 switch(e.key.toLowerCase()) {
                     case 'b': e.preventDefault(); document.getElementById('topbarSearchInput').focus(); break;
                     case 'e': e.preventDefault(); document.querySelector('.scanner-fab').click(); break;
-                    case 'n': e.preventDefault(); new bootstrap.Modal(document.getElementById('nuevoProductoModal')).show(); break;
                 }
             }
         });
@@ -1054,10 +891,68 @@
             options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#b3b3b3' } } } }
         });
         
-        const stockChart = new Chart(document.getElementById('stockChart'), {
-            type: 'pie',
-            data: { labels: ['Stock Saludable', 'Stock Crítico'], datasets: [{ data: [{{ $stockSaludable }}, {{ $stockCritico }}], backgroundColor: ['#00b894','#e74c3c'], borderWidth: 0 }] },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+        const stockChart = new Chart(document.getElementById('inventarioChart'), {
+            type: 'doughnut',
+            data: { 
+                labels: ['Óptimos', 'Por Vencer', 'Agotados'], 
+                datasets: [{ 
+                    data: [65, 15, 5], 
+                    backgroundColor: ['rgba(0, 184, 148, 0.8)', 'rgba(253, 203, 110, 0.8)', 'rgba(229, 9, 20, 0.8)'], 
+                    borderColor: '#141414', 
+                    borderWidth: 3, 
+                    hoverOffset: 10 
+                }] 
+            },
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                plugins: { 
+                    legend: { 
+                        position: 'bottom', 
+                        labels: { color: '#b3b3b3', font: { family: 'Inter', size: 11 } } 
+                    } 
+                }, 
+                cutout: '75%' 
+            }
+        });
+        
+        const ventasChart = new Chart(document.getElementById('ventasChart'), {
+            type: 'line',
+            data: { 
+                labels: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'], 
+                datasets: [{ 
+                    label: 'Salidas de Inventario', 
+                    data: [12, 19, 8, 15, 22, 14, 18], 
+                    borderColor: '#E50914', 
+                    backgroundColor: 'rgba(229, 9, 20, 0.1)', 
+                    borderWidth: 3, 
+                    tension: 0.4, 
+                    fill: true, 
+                    pointBackgroundColor: '#E50914', 
+                    pointBorderColor: '#fff', 
+                    pointBorderWidth: 2, 
+                    pointRadius: 4, 
+                    pointHoverRadius: 6 
+                }] 
+            },
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                plugins: { 
+                    legend: { display: false },
+                    tooltip: { 
+                        backgroundColor: '#181818', 
+                        borderColor: '#2b2b2b', 
+                        borderWidth: 1, 
+                        titleColor: '#fff', 
+                        bodyColor: '#b3b3b3' 
+                    }
+                }, 
+                scales: { 
+                    x: { grid: { color: '#2b2b2b' }, ticks: { color: '#b3b3b3' } }, 
+                    y: { grid: { color: '#2b2b2b' }, ticks: { color: '#b3b3b3' }, beginAtZero: true } 
+                } 
+            }
         });
         
         // ESTADO DE RED
@@ -1170,11 +1065,7 @@
                 if (stock <= 5) critico++; else saludable++;
             });
 
-            if(document.getElementById('chartSaludable')) document.getElementById('chartSaludable').textContent = saludable;
-            if(document.getElementById('chartCritico')) document.getElementById('chartCritico').textContent = critico;
-            
             if (typeof stockChart !== 'undefined') {
-                stockChart.data.datasets[0].data = [saludable, critico];
                 stockChart.update();
             }
         }
@@ -1219,72 +1110,6 @@
                 } catch (e) { showNotification('error', 'Error', true); }
             }
         }
-        
-        function editarProducto(id) {
-            const producto = {!! $productos->toJson() !!};
-            const prod = producto.find(p => p.id === id);
-            if (!prod) return;
-            document.getElementById('editId').value = prod.id;
-            document.getElementById('editNombre').value = prod.nombre;
-            document.getElementById('editCodigo').value = prod.codigo;
-            document.getElementById('editMarca').value = prod.marca || '';
-            document.getElementById('editCategoria').value = prod.categoria || '';
-            document.getElementById('editPrecio').value = prod.precio;
-            document.getElementById('editVencimiento').value = prod.fecha_vencimiento || '';
-            new bootstrap.Modal(document.getElementById('editarProductoModal')).show();
-        }
-
-        document.getElementById('editarProductoForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            try {
-                const response = await fetch('{{ route('actualizar.producto') }}', { method: 'POST', headers: { 'X-CSRF-TOKEN': csrfToken }, body: new FormData(this) });
-                const data = await response.json();
-                if (data.success) {
-                    showNotification('success', 'Producto guardado');
-                    setTimeout(() => location.reload(), 1500);
-                }
-            } catch (e) { showNotification('error', 'Error', true); }
-        });
-        
-        document.getElementById('nuevoProductoForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            try {
-                const response = await fetch('{{ route('guardar.producto') }}', { method: 'POST', headers: { 'X-CSRF-TOKEN': csrfToken }, body: new FormData(this) });
-                const data = await response.json();
-                if (data.success) { showNotification('success', 'Producto guardado'); setTimeout(() => location.reload(), 1500); }
-            } catch (e) { showNotification('error', 'Error', true); }
-        });
-
-        // TRANSFERENCIAS
-        function abrirTransferencia(id, nombre, stock) {
-            document.getElementById('transferProducto').value = nombre;
-            document.getElementById('transferProductoId').value = id;
-            document.getElementById('transferStock').value = stock;
-            document.getElementById('transferCantidad').max = stock;
-            document.getElementById('transferCantidad').value = 1;
-            new bootstrap.Modal(document.getElementById('transferenciaModal')).show();
-            if (typeof google !== 'undefined' && google.maps) initTransferMap();
-        }
-
-        document.getElementById('transferenciaForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const cantidad = parseInt(document.getElementById('transferCantidad').value);
-            const stockActual = parseInt(document.getElementById('transferStock').value);
-            if (cantidad > stockActual) return showNotification('error', 'Cantidad mayor al stock', true);
-            try {
-                const response = await fetch('{{ route('transferir.producto') }}', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
-                    body: JSON.stringify({ producto_id: document.getElementById('transferProductoId').value, cantidad: cantidad, sucursal: document.getElementById('sucursalDestino').value, soporte_base64: document.getElementById('soporte_base64').value })
-                });
-                const data = await response.json();
-                if (data.success) {
-                    const pdfUrl = `{{ route('transferencia.pdf') }}?producto=${encodeURIComponent(data.producto)}&cantidad=${cantidad}&sucursal=${encodeURIComponent(document.getElementById('sucursalDestino').value)}&distancia=${data.distancia || 0}&costo=${data.costo_flete || 0}&fecha=${encodeURIComponent(data.fecha)}`;
-                    Swal.fire({ title: 'Éxito', text: 'Transferencia lista', icon: 'success', html: `<a href="${pdfUrl}" target="_blank" class="btn btn-primary mt-3">Descargar PDF</a>` });
-                }
-            } catch (e) { showNotification('error', 'Error', true); }
-        });
-
-        function generarOrden(id, nombre) { window.location.href = '/orden-compra/' + id; }
         
         // REQUISICIONES
         function abrirRequisicion(productoId, nombre) {
@@ -1468,41 +1293,33 @@
                         <p class="text-secondary">Diseñado para optimizar, asegurar y registrar cada movimiento en el almacén.</p>
                     </div>
 
-                    <div class="row g-4">
-                        <div class="col-md-6">
-                            <div class="d-flex gap-3">
-                                <div class="text-danger"><i class="bi bi-boxes fs-1"></i></div>
-                                <div>
-                                    <h5 class="fw-bold mb-1">Gestión de Stock</h5>
-                                    <p class="text-secondary" style="font-size: 0.9rem;">Control exacto de unidades, cálculo de capital invertido e indicadores de alerta para productos con bajo inventario.</p>
-                                </div>
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-6 mb-3 mb-md-0 d-flex align-items-start">
+                            <i class="bi bi-box-seam text-danger fs-2 me-3"></i>
+                            <div>
+                                <h5 class="fw-bold mb-1">Catálogo Inteligente</h5>
+                                <p class="text-secondary" style="font-size: 0.9rem;">Control exacto de stock con un sistema de semáforo visual que alerta sobre vencimientos en tiempo real en cada tarjeta.</p>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="d-flex gap-3">
-                                <div class="text-warning"><i class="bi bi-clock-history fs-1"></i></div>
-                                <div>
-                                    <h5 class="fw-bold mb-1">Control de Vencimientos</h5>
-                                    <p class="text-secondary" style="font-size: 0.9rem;">Monitoreo en tiempo real de lotes próximos a caducar para evitar pérdidas de mercancía y optimizar la rotación.</p>
-                                </div>
+                        <div class="col-md-6 d-flex align-items-start">
+                            <i class="bi bi-buildings text-warning fs-2 me-3"></i>
+                            <div>
+                                <h5 class="fw-bold mb-1">Red de Proveedores</h5>
+                                <p class="text-secondary" style="font-size: 0.9rem;">Directorio corporativo vinculado al inventario, permitiendo emitir órdenes de abastecimiento directo a la base de datos.</p>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="d-flex gap-3">
-                                <div class="text-info"><i class="bi bi-shield-lock-fill fs-1"></i></div>
-                                <div>
-                                    <h5 class="fw-bold mb-1">Auditoría Criptográfica</h5>
-                                    <p class="text-secondary" style="font-size: 0.9rem;">Registro inmutable de movimientos protegidos con firma digital (SHA-256) para garantizar la transparencia del usuario.</p>
-                                </div>
+                        <div class="col-md-6 mb-3 mb-md-0 d-flex align-items-start">
+                            <i class="bi bi-shield-lock text-info fs-2 me-3"></i>
+                            <div>
+                                <h5 class="fw-bold mb-1">Auditoría Criptográfica</h5>
+                                <p class="text-secondary" style="font-size: 0.9rem;">Registro inmutable de movimientos protegidos con firma digital (SHA-256) para garantizar trazabilidad y evitar alteraciones.</p>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="d-flex gap-3">
-                                <div class="text-success"><i class="bi bi-file-earmark-pdf-fill fs-1"></i></div>
-                                <div>
-                                    <h5 class="fw-bold mb-1">Reportes Automatizados</h5>
-                                    <p class="text-secondary" style="font-size: 0.9rem;">Generación instantánea de reportes en PDF listos para imprimir, firmar y entregar a gerencia.</p>
-                                </div>
+                        <div class="col-md-6 d-flex align-items-start">
+                            <i class="bi bi-file-earmark-pdf text-success fs-2 me-3"></i>
+                            <div>
+                                <h5 class="fw-bold mb-1">Reportes Automatizados</h5>
+                                <p class="text-secondary" style="font-size: 0.9rem;">Generación instantánea de reportes en PDF listos para imprimir, firmar y entregar a la gerencia.</p>
                             </div>
                         </div>
                     </div>
@@ -1550,21 +1367,21 @@
                                 </div>
                             </div>
 
-                            <!-- Slide 2: Stock -->
+                            <!-- Slide 2: Catálogo y Vencimientos -->
                             <div class="carousel-item h-100">
                                 <div class="d-flex flex-column justify-content-center align-items-center h-100 text-center p-5">
-                                    <i class="bi bi-boxes mb-3" style="font-size: 4rem; color: #E50914;"></i>
-                                    <h3 class="fw-bold mb-3" style="color: var(--text-primary);">1. Control de Stock</h3>
-                                    <p style="font-size: 1.1rem; max-width: 85%; color: var(--text-secondary);">Monitoreo en tiempo real de entradas y salidas. El sistema calcula automáticamente el capital invertido y genera alertas visuales cuando un producto alcanza su nivel mínimo de inventario.</p>
+                                    <i class="bi bi-grid-fill mb-3" style="font-size: 4rem; color: #E50914;"></i>
+                                    <h3 class="fw-bold mb-3" style="color: var(--text-primary);">1. Catálogo Dinámico</h3>
+                                    <p style="font-size: 1.1rem; max-width: 85%; color: var(--text-secondary);">Toda la mercancía en un solo lugar. Integrado con un <strong>semáforo de vencimientos</strong> que cambia de color automáticamente para indicar qué productos deben rotarse con urgencia.</p>
                                 </div>
                             </div>
 
-                            <!-- Slide 3: Vencimientos -->
+                            <!-- Slide 3: Proveedores -->
                             <div class="carousel-item h-100">
                                 <div class="d-flex flex-column justify-content-center align-items-center h-100 text-center p-5">
-                                    <i class="bi bi-calendar-x mb-3" style="font-size: 4rem; color: #ffc107;"></i>
-                                    <h3 class="fw-bold mb-3" style="color: var(--text-primary);">2. Gestión de Vencimientos</h3>
-                                    <p style="font-size: 1.1rem; max-width: 85%; color: var(--text-secondary);">Seguimiento estricto de la vida útil de los productos. Algoritmos de alerta temprana notifican a los administradores sobre lotes próximos a caducar, evitando pérdidas económicas.</p>
+                                    <i class="bi bi-buildings mb-3" style="font-size: 4rem; color: #ffc107;"></i>
+                                    <h3 class="fw-bold mb-3" style="color: var(--text-primary);">2. Gestión de Suministros</h3>
+                                    <p style="font-size: 1.1rem; max-width: 85%; color: var(--text-secondary);">Un directorio estilo ERP. Visualiza qué mercancía despacha cada empresa y utiliza el botón de <strong>Abastecer</strong> para inyectar stock al catálogo con un solo clic.</p>
                                 </div>
                             </div>
 

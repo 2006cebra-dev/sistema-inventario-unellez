@@ -75,11 +75,100 @@ class InventarioController extends Controller
             $requisicionesPendientes = Requisicion::with(['user', 'producto'])->where('estado', 'Pendiente')->latest()->get();
         }
 
+        // Datos para Alertas Visuales
+        $productosBajoStock = Producto::where('stock', '<=', 5)->get();
+        $productosPorVencer = Producto::whereNotNull('fecha_vencimiento')
+            ->where('fecha_vencimiento', '<=', \Carbon\Carbon::now()->addDays(30))
+            ->get();
+
         return view('inventario.index', compact(
             'productos', 'totalProductos', 'stockTotal', 'alertasStock',
             'capitalInvertido', 'tasaBcv', 'capitalInvertidoBs', 'stockSaludable', 'stockCritico',
-            'categorias', 'ultimoMovimiento', 'esAdmin', 'requisicionesPendientes'
+            'categorias', 'ultimoMovimiento', 'esAdmin', 'requisicionesPendientes',
+            'productosBajoStock', 'productosPorVencer'
         ));
+    }
+
+    // --- CATÁLOGO GENERAL DE PRODUCTOS ---
+    public function catalogo()
+    {
+        $productos = Producto::orderBy('created_at', 'desc')->get();
+        $esAdmin = Auth::check() && Auth::user()->rol === 'admin';
+        $auditorias = Movimiento::with(['producto', 'usuario'])->orderBy('created_at', 'desc')->limit(200)->get();
+        $proveedores = \App\Models\Proveedor::all();
+        return view('inventario.catalogo', compact('productos', 'esAdmin', 'auditorias', 'proveedores'));
+    }
+
+    // --- PROVEEDORES ---
+    public function proveedores()
+    {
+        $proveedores = \App\Models\Proveedor::with('productos')->orderBy('created_at', 'desc')->get();
+        return view('inventario.proveedores', compact('proveedores'));
+    }
+
+    public function storeProveedor(Request $request)
+    {
+        $request->validate([
+            'nombre' => 'required|string|max:255',
+            'rif' => 'required|string|unique:proveedores,rif'
+        ]);
+
+        \App\Models\Proveedor::create([
+            'nombre' => $request->nombre,
+            'rif' => $request->rif,
+            'contacto' => $request->contacto,
+            'telefono' => $request->telefono,
+            'direccion' => $request->direccion,
+        ]);
+
+        return response()->json(['success' => true]);
+    }
+
+    public function updateProveedor(Request $request, $id)
+    {
+        $proveedor = \App\Models\Proveedor::findOrFail($id);
+        $request->validate([
+            'nombre' => 'required|string|max:255',
+            'rif' => 'required|string|unique:proveedores,rif,' . $id
+        ]);
+        $proveedor->update($request->all());
+        return response()->json(['success' => true]);
+    }
+
+    public function destroyProveedor($id)
+    {
+        $proveedor = \App\Models\Proveedor::findOrFail($id);
+        $proveedor->delete();
+        return response()->json(['success' => true]);
+    }
+
+    public function procesarAbastecimiento(Request $request)
+    {
+        $request->validate([ 'producto_id' => 'required', 'cantidad' => 'required|numeric|min:1' ]);
+        
+        $producto = Producto::findOrFail($request->producto_id);
+        $producto->stock += $request->cantidad;
+        $producto->save();
+
+        try {
+            $fecha = now()->format('Y-m-d H:i:s');
+            $movimiento = new Movimiento([
+                'codigo_producto' => $producto->codigo,
+                'tipo' => 'Entrada',
+                'cantidad' => $request->cantidad,
+                'motivo' => 'Orden de Abastecimiento',
+                'usuario_accion' => Auth::user()->name,
+                'user_id' => Auth::id(),
+                'created_at' => $fecha
+            ]);
+            $movimiento->firma_hash = $movimiento->generarFirma();
+            $movimiento->firma_digital = hash('sha256', $producto->codigo . 'Entrada' . $request->cantidad . $fecha);
+            $movimiento->save();
+        } catch (\Exception $e) {
+            \Log::error('Error creando movimiento de abastecimiento: ' . $e->getMessage());
+        }
+
+        return response()->json(['success' => true]);
     }
 
     // --- AJUSTE MANUAL DE STOCK ---
@@ -108,6 +197,29 @@ class InventarioController extends Controller
 
         $producto->save();
 
+        // Disparador de Telegram si el stock cae a nivel crítico
+        if ($producto->stock <= 5) {
+            $mensaje = "🚨 *ALERTA DE INVENTARIO OSWA Inv* 🚨\n\n";
+            $mensaje .= "El producto *{$producto->nombre}* ha alcanzado un nivel crítico de stock.\n";
+            $mensaje .= "📦 Unidades restantes: *{$producto->stock}*\n";
+            $mensaje .= "Recomendación: Emitir orden de abastecimiento pronto.";
+
+            $telegramToken = env('TELEGRAM_BOT_TOKEN');
+            $chatId = env('TELEGRAM_CHAT_ID');
+
+            if ($telegramToken && $chatId) {
+                try {
+                    Http::post("https://api.telegram.org/bot{$telegramToken}/sendMessage", [
+                        'chat_id' => $chatId,
+                        'text' => $mensaje,
+                        'parse_mode' => 'Markdown'
+                    ]);
+                } catch (\Exception $e) {
+                    \Log::error('Error enviando alerta de Telegram: ' . $e->getMessage());
+                }
+            }
+        }
+
         if ($request->filled('soporte_base64')) {
             $image_parts = explode(";base64,", $request->soporte_base64);
             if (isset($image_parts[1])) {
@@ -119,17 +231,23 @@ class InventarioController extends Controller
         }
 
         if ($diferencia != 0) {
-            $fecha = now()->format('Y-m-d H:i:s');
-            $firmaDigital = hash('sha256', $producto->codigo . $tipo . abs($diferencia) . $fecha);
-            Movimiento::create([
-                'codigo_producto' => $producto->codigo,
-                'tipo' => $tipo,
-                'cantidad' => abs($diferencia),
-                'motivo' => $motivo,
-                'usuario_accion' => Auth::user()->name,
-                'firma_digital' => $firmaDigital,
-                'created_at' => $fecha
-            ]);
+            try {
+                $fecha = now()->format('Y-m-d H:i:s');
+                $movimiento = new Movimiento([
+                    'codigo_producto' => $producto->codigo,
+                    'tipo' => $tipo,
+                    'cantidad' => abs($diferencia),
+                    'motivo' => $motivo,
+                    'usuario_accion' => Auth::user()->name,
+                    'user_id' => Auth::id(),
+                    'created_at' => $fecha
+                ]);
+                $movimiento->firma_hash = $movimiento->generarFirma();
+                $movimiento->firma_digital = hash('sha256', $producto->codigo . $tipo . abs($diferencia) . $fecha);
+                $movimiento->save();
+            } catch (\Exception $e) {
+                \Log::error('Error creando movimiento de auditoría: ' . $e->getMessage());
+            }
         }
 
         $capitalInvertidoNuevo = Producto::all()->sum(function ($p) { return $p->stock * $p->precio; });
@@ -233,7 +351,7 @@ class InventarioController extends Controller
     // --- GUARDAR PRODUCTO ---
     public function guardarProducto(Request $request)
     {
-        $request->validate(['codigo' => 'required|unique:productos', 'nombre' => 'required', 'precio' => 'required|numeric', 'stock' => 'required|integer']);
+        $request->validate(['codigo' => 'required|unique:productos', 'nombre' => 'required', 'precio' => 'required|numeric', 'stock' => 'required|integer', 'fecha_vencimiento' => 'nullable|date']);
         
         $imagenPath = null;
         if ($request->filled('imagen_base64')) {
@@ -278,16 +396,26 @@ class InventarioController extends Controller
     }
 
     // --- ACTUALIZAR PRODUCTO ---
-    public function actualizarProducto(Request $request)
+    public function actualizarProducto(Request $request, $id)
     {
-        $producto = Producto::findOrFail($request->id);
-        $data = $request->only(['nombre', 'codigo', 'marca', 'categoria', 'precio', 'fecha_vencimiento']);
+        $producto = \App\Models\Producto::findOrFail($id);
+        
+        $request->validate([
+            'nombre' => 'required',
+            'precio' => 'required|numeric',
+            'stock' => 'required|integer',
+            'imagen' => 'nullable|image|max:2048',
+            'fecha_vencimiento' => 'nullable|date'
+        ]);
+
+        $data = $request->except(['_method', '_token', 'imagen']);
+
         if ($request->hasFile('imagen')) {
-            $name = time() . '_' . $request->file('imagen')->getClientOriginalName();
-            $request->file('imagen')->storeAs('productos', $name, 'public');
-            $data['imagen'] = 'productos/' . $name;
+            $data['imagen'] = $request->file('imagen')->store('productos', 'public');
         }
+
         $producto->update($data);
+
         return response()->json(['success' => true]);
     }
 
@@ -297,13 +425,20 @@ class InventarioController extends Controller
         $p = Producto::where('codigo', $request->codigo)->first();
         if (!$p) return response()->json(['success' => false, 'notFound' => true]);
         $p->increment('stock', 1);
-        $fecha = now()->format('Y-m-d H:i:s');
-        Movimiento::create([
-            'codigo_producto' => $p->codigo, 'tipo' => 'Entrada', 'cantidad' => 1, 'motivo' => 'Escaneo (+1)',
-            'usuario_accion' => Auth::user()->name ?? 'Sistema',
-            'firma_digital' => hash('sha256', $p->codigo . 'Entrada' . 1 . $fecha),
-            'created_at' => $fecha
-        ]);
+        try {
+            $fecha = now()->format('Y-m-d H:i:s');
+            $movimiento = new Movimiento([
+                'codigo_producto' => $p->codigo, 'tipo' => 'Entrada', 'cantidad' => 1, 'motivo' => 'Escaneo (+1)',
+                'usuario_accion' => Auth::user()->name ?? 'Sistema',
+                'user_id' => Auth::id(),
+                'created_at' => $fecha
+            ]);
+            $movimiento->firma_hash = $movimiento->generarFirma();
+            $movimiento->firma_digital = hash('sha256', $p->codigo . 'Entrada' . 1 . $fecha);
+            $movimiento->save();
+        } catch (\Exception $e) {
+            \Log::error('Error creando movimiento de escaneo: ' . $e->getMessage());
+        }
         return response()->json(['success' => true, 'producto' => $p, 'nuevo_stock' => $p->stock]);
     }
 

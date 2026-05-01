@@ -19,6 +19,7 @@ class Producto extends Model
         'descripcion',
         'imagen',
         'fecha_vencimiento',
+        'proveedor_id',
     ];
 
     protected $casts = [
@@ -30,5 +31,10 @@ class Producto extends Model
     public function movimientos()
     {
         return $this->hasMany(Movimiento::class, 'codigo_producto', 'codigo');
+    }
+
+    public function proveedor()
+    {
+        return $this->belongsTo(\App\Models\Proveedor::class, 'proveedor_id');
     }
 }

@@ -11,6 +11,12 @@ Route::get('/home', fn() => redirect()->to('/dashboard'))->name('home');
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [InventarioController::class, 'index'])->name('inventario');
+    Route::get('/catalogo', [InventarioController::class, 'catalogo'])->name('catalogo');
+    Route::get('/proveedores', [InventarioController::class, 'proveedores'])->name('proveedores');
+    Route::post('/proveedores/guardar', [InventarioController::class, 'storeProveedor'])->name('proveedores.store');
+    Route::post('/proveedores/{id}/actualizar', [InventarioController::class, 'updateProveedor'])->name('proveedores.update');
+    Route::delete('/proveedores/{id}/eliminar', [InventarioController::class, 'destroyProveedor'])->name('proveedores.destroy');
+    Route::post('/proveedores/abastecer', [InventarioController::class, 'procesarAbastecimiento'])->name('proveedores.abastecer');
     Route::get('/vencimientos', [InventarioController::class, 'vencimientos'])->name('vencimientos');
     Route::get('/auditoria', [InventarioController::class, 'auditoria'])->name('auditoria');
     Route::get('/escaner', [InventarioController::class, 'vistaEscaner'])->name('escaner');
@@ -18,11 +24,11 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/buscar-codigo', [InventarioController::class, 'buscarPorCodigo'])->name('buscar.codigo');
     Route::post('/productos/escanear', [InventarioController::class, 'escanearProducto'])->name('escanear.producto');
     Route::post('/productos/guardar', [InventarioController::class, 'guardarProducto'])->name('guardar.producto');
+    Route::put('/productos/{id}/actualizar', [InventarioController::class, 'actualizarProducto'])->name('productos.update');
     Route::post('/oswa-bot', [InventarioController::class, 'oswaBot'])->name('oswa.bot');
     Route::get('/exportar-pdf', [InventarioController::class, 'exportarPdf'])->name('exportar.pdf');
     Route::delete('/eliminar-producto', [InventarioController::class, 'eliminarProducto'])->name('eliminar.producto');
     Route::post('/transferir-producto', [InventarioController::class, 'transferirProducto'])->name('transferir.producto');
-    Route::post('/actualizar-producto', [InventarioController::class, 'actualizarProducto'])->name('actualizar.producto');
     Route::get('/orden-compra/{id}', [InventarioController::class, 'generarOrdenCompra'])->name('orden.compra');
     
     // --- RUTA AGREGADA: PARA GENERAR EL COMPROBANTE DE TRANSFERENCIA ---

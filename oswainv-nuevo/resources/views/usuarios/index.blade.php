@@ -91,7 +91,7 @@
             <div class="topbar-logo"><i class="bi bi-box-seam"></i> <span>OSWA Inv</span></div>
             <div class="topbar-nav">
                 <a href="{{ route('inventario') }}">Dashboard</a>
-                <a href="{{ route('vencimientos') }}">Vencimientos</a>
+                <a href="{{ route('proveedores') }}">Proveedores</a>
                 <a href="{{ route('auditoria') }}">Auditoría</a>
                 <a href="{{ route('usuarios.index') }}" class="active">Usuarios</a>
             </div>

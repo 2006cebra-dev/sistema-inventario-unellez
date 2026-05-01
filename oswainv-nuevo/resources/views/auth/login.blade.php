@@ -165,120 +165,101 @@
             50% { transform: scale(1.2); }
         }
 
-        /* ESTILOS DEL OVERLAY DE LOGIN */
-        .cinematic-overlay {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background-color: #050505; z-index: 99999;
-            display: flex; justify-content: center; align-items: center;
-            opacity: 0; transition: opacity 0.4s ease;
-            pointer-events: none; /* EVITA QUE BLOQUEE LA PANTALLA ANTES DE TIEMPO */
+        /* SPLASH SCREEN FINAL */
+        .splash-screen-container {
+            position: fixed;
+            top: 0; left: 0; 
+            width: 100vw; height: 100vh;
+            background: #000000 !important;
+            z-index: 999999 !important;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.8s ease-in-out, visibility 0.8s ease-in-out;
         }
-        .cinematic-overlay.active { 
-            opacity: 1; 
-            pointer-events: all; /* BLOQUEA INTERACCIÓN CUANDO ESTÁ ACTIVO */
+        .splash-screen-container.fade-out {
+            opacity: 0;
+            visibility: hidden;
+        }
+        .unellez-logo {
+            width: 150px;
+            filter: brightness(0) invert(1);
+            margin-bottom: 2rem;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.9; }
+            50% { transform: scale(1.05); opacity: 1; }
+            100% { transform: scale(1); opacity: 0.9; }
+        }
+        .progress-wrapper {
+            width: 300px;
+            text-align: center;
+        }
+        .progress {
+            height: 4px !important;
+            background-color: #1a1a1a !important;
+            border-radius: 0 !important;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+        #splash-bar {
+            background-color: #ff0000 !important;
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.7);
+            transition: width 0.1s linear;
+        }
+        .splash-text-sub, #splash-quote, #splash-percentage {
+            font-family: 'Courier New', Courier, monospace !important;
+            letter-spacing: 1px;
+        }
+        #splash-quote {
+            color: #ffffff;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+        #splash-percentage {
+            color: #ffffff;
+            font-size: 0.75rem;
+            margin-top: 6px;
         }
 
-        .cinematic-content { text-align: center; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-
-        .fase-secuencia { transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
-        .fase-secuencia.fade-out { opacity: 0; transform: scale(0.9); filter: blur(5px); }
-        .fase-secuencia.fade-in { animation: textExplosion 0.8s forwards; }
-
-        /* EFECTO DE RAYO ELÉCTRICO PARA LOS TÍTULOS */
-        .fase-secuencia.fade-in .quote-highlight {
-            animation: rayoElectrico 1.2s ease-out forwards !important;
+        /* =========================================
+           SCROLLBAR HACKER VIP (Estilo Gaming)
+           ========================================= */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
         }
-
-        /* Keyframes del cortocircuito eléctrico */
-        @keyframes rayoElectrico {
-            0% { opacity: 0; text-shadow: none; filter: brightness(1); }
-            8% { opacity: 1; text-shadow: 0 0 40px #ffffff, 0 0 100px #ffffff, 0 0 150px #E50914; transform: scale(1.05) skewX(-5deg); filter: brightness(2.5); }
-            12% { opacity: 0; text-shadow: none; transform: scale(1) skewX(0); filter: brightness(1); }
-            16% { opacity: 1; text-shadow: 0 0 60px #ffffff, 0 0 120px #E50914; transform: scale(1.02) skewX(3deg); filter: brightness(1.8); }
-            20% { opacity: 0; }
-            24% { opacity: 1; text-shadow: 0 0 40px #E50914; filter: brightness(1.2); }
-            28% { opacity: 0; }
-            35% { opacity: 1; text-shadow: 0 0 30px #E50914; }
-            100% { opacity: 1; transform: scale(1) skewX(0); text-shadow: 0 0 20px rgba(229, 9, 20, 0.8), 0 0 40px rgba(229, 9, 20, 0.4); filter: brightness(1); }
+        ::-webkit-scrollbar-track {
+            background: #0a0a0a;
+            border-left: 1px solid #1a1a1a;
         }
-
-        .intro-logo { width: 160px; filter: brightness(0) invert(1); animation: pulseGlow 2s infinite alternate; }
-        .loading-text { color: var(--text-secondary, #b3b3b3); font-size: 1.2rem; letter-spacing: 3px; font-weight: 600; }
-
-        .quote-text { color: #a0a0a0; font-size: 1.5rem; font-weight: 300; letter-spacing: 2px; }
-        .quote-highlight { 
-            color: #ffffff; font-size: 3.5rem; font-weight: 800; letter-spacing: 4px;
-            text-shadow: 0 0 20px rgba(229, 9, 20, 0.8), 0 0 40px rgba(229, 9, 20, 0.4); 
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #B20710, #E50914);
+            border-radius: 10px;
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
         }
-
-        @keyframes pulseGlow {
-            0% { filter: brightness(0) invert(1) drop-shadow(0 0 5px rgba(255,255,255,0.2)); transform: scale(0.95); }
-            100% { filter: brightness(0) invert(1) drop-shadow(0 0 25px rgba(255,255,255,0.8)); transform: scale(1.05); }
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, #E50914, #ff6b6b);
         }
-        @keyframes textExplosion {
-            0% { opacity: 0; transform: scale(0.8); filter: blur(10px); }
-            100% { opacity: 1; transform: scale(1); filter: blur(0); }
-        }
-
-        /* Cursor de terminal hacker */
-        .cursor-blink {
-            display: inline-block;
-            width: 10px;
-            height: 1.2rem;
-            background-color: #E50914;
-            margin-left: 5px;
-            animation: blink 1s step-end infinite;
-            vertical-align: text-bottom;
-        }
-        @keyframes blink { 50% { opacity: 0; } }
     </style>
 </head>
 <body>
     
-<!-- OVERLAY DE CARGA CINEMÁTICA (LOGIN) -->
-<div id="login-cinematic-overlay" class="cinematic-overlay d-none">
-    <div class="cinematic-content" style="width: 80%; max-width: 600px;">
-        
-        <!-- Fase 1: Logo, Bienvenida y Barra tipo Videojuego -->
-        <div id="fase-1" class="fase-secuencia text-center w-100">
-            <img src="{{ asset('img/logo-unellez.png') }}" class="intro-logo mb-3" alt="UNELLEZ" style="width: 120px;">
-            
-            <h3 id="texto-bienvenida" class="text-white fw-bold mb-4" style="letter-spacing: 3px; font-size: 1.6rem; text-transform: uppercase; min-height: 2.5rem;">
-                <!-- Se llenará con JS -->
-            </h3>
-            
-            <div class="d-flex justify-content-between align-items-end mb-1 px-2">
-                <span style="color: var(--text-secondary); font-family: monospace; font-size: 0.9rem;">CARGANDO RECURSOS DEL SISTEMA</span>
-                <span id="porcentaje-carga" class="text-danger fw-bold" style="font-family: monospace; font-size: 1.5rem; text-shadow: 0 0 10px rgba(229,9,20,0.5);">0%</span>
-            </div>
-            
-            <!-- Barra de Progreso -->
-            <div class="progress" style="height: 6px; background-color: #222; border-radius: 0; box-shadow: 0 0 15px rgba(0,0,0,0.8) inset;">
-                <div id="barra-progreso" class="progress-bar bg-danger" role="progressbar" style="width: 0%; transition: width 0.1s linear; box-shadow: 0 0 10px rgba(229,9,20,0.8);"></div>
-            </div>
+<!-- SPLASH SCREEN MINIMALISTA -->
+<div id="splash-screen" class="splash-screen-container">
+    <img src="{{ asset('img/logo-unellez.png') }}" alt="UNELLEZ" class="unellez-logo">
+    <div class="progress-wrapper">
+        <div class="progress">
+            <div id="splash-bar" class="progress-bar" role="progressbar" style="width: 0%;"></div>
         </div>
-
-        <!-- Fase 2: Frase 1 -->
-        <div id="fase-2" class="fase-secuencia text-center d-none">
-            <h2 class="quote-text">Cada línea de código cuenta...</h2>
-            <h1 class="quote-highlight mt-2" style="font-size: 2.5rem; letter-spacing: 3px;">CADA DATO IMPORTA</h1>
-        </div>
-
-        <!-- Fase 3: Frase 2 -->
-        <div id="fase-3" class="fase-secuencia text-center d-none">
-            <h2 class="quote-text">Optimizando el presente...</h2>
-            <h1 class="quote-highlight mt-2" style="font-size: 2.5rem; letter-spacing: 3px;">ASEGURANDO EL MAÑANA</h1>
-        </div>
-
-        <!-- Fase 4: Frase Final Épica -->
-        <div id="fase-4" class="fase-secuencia text-center d-none">
-            <h2 class="quote-text">La ingeniería no es solo código...</h2>
-            <h1 class="quote-highlight mt-2">ES DISEÑAR EL FUTURO</h1>
-        </div>
-        
+        <div id="splash-quote" class="splash-text-sub">Iniciando sistema...</div>
+        <div id="splash-percentage">0%</div>
     </div>
 </div>
     
+    <div id="login-card-container">
     <div class="auth-card">
         <div class="auth-logo">
             <img src="{{ asset('img/logo-unellez.png') }}" alt="UNELLEZ" class="logo-auth-clean">
@@ -286,7 +267,7 @@
             <p>Gestión de Inventario</p>
         </div>
         
-        <form method="POST" action="{{ route('login') }}" class="text-start">
+        <form id="formLogin" method="POST" action="{{ route('login') }}" class="text-start">
             @csrf
             
             <div class="mb-3">
@@ -343,128 +324,73 @@
             <strong style="letter-spacing: 0.5px;">UNELLEZ</strong>
         </div>
     </footer>
+    </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const loginForm = document.querySelector('form'); 
-            
+        document.addEventListener('DOMContentLoaded', function() {
+            const splash = document.getElementById('splash-screen');
+            const loginContainer = document.getElementById('login-card-container');
+            const loginForm = document.getElementById('formLogin');
+
+            function ejecutarAnimacionCarga(isLogin = false) {
+                let progreso = 0;
+                const bar = document.getElementById('splash-bar');
+                const quote = document.getElementById('splash-quote');
+                const percentage = document.getElementById('splash-percentage');
+
+                const frasesIngenieria = [
+                    "Iniciando módulos de estructuras discretas...",
+                    "Sincronizando bases de datos relacionales...",
+                    "Cargando protocolos de auditoría SHA-256...",
+                    "Estableciendo handshake de seguridad...",
+                    "Compilando entorno de gestión OSWA...",
+                    "Optimizando recursos del sistema..."
+                ];
+
+                if(isLogin && loginContainer) {
+                    loginContainer.style.opacity = '0';
+                    loginContainer.style.pointerEvents = 'none';
+                    loginContainer.style.transition = 'opacity 0.3s ease';
+                }
+
+                splash.classList.remove('fade-out');
+                splash.style.display = 'flex';
+
+                const interval = setInterval(() => {
+                    progreso += Math.floor(Math.random() * 10) + 2;
+
+                    if(progreso % 20 === 0) {
+                        quote.innerText = frasesIngenieria[Math.floor(Math.random() * frasesIngenieria.length)];
+                    }
+
+                    if (progreso >= 100) {
+                        progreso = 100;
+                        clearInterval(interval);
+                        bar.style.width = '100%';
+                        percentage.innerText = '100%';
+
+                        if(!isLogin) {
+                            setTimeout(() => {
+                                splash.classList.add('fade-out');
+                            }, 500);
+                        }
+                    } else {
+                        bar.style.width = progreso + '%';
+                        percentage.innerText = progreso + '%';
+                    }
+                }, 50);
+            }
+
+            ejecutarAnimacionCarga(false);
+
             if(loginForm) {
                 loginForm.addEventListener('submit', function(e) {
-                    e.preventDefault(); // Detenemos el envío
-                    
-                    const overlay = document.getElementById('login-cinematic-overlay');
-                    const fase1 = document.getElementById('fase-1');
-                    const fase2 = document.getElementById('fase-2');
-                    const fase3 = document.getElementById('fase-3');
-                    const fase4 = document.getElementById('fase-4');
-                    const btnSubmit = loginForm.querySelector('button[type="submit"]');
-                    
-                    // --- LÓGICA DE BIENVENIDA CON SUSPENSO Y HACK DE NOMBRES ---
-                    const inputUsuario = document.querySelector('input[name="email"]') || document.querySelector('input[name="username"]');
-                    let nombreUsuario = "AGENTE"; // Nombre por defecto
-                    
-                    if(inputUsuario && inputUsuario.value) {
-                        const prefijo = inputUsuario.value.split('@')[0].toLowerCase();
-                        
-                        // DICCIONARIO VIP PARA LA PRESENTACIÓN (Agrega aquí tus correos)
-                        const usuariosVIP = {
-                            '2006cebra': 'CARLOS',
-                            'yorgelis123': 'YORGELIS',
-                            'admin': 'ADMINISTRADOR'
-                        };
-                        
-                        // Si el correo está en la lista VIP, usa el nombre real, sino usa el correo
-                        nombreUsuario = usuariosVIP[prefijo] || prefijo.toUpperCase();
-                    }
+                    e.preventDefault();
+                    ejecutarAnimacionCarga(true);
 
-                    const textoFinal = `BIENVENIDO, ${nombreUsuario}... A OSWA INV`;
-                    const h3Bienvenida = document.getElementById('texto-bienvenida');
-                    h3Bienvenida.innerHTML = '<span class="cursor-blink"></span>'; // Cursor inicial
-                    
-                    // Efecto Máquina de Escribir (Suspenso)
-                    let charIndex = 0;
-                    const typingInterval = setInterval(() => {
-                        if (charIndex < textoFinal.length) {
-                            const currentText = textoFinal.substring(0, charIndex + 1);
-                            h3Bienvenida.innerHTML = currentText + '<span class="cursor-blink"></span>';
-                            charIndex++;
-                        } else {
-                            clearInterval(typingInterval);
-                        }
-                    }, 60); // 60ms por letra
-
-                    if(btnSubmit) btnSubmit.disabled = true;
-                    
-                    // Quitar el d-none y arrancar
-                    overlay.classList.remove('d-none');
-                    setTimeout(() => overlay.classList.add('active'), 50);
-                    
-                    try {
-                        const cinematicSound = new Audio('{{ asset("sounds/intro.mp3") }}');
-                        cinematicSound.volume = 0.9;
-                        cinematicSound.play();
-                    } catch (err) {
-                        console.log("Audio bloqueado", err);
-                    }
-                    
-                    // --- LÓGICA DE LA BARRA DE CARGA (VIDEOJUEGO) ---
-                    let progreso = 0;
-                    const textoPorcentaje = document.getElementById('porcentaje-carga');
-                    const barraProgreso = document.getElementById('barra-progreso');
-                    
-                    // El contador subirá aleatoriamente hasta llegar a 100% justo antes de cambiar de fase (3s)
-                    const intervaloCarga = setInterval(() => {
-                        // Sube entre 1% y 3% cada 60ms (promedio 2% -> 100% en ~3s)
-                        progreso += Math.floor(Math.random() * 3) + 1; 
-                        if(progreso >= 100) {
-                            progreso = 100;
-                            clearInterval(intervaloCarga);
-                        }
-                        textoPorcentaje.innerText = progreso + '%';
-                        barraProgreso.style.width = progreso + '%';
-                    }, 60);
-
-                    // --- LÍNEA DE TIEMPO (15 SEGUNDOS TOTALES) ---
-
-                    // Minuto 0:03 - Sale Logo y Barra, entra Frase 1
-                    setTimeout(() => {
-                        fase1.classList.add('fade-out');
-                        setTimeout(() => {
-                            fase1.classList.add('d-none');
-                            fase2.classList.remove('d-none');
-                            fase2.classList.add('fade-in');
-                        }, 500);
-                    }, 3000);
-
-                    // Minuto 0:06.5 - Sale Frase 1, entra Frase 2
-                    setTimeout(() => {
-                        fase2.classList.replace('fade-in', 'fade-out');
-                        setTimeout(() => {
-                            fase2.classList.add('d-none');
-                            fase3.classList.remove('d-none');
-                            fase3.classList.add('fade-in');
-                        }, 500);
-                    }, 6500);
-
-                    // Minuto 0:10 - Sale Frase 2, entra Frase Final Épica
-                    setTimeout(() => {
-                        fase3.classList.replace('fade-in', 'fade-out');
-                        setTimeout(() => {
-                            fase3.classList.add('d-none');
-                            fase4.classList.remove('d-none');
-                            fase4.classList.add('fade-in');
-                        }, 500);
-                    }, 10000);
-
-                    // Minuto 0:14.5 - Se oscurece todo antes de entrar al sistema
-                    setTimeout(() => {
-                        fase4.classList.replace('fade-in', 'fade-out');
-                    }, 14000);
-
-                    // Minuto 0:15 - ¡Entramos al Dashboard!
                     setTimeout(() => {
                         loginForm.submit();
-                    }, 15000);
+                    }, 1000);
                 });
             }
         });

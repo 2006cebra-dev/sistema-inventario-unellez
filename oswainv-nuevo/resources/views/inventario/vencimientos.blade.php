@@ -179,15 +179,16 @@
                 <img src="{{ asset('img/logo-unellez.png') }}" class="logo-nav-unellez" alt="Logo"> 
                 <span class="logo-text">OSWA Inv</span>
             </div>
-            <div class="status-indicator online d-none d-md-flex ms-2">
+            <div class="status-indicator online d-none d-md-flex ms-2 me-4">
                 <span class="status-dot" style="width: 8px; height: 8px; border-radius: 50%; background: #00b894; box-shadow: 0 0 6px rgba(0,184,148,0.6);"></span>
                 <span class="status-text text-white" style="font-size: 0.75rem;">En línea</span>
             </div>
         </div>
 
         <div class="topbar-nav" id="topbarNav">
-            <a href="{{ route('inventario') }}">Dashboard</a>
-            <a href="{{ route('vencimientos') }}" class="active">Vencimientos</a>
+            <a href="{{ route('inventario') }}" class="{{ request()->routeIs('inventario') ? 'active' : '' }}">Dashboard</a>
+            <a href="{{ route('catalogo') }}" class="{{ request()->routeIs('catalogo') ? 'active' : '' }}">Catálogo</a>
+            <a href="{{ route('proveedores') }}" class="{{ request()->routeIs('proveedores') ? 'active' : '' }}">Proveedores</a>
             
             <div class="nav-dropdown">
                 <a href="#" class="dropdown-toggle" onclick="event.preventDefault(); this.parentElement.classList.toggle('show')">Reportes</a>
@@ -197,11 +198,6 @@
                     </a>
                 </div>
             </div>
-
-            @if(auth()->check() && auth()->user()->rol === 'admin')
-                <a href="{{ route('auditoria') }}" class="text-warning"><i class="bi bi-shield-lock"></i> Auditoría</a>
-                <a href="#" class="text-info"><i class="bi bi-people"></i> Administrar Usuarios</a>
-            @endif
 
             <div class="mobile-user-section d-md-none mt-auto pt-4 border-top border-secondary">
                 <div class="status-indicator online mb-3" style="width: fit-content;">
