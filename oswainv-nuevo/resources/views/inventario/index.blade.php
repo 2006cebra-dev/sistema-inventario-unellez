@@ -1196,7 +1196,45 @@
             chatHistory.innerHTML += `<div class="chat-bubble user-bubble">${pregunta}</div>`;
             input.value = '';
             chatHistory.scrollTop = chatHistory.scrollHeight;
-            
+
+            // Interceptación de Quick Replies
+            if (pregunta.includes('Ver Catálogo')) {
+                setTimeout(() => {
+                    const html = '¡Claro! Puedes ver y gestionar todos los productos de tu inventario haciendo clic aquí: <br><br><a href="/catalogo" style="display:inline-block; padding:6px 12px; background:#E50914; color:#fff; text-decoration:none; border-radius:4px; font-size:0.85rem; font-weight:bold;">📦 Ir al Catálogo</a>';
+                    chatHistory.innerHTML += `<div class="chat-bubble bot-bubble">${html}</div>`;
+                    chatHistory.scrollTop = chatHistory.scrollHeight;
+                }, 500);
+                return;
+            } else if (pregunta.includes('Añadir Proveedor')) {
+                setTimeout(() => {
+                    const html = 'Para registrar una nueva alianza comercial, dirígete al módulo de proveedores: <br><br><a href="/proveedores" style="display:inline-block; padding:6px 12px; background:#E50914; color:#fff; text-decoration:none; border-radius:4px; font-size:0.85rem; font-weight:bold;">🤝 Ir a Proveedores</a>';
+                    chatHistory.innerHTML += `<div class="chat-bubble bot-bubble">${html}</div>`;
+                    chatHistory.scrollTop = chatHistory.scrollHeight;
+                }, 500);
+                return;
+            } else if (pregunta.includes('Reporte de Stock')) {
+                setTimeout(() => {
+                    const html = '📊 Para auditar el stock general, te recomiendo ir a la sección de <b>Estadísticas</b> en el menú principal o usar el botón de "Exportar" dentro del Catálogo de productos.';
+                    chatHistory.innerHTML += `<div class="chat-bubble bot-bubble">${html}</div>`;
+                    chatHistory.scrollTop = chatHistory.scrollHeight;
+                }, 500);
+                return;
+            } else if (pregunta.includes('Soporte')) {
+                setTimeout(() => {
+                    const numeroAdmin = "584122266083";
+                    const mensajeBase = "Hola soporte de OSWA Inv. Necesito ayuda con el siguiente problema: ";
+                    const enlaceChat = `https://wa.me/${numeroAdmin}?text=${encodeURIComponent(mensajeBase)}`;
+                    const html = `🛠️ ¡Entendido! Te voy a comunicar en vivo con <b>Carlos (Administrador del Sistema)</b> para que te atienda personalmente.<br><br>
+                    <a href="${enlaceChat}" target="_blank" style="display:flex; align-items:center; justify-content:center; gap:8px; padding:10px 15px; background:#25D366; color:#fff; text-decoration:none; border-radius:4px; font-size:0.9rem; font-weight:bold; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
+                        <i class="bi bi-whatsapp"></i> Iniciar Chat de Soporte
+                    </a>`;
+                    chatHistory.innerHTML += `<div class="chat-bubble bot-bubble">${html}</div>`;
+                    chatHistory.scrollTop = chatHistory.scrollHeight;
+                }, 500);
+                return;
+            }
+
+            // Flujo normal: enviar al backend
             const loadingId = 'loading-' + Date.now();
             chatHistory.innerHTML += `<div id="${loadingId}" class="chat-bubble bot-bubble">Pensando...</div>`;
             chatHistory.scrollTop = chatHistory.scrollHeight;
