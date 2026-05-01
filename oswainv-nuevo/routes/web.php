@@ -4,7 +4,10 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\InventarioController;
 use App\Http\Controllers\BackupController;
 
-Route::get('/', fn() => redirect()->to('/login'));
+// Ruta pública de la Landing Page
+Route::get('/', function () {
+    return view('inicio');
+})->name('inicio');
 
 Auth::routes();
 

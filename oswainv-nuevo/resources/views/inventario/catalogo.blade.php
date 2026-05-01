@@ -231,6 +231,19 @@
             100% { opacity: 0; transform: translateY(-30px) scale(1.5); }
         }
         @keyframes pulseRed { 0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); } 100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); } }
+
+        /* Page Transition: Fade In + Slide Up */
+        @keyframes fadeSlideUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-page-enter {
+            animation: fadeSlideUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+            opacity: 0;
+        }
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.25s; }
+        .delay-3 { animation-delay: 0.4s; }
     </style>
 </head>
 <body data-theme="dark">
@@ -314,7 +327,7 @@
     </nav>
     
     <main class="main-content">
-        <div class="d-flex align-items-center justify-content-between mb-4 pb-3 border-bottom border-secondary border-opacity-50">
+        <div class="d-flex align-items-center justify-content-between mb-4 pb-3 border-bottom border-secondary border-opacity-50 animate-page-enter">
             <div class="d-flex align-items-center">
                 <div class="bg-danger bg-opacity-10 p-2 rounded-3 me-3 text-danger d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
                     <i class="bi bi-grid-fill fs-4"></i>
@@ -330,7 +343,7 @@
         </div>
 
         <!-- SISTEMA DE PESTAÑAS (TABS) -->
-        <ul class="nav nav-pills mb-4" id="catalogoTabs" role="tablist" style="gap: 10px;">
+        <ul class="nav nav-pills mb-4 animate-page-enter delay-1" id="catalogoTabs" role="tablist" style="gap: 10px;">
             <li class="nav-item" role="presentation">
                 <button class="nav-link active fw-bold px-4 py-2" id="productos-tab" data-bs-toggle="pill" data-bs-target="#tab-productos" type="button" role="tab" style="border-radius: 8px;">
                     <i class="bi bi-grid-fill me-2"></i> Productos
@@ -346,7 +359,7 @@
         </ul>
 
         <!-- CONTENIDO DE LAS PESTAÑAS -->
-        <div class="tab-content" id="catalogoTabsContent">
+        <div class="tab-content animate-page-enter delay-2" id="catalogoTabsContent">
             
             <!-- PESTAÑA 1: CATÁLOGO DE PRODUCTOS -->
             <div class="tab-pane fade show active" id="tab-productos" role="tabpanel" tabindex="0">

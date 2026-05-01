@@ -156,6 +156,19 @@
         .form-select:focus { background-color: #333; border-color: var(--accent-primary); color: #e5e5e5; }
 
         @keyframes pulseRed { 0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); } 100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); } }
+
+        /* Page Transition: Fade In + Slide Up */
+        @keyframes fadeSlideUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-page-enter {
+            animation: fadeSlideUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+            opacity: 0;
+        }
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.25s; }
+        .delay-3 { animation-delay: 0.4s; }
     </style>
 </head>
 <body data-theme="dark">
@@ -241,7 +254,7 @@
     <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">@csrf</form>
     
     <main class="main-content">
-        <div class="d-flex align-items-center justify-content-between mb-4 pb-3 border-bottom border-secondary border-opacity-50">
+        <div class="d-flex align-items-center justify-content-between mb-4 pb-3 border-bottom border-secondary border-opacity-50 animate-page-enter">
             <div class="d-flex align-items-center">
                 <div class="bg-warning bg-opacity-10 p-2 rounded-3 me-3 text-warning d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
                     <i class="bi bi-buildings-fill fs-4"></i>
@@ -256,7 +269,7 @@
             @endif
         </div>
 
-        <div class="row" id="contenedor-proveedores">
+        <div class="row animate-page-enter delay-1" id="contenedor-proveedores">
             @forelse($proveedores as $proveedor)
                 <div class="col-12 col-md-6 col-lg-4 mb-4">
                     <div class="card h-100" style="background: var(--bg-card); border: 1px solid var(--n-border); border-radius: 12px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;">

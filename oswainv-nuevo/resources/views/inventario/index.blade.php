@@ -224,6 +224,34 @@
         .bot-input-area { padding: 10px; background: var(--bg-card); display: flex; gap: 8px; }
         .bot-input-area input { flex: 1; padding: 10px 15px; background: var(--bg-input); border: none; border-radius: 20px; color: var(--text-primary); outline: none; }
         .bot-input-area button { width: 40px; height: 40px; border-radius: 50%; background: #E50914; color: white; border: none; cursor: pointer; }
+
+        .oswa-quick-replies-container {
+            display: flex;
+            gap: 8px;
+            padding: 10px 15px;
+            overflow-x: auto;
+            white-space: nowrap;
+            background: transparent;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .oswa-quick-replies-container::-webkit-scrollbar { height: 5px; }
+        .oswa-quick-replies-container::-webkit-scrollbar-track { background: #1c1c1c; border-radius: 10px; }
+        .oswa-quick-replies-container::-webkit-scrollbar-thumb { background: #E50914; border-radius: 10px; }
+        .oswa-quick-replies-container::-webkit-scrollbar-thumb:hover { background: #ff1523; }
+
+        .bot-chip {
+            flex-shrink: 0;
+            background: transparent;
+            border: 1px solid #E50914;
+            color: #E50914;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
+        .bot-chip:hover { background: #E50914; color: #ffffff; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         .oswa-bot-card { display: none; }
@@ -808,6 +836,12 @@
         <div class="bot-chat-history" id="botChatHistory">
             <div class="chat-bubble bot-bubble">¡Epa! Soy la Inteligencia Artificial de tu inventario. ¿En qué te ayudo?</div>
         </div>
+        <div class="oswa-quick-replies-container">
+            <button type="button" class="bot-chip" onclick="enviarOpcionRapida('📦 Ver Catálogo')">📦 Ver Catálogo</button>
+            <button type="button" class="bot-chip" onclick="enviarOpcionRapida('🤝 Añadir Proveedor')">🤝 Añadir Proveedor</button>
+            <button type="button" class="bot-chip" onclick="enviarOpcionRapida('📊 Reporte de Stock')">📊 Reporte de Stock</button>
+            <button type="button" class="bot-chip" onclick="enviarOpcionRapida('🛠️ Soporte')">🛠️ Soporte</button>
+        </div>
         <div class="bot-input-area">
             <input type="text" id="botInput" placeholder="Pregúntame algo..." onkeypress="if(event.key==='Enter') enviarBot()">
             <button onclick="enviarBot()"><i class="bi bi-send-fill"></i></button>
@@ -1143,6 +1177,14 @@
         }
         
         // BOT
+        function enviarOpcionRapida(texto) {
+            const inputBot = document.getElementById('botInput');
+            if (inputBot) {
+                inputBot.value = texto;
+                enviarBot();
+            }
+        }
+
         function toggleBotWindow() {
             document.getElementById('botWindow').classList.toggle('show');
         }
