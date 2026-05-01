@@ -12,25 +12,40 @@
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <style>
         :root {
-            --bg-dark: #141414; --bg-card: #181818; --bg-input: #333333;
-            --border-color: #2b2b2b; --text-primary: #ffffff; --text-secondary: #b3b3b3;
-            --accent-primary: #E50914; --accent-success: #00b894;
-            --accent-danger: #e74c3c; --accent-warning: #fdcb6e; --accent-info: #0984e3;
+            --bg-main: #121212;
+            --bg-card: #1c1c1c;
+            --n-red: #E50914;
+            --n-border: #2b2b2b;
+            --bg-dark: #121212;
+            --bg-input: #2a2a2a;
+            --border-color: #2b2b2b;
+            --text-primary: #e5e5e5;
+            --text-secondary: #a3a3a3;
+            --accent-primary: #E50914;
+            --accent-success: #00b894;
+            --accent-danger: #e74c3c;
+            --accent-warning: #fdcb6e;
+            --accent-info: #0984e3;
             --topbar-height: 68px;
         }
         [data-theme="light"] {
-            --bg-dark: #f5f6f8; --bg-card: #ffffff; --bg-input: #e9ecef;
-            --border-color: #dee2e6; --text-primary: #212529; --text-secondary: #6c757d;
+            --bg-dark: #121212; --bg-card: #1c1c1c; --bg-input: #2a2a2a;
+            --border-color: #2b2b2b; --text-primary: #e5e5e5; --text-secondary: #a3a3a3;
         }
         * { font-family: 'Inter', sans-serif; }
-        body { background-color: var(--bg-dark); color: var(--text-primary); margin: 0; }
+        body { background-color: var(--bg-main) !important; color: #e5e5e5 !important; margin: 0; }
+
+        /* Glassmorphism Navbar */
+        .topbar {
+            background: linear-gradient(to bottom, rgba(18,18,18,0.85) 0%, rgba(18,18,18,0) 100%) !important;
+            backdrop-filter: blur(10px);
+            border: none !important;
+        }
         
         .topbar { 
             position: fixed; top: 0; left: 0; right: 0; height: var(--topbar-height); 
-            background: linear-gradient(180deg, rgba(0,0,0,0.95) 0%, rgba(20,20,20,0.98) 100%);
-            border-bottom: 1px solid var(--border-color); 
             display: flex; align-items: center; justify-content: space-between;
-            padding: 0 4%; z-index: 999; backdrop-filter: blur(10px);
+            padding: 0 4%; z-index: 999;
             overflow: visible !important;
         }
         .topbar::-webkit-scrollbar { display: none; }
@@ -63,7 +78,7 @@
         
         .nav-dropdown { position: relative; }
         .nav-dropdown .dropdown-toggle { cursor: pointer; }
-        .dropdown-menu-custom { position: absolute; top: 100%; left: 0; min-width: 220px; background: #1a1a1a; border: 1px solid var(--border-color); border-radius: 8px; box-shadow: 0 8px 30px rgba(0,0,0,0.6); padding: 6px 0; z-index: 1000; display: none; }
+        .dropdown-menu-custom { position: absolute; top: 100%; left: 0; min-width: 220px; background: #0d0d0d; border: 1px solid #2a2a2a; border-radius: 8px; box-shadow: 0 8px 30px rgba(0,0,0,0.8); padding: 6px 0; z-index: 1000; display: none; }
         .nav-dropdown.show .dropdown-menu-custom { display: block; }
         .dropdown-item-custom { display: flex; align-items: center; gap: 8px; padding: 10px 16px; color: #ccc; font-size: 0.85rem; text-decoration: none; transition: all 0.2s; }
         .dropdown-item-custom:hover { background: rgba(229,9,20,0.1); color: #fff; }
@@ -99,21 +114,64 @@
         @media (max-width: 1199px) { .stats-grid { grid-template-columns: repeat(3, 1fr); } }
         @media (max-width: 767px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
         
-        .stat-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 1.5rem; transition: all 0.3s ease; animation: fadeInUp 0.5s ease forwards; opacity: 0; }
+        .stat-card {
+            background: #1c1c1c !important;
+            border: 1px solid #2b2b2b !important;
+            border-radius: 15px !important;
+            padding: 1.5rem;
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            animation: fadeInUp 0.5s ease forwards;
+            opacity: 0;
+            overflow: hidden;
+            position: relative;
+        }
         .stat-card:nth-child(1) { animation-delay: 0.05s; }
         .stat-card:nth-child(2) { animation-delay: 0.1s; }
         .stat-card:nth-child(3) { animation-delay: 0.15s; }
         .stat-card:nth-child(4) { animation-delay: 0.2s; }
         .stat-card:nth-child(5) { animation-delay: 0.25s; }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .stat-card:hover { transform: translateY(-4px); box-shadow: 0 15px 50px rgba(0,0,0,0.3); }
-        .stat-icon { width: 50px; height: 50px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
-        .stat-value { font-size: 1.75rem; font-weight: 700; }
-        .stat-label { color: var(--text-secondary); font-size: 0.9rem; }
+        .stat-card:hover {
+            transform: translateY(-8px) scale(1.05);
+            border-color: #E50914 !important;
+            z-index: 100;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.6);
+        }
+        .stat-icon {
+            font-size: 2rem;
+            opacity: 0.8;
+            margin-bottom: 10px;
+        }
+        .stat-value {
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 1.8rem;
+            font-weight: 800;
+        }
+        .stat-label {
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.75rem;
+            color: #888;
+        }
         
         .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; margin-top: 20px; }
-        .product-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; display: flex; gap: 14px; align-items: flex-start; transition: all 0.3s ease; overflow: hidden; }
-        .product-card:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(0,0,0,0.5); }
+        .product-card {
+            background: var(--bg-card);
+            border: 1px solid var(--n-border);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+            overflow: hidden;
+        }
+        .product-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            border-color: var(--n-red);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            z-index: 5;
+        }
         .product-card.stock-critical { border-left: 4px solid #E50914; }
         .product-card.stock-low { border-left: 4px solid #fdcb6e; }
         .product-card.stock-normal { border-left: 4px solid #00b894; }
@@ -148,7 +206,8 @@
         /* Gráficos */
         .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 2rem; }
         @media (max-width: 991.98px) { .charts-grid { grid-template-columns: 1fr; } }
-        .chart-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 1.5rem; }
+        .chart-card { background: var(--bg-card); border: 1px solid var(--n-border); border-radius: 12px; padding: 1.5rem; transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease; }
+        .chart-card:hover { transform: translateY(-5px) scale(1.02); border-color: var(--n-red); box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
         .chart-container { position: relative; height: 280px; width: 100%; }
         
         .bot-fab { position: fixed; bottom: 20px; left: 20px; width: 60px; height: 60px; border-radius: 50%; background: #E50914; color: white; border: none; font-size: 1.8rem; box-shadow: 0 8px 25px rgba(229,9,20,0.5); z-index: 9999; cursor: pointer; transition: transform 0.3s; display: flex; align-items: center; justify-content: center; }
@@ -224,7 +283,7 @@
             .topbar-nav.show { 
                 display: flex; flex-direction: column; position: absolute; 
                 top: var(--topbar-height); left: 0; right: 0; 
-                background: #141414; padding: 1.5rem 5%; gap: 1rem; 
+                background: #000000; padding: 1.5rem 5%; gap: 1rem; 
                 border-bottom: 1px solid var(--border-color); height: calc(100vh - var(--topbar-height));
                 overflow-y: auto; z-index: 1000;
             }
@@ -262,27 +321,27 @@
         }
 
         /* HERO VIDEO NETFLIX */
-        .netflix-hero { 
-            position: relative; 
-            height: 55vh; 
-            min-height: 400px; 
-            width: 100%; 
-            border-radius: 12px; 
-            overflow: hidden; 
-            margin-top: 1.5rem; 
-            margin-bottom: 2.5rem; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            
+        .netflix-hero {
+            position: relative;
+            height: 55vh;
+            min-height: 400px;
+            width: 100%;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-top: 1.5rem;
+            margin-bottom: 2.5rem;
+            box-shadow: inset 0 0 100px #000;
+
             background-color: #141414;
-            background-image: url('https://images.unsplash.com/photo-1586528116311-ad8ed7c80a30?q=80&w=2000&auto=format&fit=crop');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
         }
-        .hero-vignette { 
-            position: absolute; top: 0; left: 0; right: 0; bottom: 0; 
-            background: linear-gradient(90deg, rgba(20,20,20,0.95) 0%, rgba(20,20,20,0.5) 50%, transparent 100%), linear-gradient(to top, #141414 0%, transparent 20%);
-            z-index: 1; 
+        .hero-vignette {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(77deg, rgba(18,18,18,1) 0%, rgba(18,18,18,0.8) 30%, transparent 85%),
+                        linear-gradient(to top, #121212 0%, transparent 20%);
+            z-index: 1;
         }
         .hero-content { 
             position: absolute; 
@@ -293,9 +352,10 @@
             max-width: 600px; 
         }
         .hero-logo-small { height: 25px; filter: brightness(0) invert(1); }
-        .hero-title { 
-            font-size: 4rem; font-weight: 800; color: white; margin-bottom: 1rem; 
+        .hero-title {
+            font-size: 4rem; font-weight: 800; color: white; margin-bottom: 1rem;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            letter-spacing: -1px;
         }
         .hero-description { 
             font-size: 1.1rem; color: #fff; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); 
@@ -305,10 +365,10 @@
 
         .btn-play { 
             display: flex; align-items: center; justify-content: center; 
-            background: white; color: black; border: none; border-radius: 4px; 
+            background: #E50914; color: white; border: none; border-radius: 6px; 
             padding: 8px 24px; font-weight: 600; font-size: 1.1rem; transition: all 0.2s; 
         }
-        .btn-play:hover { background: rgba(255,255,255,0.75); }
+        .btn-play:hover { background: #f40612; transform: scale(1.05); }
 
         .btn-more { 
             display: flex; align-items: center; justify-content: center; 
@@ -416,6 +476,23 @@
         /* Clase para desaparecer el overlay */
         .cinematic-overlay.fade-out { opacity: 0; pointer-events: none; }
 
+        /* Boton Netflix para Respaldo */
+        .btn-netflix {
+            background: var(--n-red) !important;
+            color: #fff !important;
+            border: none !important;
+            font-weight: 600;
+            padding: 10px 24px;
+            border-radius: 4px;
+            box-shadow: 0 4px 15px rgba(229,9,20,0.4);
+            transition: all 0.3s ease;
+        }
+        .btn-netflix:hover {
+            background: #c10711 !important;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(229,9,20,0.6);
+        }
+
         /* =========================================
            SCROLLBAR HACKER VIP (Estilo Gaming)
            ========================================= */
@@ -476,6 +553,11 @@
                     <a href="{{ route('exportar.pdf') }}" target="_blank" class="dropdown-item-custom">
                         <i class="bi bi-file-earmark-pdf-fill text-danger"></i> Inventario (PDF)
                     </a>
+                    @if(auth()->user()?->rol === 'admin')
+                    <a href="{{ route('respaldo.db') }}" class="dropdown-item-custom">
+                        <i class="bi bi-database-down text-info"></i> Respaldar Base de Datos
+                    </a>
+                    @endif
                 </div>
             </div>
 
@@ -533,11 +615,11 @@
     </nav>
     
     <main class="main-content">
-        <div class="netflix-hero" style="background: url('{{ asset('img/refrigeracion_centros_datos.jpg') }}') center/cover no-repeat; background-color: #141414;">
+        <div class="netflix-hero" style="background-image: url('{{ asset('img/refrigeracion_centros_datos.jpg') }}');">
             
-            <div class="hero-vignette" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(90deg, rgba(20,20,20,0.95) 0%, rgba(20,20,20,0.6) 50%, transparent 100%), linear-gradient(to top, #141414 0%, transparent 20%); z-index: 1;"></div>
+            <div class="hero-vignette"></div>
             
-            <div class="hero-content" style="position: relative; z-index: 2;">
+            <div class="hero-content">
                 <div class="d-flex align-items-center mb-2">
                     <img src="{{ asset('img/logo-unellez.png') }}" class="hero-logo-small" alt="UNELLEZ">
                     <span class="hero-subtitle-rgb">SISTEMA DE INVENTARIO</span>
@@ -561,65 +643,45 @@
         
         <div id="panel-estadisticas" class="mt-4 pt-2">
         <div class="d-flex justify-content-between align-items-center mb-4" style="flex-wrap: wrap; gap: 10px;">
-            <h4 class="mb-0 fw-bold">Panel de Control</h4>
+            <h4 class="mb-0 fw-bold">Resumen de Inventario</h4>
             <a href="{{ route('catalogo') }}" class="btn-nuevo"><i class="bi bi-grid me-2"></i>Ir al Catálogo</a>
         </div>
         
         <div class="stats-grid">
             <div class="stat-card">
-                <div class="d-flex align-items-center">
-                    <div class="stat-icon" style="background: rgba(229,9,20,0.15); color: var(--accent-primary);"><i class="bi bi-box-seam"></i></div>
-                    <div class="ms-3">
-                        <div class="stat-value" id="totalProductos">{{ $totalProductos }}</div>
-                        <div class="stat-label">Total Productos</div>
-                    </div>
-                </div>
+                <div class="stat-icon" style="color: var(--accent-primary);"><i class="bi bi-box-seam-fill"></i></div>
+                <div class="stat-value" id="totalProductos">{{ $totalProductos }}</div>
+                <div class="stat-label">Total Productos</div>
             </div>
             <div class="stat-card">
-                <div class="d-flex align-items-center">
-                    <div class="stat-icon" style="background: rgba(9,132,227,0.15); color: var(--accent-info);"><i class="bi bi-stack"></i></div>
-                    <div class="ms-3">
-                        <div class="stat-value" id="stockTotal">{{ number_format($stockTotal) }}</div>
-                        <div class="stat-label">Unidades en Almacén</div>
-                    </div>
-                </div>
+                <div class="stat-icon" style="color: var(--accent-info);"><i class="bi bi-stack"></i></div>
+                <div class="stat-value" id="stockTotal">{{ number_format($stockTotal) }}</div>
+                <div class="stat-label">Unidades en Almacén</div>
             </div>
-            <div class="stat-card">
-                <div class="d-flex align-items-center">
-                    <div class="stat-icon" style="background: rgba(253,203,110,0.15); color: var(--accent-warning);"><i class="bi bi-exclamation-triangle"></i></div>
-                    <div class="ms-3">
-                        <div class="stat-value" id="alertasStock">{{ $alertasStock }}</div>
-                        <div class="stat-label">Alertas de Bajo Stock</div>
-                    </div>
-                </div>
+            <div class="stat-card" style="border-color: rgba(229,9,20,0.4) !important;">
+                <div class="stat-icon" style="color: var(--n-red);"><i class="bi bi-exclamation-triangle-fill"></i></div>
+                <div class="stat-value" id="alertasStock" style="color: var(--n-red);">{{ $alertasStock }}</div>
+                <div class="stat-label">Alertas de Bajo Stock</div>
             </div>
             <div class="stat-card" id="cardCapital">
-                <div class="d-flex align-items-center">
-                    <div class="stat-icon" style="background: rgba(0,184,148,0.15); color: var(--accent-success);"><i class="bi bi-currency-dollar"></i></div>
-                    <div class="ms-3">
-                        <div class="stat-value" id="capitalInvertido">${{ number_format($capitalInvertido, 2) }}</div>
-                        <div class="stat-label">Capital Invertido</div>
-                        <div class="stat-sub" style="font-size:0.75rem;color:var(--text-secondary);margin-top:2px;">Eqv: Bs. {{ number_format($capitalInvertidoBs ?? 0, 2) }}</div>
-                    </div>
-                </div>
+                <div class="stat-icon" style="color: #10b981;"><i class="bi bi-currency-dollar"></i></div>
+                <div class="stat-value" id="capitalInvertido" style="color: #10b981;">${{ number_format($capitalInvertido, 2) }}</div>
+                <div class="stat-label">Capital Invertido</div>
+                <div class="stat-sub" style="font-size:0.7rem;color:#64748b;margin-top:4px;font-family:'Consolas',monospace;">Eqv: Bs. {{ number_format($capitalInvertidoBs ?? 0, 2) }}</div>
             </div>
             <div class="stat-card">
-                <div class="d-flex align-items-center">
-                    <div class="stat-icon" style="background: rgba(229,9,20,0.15); color: var(--accent-primary);"><i class="bi bi-bank"></i></div>
-                    <div class="ms-3">
-                        <div class="stat-value" id="tasaBcv">{{ number_format($tasaBcv ?? 0, 2) }}</div>
-                        <div class="stat-label">Tasa BCV (Bs/USD)</div>
-                    </div>
-                </div>
+                <div class="stat-icon" style="color: var(--accent-primary);"><i class="bi bi-bank2"></i></div>
+                <div class="stat-value" id="tasaBcv">{{ number_format($tasaBcv ?? 0, 2) }}</div>
+                <div class="stat-label">Tasa BCV (Bs/USD)</div>
             </div>
         </div>
         
         <!-- Panel de Alertas Críticas -->
         <div class="row mt-4">
             <div class="col-12">
-                <div class="card" style="background: var(--bg-card); border: 1px solid #ff475740;">
+                <div class="card" style="background: var(--bg-card); border: 1px solid var(--n-border); border-radius: 12px; box-shadow: 0 10px 20px rgba(0,0,0,0.5);">
                     <div class="card-header border-bottom border-danger border-opacity-25 py-3">
-                        <h6 class="mb-0 text-white fw-bold"><i class="bi bi-exclamation-triangle text-danger me-2"></i> Alertas Críticas de Inventario</h6>
+                        <h6 class="mb-0 text-white fw-bold"><i class="bi bi-exclamation-triangle text-danger me-2"></i> Tendencias de Vencimiento</h6>
                     </div>
                     <div class="card-body">
                         <div class="row">
@@ -662,7 +724,7 @@
             <h5 class="mb-0"><i class="bi bi-clipboard-check me-2" style="color: var(--accent-warning);"></i>Requisiciones Pendientes</h5>
             <span style="color:var(--accent-warning);font-weight:500;">{{ count($requisicionesPendientes) }} pendientes</span>
         </div>
-        <div class="table-responsive" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem;">
+        <div class="table-responsive" style="background: var(--bg-card); border: 1px solid var(--n-border); border-radius: 12px; padding: 1rem; box-shadow: 0 10px 20px rgba(0,0,0,0.5);">
             <table class="table mb-0" style="color: var(--text-primary);">
                 <thead>
                     <tr style="border-bottom: 1px solid var(--border-color);">
@@ -693,7 +755,7 @@
         
         <div class="row mt-4">
             <div class="col-12 col-lg-6 mb-4">
-                <div class="p-4 h-100" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
+                <div class="p-4 h-100" style="background: var(--bg-card); border: 1px solid var(--n-border); border-radius: 12px; box-shadow: 0 10px 20px rgba(0,0,0,0.5);">
                     <h5 class="text-white mb-4"><i class="bi bi-pie-chart me-2"></i> Distribución por Categorías</h5>
                     <div class="chart-container">
                         <canvas id="categoriaChart"></canvas>
@@ -702,7 +764,7 @@
             </div>
             
             <div class="col-12 col-lg-6 mb-4"> 
-                <div class="p-4 h-100" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
+                <div class="p-4 h-100" style="background: var(--bg-card); border: 1px solid var(--n-border); border-radius: 12px; box-shadow: 0 10px 20px rgba(0,0,0,0.5);">
                     <h5 class="text-white mb-4"><i class="bi bi-pie-chart-fill me-2 text-danger"></i> Estado del Inventario</h5>
                     
                     <div style="position: relative; height: 250px; width: 100%; display: flex; justify-content: center;">
@@ -715,7 +777,7 @@
         <!-- GRÁFICO DE TENDENCIAS: VENTAS / SALIDAS RECIENTES -->
         <div class="row mb-5">
             <div class="col-12">
-                <div class="p-4" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
+                <div class="p-4" style="background: var(--bg-card); border: 1px solid var(--n-border); border-radius: 12px; box-shadow: 0 10px 20px rgba(0,0,0,0.5);">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h5 class="text-white m-0"><i class="bi bi-graph-up-arrow me-2 text-success"></i> Tendencia de Salidas (Últimos 7 días)</h5>
                         <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-3 py-2">Datos en Tiempo Real</span>

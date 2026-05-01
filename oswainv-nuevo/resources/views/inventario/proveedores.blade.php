@@ -11,25 +11,36 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         :root {
-            --bg-dark: #141414; --bg-card: #181818; --bg-input: #333333;
-            --border-color: #2b2b2b; --text-primary: #ffffff; --text-secondary: #b3b3b3;
-            --accent-primary: #E50914; --accent-success: #00b894;
-            --accent-danger: #e74c3c; --accent-warning: #fdcb6e; --accent-info: #0984e3;
+            --bg-main: #121212;
+            --bg-card: #1c1c1c;
+            --n-red: #E50914;
+            --n-border: #2b2b2b;
+            --bg-dark: #121212;
+            --bg-input: #2a2a2a;
+            --border-color: #2b2b2b;
+            --text-primary: #e5e5e5;
+            --text-secondary: #a3a3a3;
+            --accent-primary: #E50914;
+            --accent-success: #00b894;
+            --accent-danger: #e74c3c;
+            --accent-warning: #fdcb6e;
+            --accent-info: #0984e3;
             --topbar-height: 68px;
         }
         [data-theme="light"] {
-            --bg-dark: #f5f6f8; --bg-card: #ffffff; --bg-input: #e9ecef;
-            --border-color: #dee2e6; --text-primary: #212529; --text-secondary: #6c757d;
+            --bg-dark: #121212; --bg-card: #1c1c1c; --bg-input: #2a2a2a;
+            --border-color: #2b2b2b; --text-primary: #e5e5e5; --text-secondary: #a3a3a3;
         }
         * { font-family: 'Inter', sans-serif; }
-        body { background-color: var(--bg-dark); color: var(--text-primary); margin: 0; }
+        body { background-color: var(--bg-main) !important; color: #e5e5e5 !important; margin: 0; }
         
         .topbar { 
             position: fixed; top: 0; left: 0; right: 0; height: var(--topbar-height); 
-            background: linear-gradient(180deg, rgba(0,0,0,0.95) 0%, rgba(20,20,20,0.98) 100%);
-            border-bottom: 1px solid var(--border-color); 
+            background: linear-gradient(to bottom, rgba(18,18,18,0.85) 0%, rgba(18,18,18,0) 100%);
+            backdrop-filter: blur(10px);
+            border: none !important;
             display: flex; align-items: center; justify-content: space-between;
-            padding: 0 4%; z-index: 999; backdrop-filter: blur(10px);
+            padding: 0 4%; z-index: 999;
             overflow: visible !important;
         }
         .topbar::-webkit-scrollbar { display: none; }
@@ -62,7 +73,7 @@
         
         .nav-dropdown { position: relative; }
         .nav-dropdown .dropdown-toggle { cursor: pointer; }
-        .dropdown-menu-custom { position: absolute; top: 100%; left: 0; min-width: 220px; background: #1a1a1a; border: 1px solid var(--border-color); border-radius: 8px; box-shadow: 0 8px 30px rgba(0,0,0,0.6); padding: 6px 0; z-index: 1000; display: none; }
+        .dropdown-menu-custom { position: absolute; top: 100%; left: 0; min-width: 220px; background: #121212; border: 1px solid var(--n-border); border-radius: 8px; box-shadow: 0 8px 30px rgba(0,0,0,0.6); padding: 6px 0; z-index: 1000; display: none; }
         .nav-dropdown.show .dropdown-menu-custom { display: block; }
         .dropdown-item-custom { display: flex; align-items: center; gap: 8px; padding: 10px 16px; color: #ccc; font-size: 0.85rem; text-decoration: none; transition: all 0.2s; }
         .dropdown-item-custom:hover { background: rgba(229,9,20,0.1); color: #fff; }
@@ -106,7 +117,7 @@
         .dd-logout:hover { background: rgba(229,9,20,0.1) !important; }
         
         @media (max-width: 767px) {
-            .topbar-nav { display: none; flex-direction: column; position: absolute; top: var(--topbar-height); left: 0; right: 0; background: rgba(0,0,0,0.98); padding: 1rem 4%; border-bottom: 1px solid var(--border-color); }
+            .topbar-nav { display: none; flex-direction: column; position: absolute; top: var(--topbar-height); left: 0; right: 0; background: rgba(18,18,18,0.98); padding: 1rem 4%; border-bottom: 1px solid var(--n-border); }
             .topbar-nav.show { display: flex; }
             .topbar-search { display: none; }
         }
@@ -114,22 +125,35 @@
         .menu-toggle { display: none; background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; }
         @media (max-width: 767px) { .menu-toggle { display: block; } }
         
-        .professional-footer { text-align: center; padding: 1.5rem 4%; margin-top: 2rem; border-top: 1px solid var(--border-color); color: var(--text-secondary); font-size: 0.85rem; }
+        .professional-footer { text-align: center; padding: 1.5rem 4%; margin-top: 2rem; border-top: 1px solid var(--n-border); color: var(--text-secondary); font-size: 0.85rem; }
         .professional-footer span.highlight { color: var(--text-primary); font-weight: 600; }
         .professional-footer .heart-icon { color: var(--accent-danger); animation: heartbeat 1.5s infinite; display: inline-block; }
         @keyframes heartbeat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
 
+        .card, .card-custom, .provider-card, .product-card {
+            background-color: var(--bg-card) !important;
+            border: 1px solid var(--n-border) !important;
+            border-radius: 12px !important;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+        }
+        .card:hover, .provider-card:hover, .product-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            border-color: var(--n-red) !important;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            z-index: 5;
+        }
+
         .scanner-fab { position: fixed; bottom: 30px; right: 30px; width: 56px; height: 56px; border-radius: 16px; background: linear-gradient(135deg, var(--accent-primary), #B20710); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; text-decoration: none; box-shadow: 0 4px 20px rgba(229,9,20,0.4); transition: all 0.3s; z-index: 900; }
         .scanner-fab:hover { transform: scale(1.1); box-shadow: 0 6px 25px rgba(229,9,20,0.6); }
 
-        .modal-content { background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border-color); }
-        .modal-header { border-bottom: 1px solid var(--border-color); }
-        .modal-footer { border-top: 1px solid var(--border-color); }
-        .form-control { background: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-primary); }
-        .form-control:focus { background: #444; border-color: var(--accent-primary); color: #fff; box-shadow: 0 0 0 0.25rem rgba(229,9,20,0.25); }
+        .modal-content { background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--n-border); border-radius: 12px; }
+        .modal-header { border-bottom: 1px solid var(--n-border); }
+        .modal-footer { border-top: 1px solid var(--n-border); }
+        .form-control { background: var(--bg-input); border: 1px solid var(--n-border); color: var(--text-primary); border-radius: 8px; }
+        .form-control:focus { background: #333; border-color: var(--accent-primary); color: #e5e5e5; box-shadow: 0 0 0 0.25rem rgba(229,9,20,0.25); }
         .form-label { color: var(--text-secondary); }
-        .form-select { background-color: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-primary); }
-        .form-select:focus { background-color: #444; border-color: var(--accent-primary); color: #fff; }
+        .form-select { background-color: var(--bg-input); border: 1px solid var(--n-border); color: var(--text-primary); border-radius: 8px; }
+        .form-select:focus { background-color: #333; border-color: var(--accent-primary); color: #e5e5e5; }
 
         @keyframes pulseRed { 0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); } 100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); } }
     </style>
@@ -235,7 +259,7 @@
         <div class="row" id="contenedor-proveedores">
             @forelse($proveedores as $proveedor)
                 <div class="col-12 col-md-6 col-lg-4 mb-4">
-                    <div class="card h-100" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
+                    <div class="card h-100" style="background: var(--bg-card); border: 1px solid var(--n-border); border-radius: 12px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;">
                         <div class="card-body p-4">
                             <div class="d-flex justify-content-between align-items-start mb-3">
                                 <h5 class="card-title text-white fw-bold mb-0"><i class="bi bi-building text-warning me-2"></i> {{ $proveedor->nombre }}</h5>

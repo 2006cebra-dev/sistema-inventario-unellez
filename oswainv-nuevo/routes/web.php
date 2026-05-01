@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\InventarioController;
+use App\Http\Controllers\BackupController;
 
 Route::get('/', fn() => redirect()->to('/login'));
 
@@ -45,5 +46,5 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/requisiciones/rechazar', [InventarioController::class, 'rechazarRequisicion'])->name('requisiciones.rechazar');
     
     // --- RESPALDO DE BASE DE DATOS (Solo Admin) ---
-    Route::get('/respaldo-db', [InventarioController::class, 'respaldarBaseDatos'])->name('respaldo.db');
+    Route::get('/respaldo-db', [BackupController::class, 'download'])->name('respaldo.db');
 });
