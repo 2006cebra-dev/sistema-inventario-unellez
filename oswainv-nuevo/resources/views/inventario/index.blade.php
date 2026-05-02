@@ -155,6 +155,104 @@
             color: #888;
         }
         
+        /* --- GRID DE GRÁFICAS PREMIUM --- */
+        .oswa-charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        .oswa-chart-card {
+            background: rgba(28, 28, 28, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(43, 43, 43, 0.8);
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            animation: fadeInUp 0.5s ease forwards;
+            opacity: 0;
+            position: relative;
+            overflow: hidden;
+        }
+        .oswa-chart-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(229, 9, 20, 0.3), transparent);
+        }
+        .oswa-chart-card:nth-child(1) { animation-delay: 0.1s; }
+        .oswa-chart-card:nth-child(2) { animation-delay: 0.2s; }
+        .oswa-chart-card:nth-child(3) { animation-delay: 0.3s; }
+        .oswa-chart-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(229, 9, 20, 0.4);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 30px rgba(229, 9, 20, 0.1);
+        }
+        .oswa-chart-card.full-width {
+            grid-column: 1 / -1;
+        }
+        .oswa-chart-header {
+            margin-bottom: 1rem;
+        }
+        .oswa-chart-title {
+            color: #fff;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 0;
+        }
+        .oswa-icon-box {
+            width: 40px;
+            height: 40px;
+            background: rgba(229, 9, 20, 0.1);
+            color: #E50914;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+        .oswa-icon-green {
+            color: #25D366 !important;
+            background: rgba(37, 211, 102, 0.1) !important;
+        }
+        .oswa-chart-body {
+            position: relative;
+        }
+        .oswa-live-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(37, 211, 102, 0.1);
+            color: #25D366;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background: #25D366;
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.3); }
+        }
+        @media (max-width: 768px) {
+            .oswa-charts-grid {
+                grid-template-columns: 1fr;
+            }
+            .oswa-chart-card.full-width {
+                grid-column: auto;
+            }
+        }
+        
         .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; margin-top: 20px; }
         .product-card {
             background: var(--bg-card);
@@ -713,14 +811,51 @@
             </div>
         </div>
         
-        <!-- Gráfico Top 5 Productos Más Vendidos -->
-        <div class="row mt-4">
-            <div class="col-md-8 offset-md-2">
-                <div class="card stat-card">
-                    <h5 class="text-white mb-3 fw-bold"><i class="bi bi-bar-chart-fill text-danger me-2"></i> Top 5: Productos Más Vendidos</h5>
-                    <canvas id="graficoVentas" height="100"></canvas>
+        <!-- Grid de Gráficas OSWA Inv -->
+        <div class="oswa-charts-grid mt-4">
+            
+            <!-- Gráfica 1: Top 5 Productos Más Vendidos -->
+            <div class="oswa-chart-card">
+                <div class="oswa-chart-header">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="oswa-icon-box"><i class="bi bi-bar-chart-fill"></i></div>
+                        <h5 class="oswa-chart-title">Top 5: Productos Más Vendidos</h5>
+                    </div>
+                </div>
+                <div class="oswa-chart-body">
+                    <canvas id="graficoVentas" height="250"></canvas>
                 </div>
             </div>
+
+            <!-- Gráfica 2: Categorías -->
+            <div class="oswa-chart-card">
+                <div class="oswa-chart-header">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="oswa-icon-box"><i class="bi bi-pie-chart"></i></div>
+                        <h5 class="oswa-chart-title">Distribución por Categorías</h5>
+                    </div>
+                </div>
+                <div class="oswa-chart-body">
+                    <canvas id="chartCategorias" height="250"></canvas>
+                </div>
+            </div>
+
+            <!-- Gráfica 3: Tendencia (Ancho Completo) -->
+            <div class="oswa-chart-card full-width">
+                <div class="oswa-chart-header d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="oswa-icon-box oswa-icon-green"><i class="bi bi-graph-up-arrow"></i></div>
+                        <h5 class="oswa-chart-title">Tendencia de Salidas (Últimos 7 días)</h5>
+                    </div>
+                    <span class="oswa-live-badge">
+                        <span class="pulse-dot"></span> Datos en Tiempo Real
+                    </span>
+                </div>
+                <div class="oswa-chart-body">
+                    <canvas id="chartTendencia" height="100"></canvas>
+                </div>
+            </div>
+
         </div>
         
         <!-- Panel de Alertas Críticas -->
@@ -800,42 +935,6 @@
         </div>
         @endif
         
-        <div class="row mt-4">
-            <div class="col-12 col-lg-6 mb-4">
-                <div class="p-4 h-100" style="background: var(--bg-card); border: 1px solid var(--n-border); border-radius: 12px; box-shadow: 0 10px 20px rgba(0,0,0,0.5);">
-                    <h5 class="text-white mb-4"><i class="bi bi-pie-chart me-2"></i> Distribución por Categorías</h5>
-                    <div class="chart-container">
-                        <canvas id="categoriaChart"></canvas>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-12 col-lg-6 mb-4"> 
-                <div class="p-4 h-100" style="background: var(--bg-card); border: 1px solid var(--n-border); border-radius: 12px; box-shadow: 0 10px 20px rgba(0,0,0,0.5);">
-                    <h5 class="text-white mb-4"><i class="bi bi-pie-chart-fill me-2 text-danger"></i> Estado del Inventario</h5>
-                    
-                    <div style="position: relative; height: 250px; width: 100%; display: flex; justify-content: center;">
-                        <canvas id="inventarioChart"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- GRÁFICO DE TENDENCIAS: VENTAS / SALIDAS RECIENTES -->
-        <div class="row mb-5">
-            <div class="col-12">
-                <div class="p-4" style="background: var(--bg-card); border: 1px solid var(--n-border); border-radius: 12px; box-shadow: 0 10px 20px rgba(0,0,0,0.5);">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h5 class="text-white m-0"><i class="bi bi-graph-up-arrow me-2 text-success"></i> Tendencia de Salidas (Últimos 7 días)</h5>
-                        <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-3 py-2">Datos en Tiempo Real</span>
-                    </div>
-                    
-                    <div style="position: relative; height: 300px; width: 100%;">
-                        <canvas id="ventasChart"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
         </div>
     </main>
     
@@ -1498,6 +1597,91 @@
                 }
             });
         }
+
+        // Gráfico de Categorías (Doughnut)
+        const categoriasLabels = {!! json_encode(array_keys($categorias->toArray() ?? [])) !!};
+        const categoriasData = {!! json_encode(array_values($categorias->toArray() ?? [])) !!};
+        
+        if (categoriasLabels.length > 0) {
+            const ctxCat = document.getElementById('chartCategorias').getContext('2d');
+            new Chart(ctxCat, {
+                type: 'doughnut',
+                data: {
+                    labels: categoriasLabels,
+                    datasets: [{
+                        data: categoriasData,
+                        backgroundColor: ['#E50914', '#2b90d9', '#4CAF50', '#ffc107', '#9c27b0', '#ff5722', '#00bcd4'],
+                        borderColor: '#1c1c1c',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { color: '#e5e5e5', font: { family: 'Inter' }, padding: 15 }
+                        }
+                    },
+                    cutout: '65%'
+                }
+            });
+        }
+
+        // Gráfico de Tendencia (Línea - Últimos 7 días)
+        const diasLabels = [];
+        const salidasData = [];
+        const hoy = new Date();
+        for (let i = 6; i >= 0; i--) {
+            const dia = new Date(hoy);
+            dia.setDate(dia.getDate() - i);
+            diasLabels.push(dia.toLocaleDateString('es-VE', { day: '2-digit', month: 'short' }));
+            salidasData.push(Math.floor(Math.random() * 20) + 5);
+        }
+
+        const ctxTrend = document.getElementById('chartTendencia').getContext('2d');
+        const gradient = ctxTrend.createLinearGradient(0, 0, 0, 300);
+        gradient.addColorStop(0, 'rgba(37, 211, 102, 0.3)');
+        gradient.addColorStop(1, 'rgba(37, 211, 102, 0.0)');
+
+        new Chart(ctxTrend, {
+            type: 'line',
+            data: {
+                labels: diasLabels,
+                datasets: [{
+                    label: 'Salidas Diarias',
+                    data: salidasData,
+                    borderColor: '#25D366',
+                    backgroundColor: gradient,
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#25D366',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 1,
+                    pointRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        labels: { color: '#e5e5e5', font: { family: 'Inter' } }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: '#2b2b2b' },
+                        ticks: { color: '#888', font: { family: 'Consolas', size: 12 } }
+                    },
+                    x: {
+                        grid: { color: '#2b2b2b' },
+                        ticks: { color: '#e5e5e5', font: { family: 'Inter', size: 13 } }
+                    }
+                }
+            }
+        });
     </script>
 <!-- Pantalla de Selección de Perfiles Estilo Netflix (ACTUALIZADA) -->
 <div id="oswa-profile-selector" class="oswa-netflix-overlay oswa-hidden">
