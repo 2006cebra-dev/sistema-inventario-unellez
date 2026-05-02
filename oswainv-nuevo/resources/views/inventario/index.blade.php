@@ -309,30 +309,33 @@
         .chart-card:hover { transform: translateY(-5px) scale(1.02); border-color: var(--n-red); box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
         .chart-container { position: relative; height: 280px; width: 100%; }
         
-        .bot-fab { position: fixed; bottom: 20px; left: 20px; width: 60px; height: 60px; border-radius: 50%; background: #E50914; color: white; border: none; font-size: 1.8rem; box-shadow: 0 8px 25px rgba(229,9,20,0.5); z-index: 9999; cursor: pointer; transition: transform 0.3s; display: flex; align-items: center; justify-content: center; }
-        .floating-bot-window { position: fixed; bottom: 90px; left: 20px; width: 340px; height: 450px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; box-shadow: 0 15px 40px rgba(0,0,0,0.6); z-index: 9998; display: flex; flex-direction: column; opacity: 0; pointer-events: none; transform: translateY(20px); transition: all 0.3s ease; overflow: hidden; }
-        .floating-bot-window.show { opacity: 1; pointer-events: all; transform: translateY(0); }
-        .bot-header { background: #141414; padding: 15px; color: white; font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
-        .bot-header button { background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; }
-        .bot-chat-history { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; background: var(--bg-dark); }
-        .bot-chat-history::-webkit-scrollbar { width: 6px; }
-        .bot-chat-history::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
+        .bot-fab { position: fixed; bottom: 30px; left: 30px; width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #0984e3, #00b894); color: white; border: none; font-size: 1.8rem; box-shadow: 0 8px 25px rgba(9,132,227,0.4); z-index: 9999; cursor: pointer; transition: transform 0.3s; display: flex; align-items: center; justify-content: center; }
+        .bot-fab:hover { transform: scale(1.1); }
+
+        .oswa-chat-window {
+            position: fixed; bottom: 100px; left: 30px; width: 350px; height: 500px;
+            background-color: #141414; border: 1px solid #2a2a2a; border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8); display: flex; flex-direction: column;
+            z-index: 9998; overflow: hidden; opacity: 0; pointer-events: none;
+            transform: translateY(20px); transition: all 0.3s ease;
+        }
+        .oswa-chat-window.show { opacity: 1; pointer-events: all; transform: translateY(0); }
+        .oswa-chat-header { background-color: #0f0f0f; padding: 15px; border-bottom: 1px solid #2a2a2a; }
+        .bot-avatar { background-color: #E50914; color: white; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+        .oswa-chat-body { flex: 1; padding: 15px; overflow-y: auto; background-color: #141414; display: flex; flex-direction: column; gap: 12px; }
+        .oswa-chat-body::-webkit-scrollbar { width: 6px; }
+        .oswa-chat-body::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
         .chat-bubble { max-width: 85%; padding: 10px 14px; border-radius: 12px; font-size: 0.85rem; line-height: 1.4; animation: fadeIn 0.3s ease; }
         .user-bubble { align-self: flex-end; background: #E50914; color: white; border-bottom-right-radius: 4px; }
         .bot-bubble { align-self: flex-start; background: #2b2b2b; color: white; border-bottom-left-radius: 4px; }
-        .bot-input-area { padding: 10px; background: var(--bg-card); display: flex; gap: 8px; }
-        .bot-input-area input { flex: 1; padding: 10px 15px; background: var(--bg-input); border: none; border-radius: 20px; color: var(--text-primary); outline: none; }
-        .bot-input-area button { width: 40px; height: 40px; border-radius: 50%; background: #E50914; color: white; border: none; cursor: pointer; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        .oswa-chat-footer { padding: 15px; background-color: #0f0f0f; border-top: 1px solid #2a2a2a; }
+        .oswa-chat-footer input { background-color: #222; border: 1px solid #333; color: white; }
+        .oswa-chat-footer input:focus { background-color: #2a2a2a; border-color: #E50914; color: white; box-shadow: none; }
 
         .oswa-quick-replies-container {
-            display: flex;
-            gap: 8px;
-            padding: 10px 15px;
-            overflow-x: auto;
-            white-space: nowrap;
-            background: transparent;
-            width: 100%;
-            box-sizing: border-box;
+            display: flex; gap: 8px; padding: 10px 15px; overflow-x: auto; white-space: nowrap;
+            background: transparent; width: 100%; box-sizing: border-box;
         }
         .oswa-quick-replies-container::-webkit-scrollbar { height: 5px; }
         .oswa-quick-replies-container::-webkit-scrollbar-track { background: #1c1c1c; border-radius: 10px; }
@@ -356,9 +359,6 @@
         .oswa-bot-card { display: none; }
         .bot-response { margin-top: 1rem; padding: 1rem; border-radius: 4px; background: var(--bg-input); display: none; }
 
-        .scanner-fab { position: fixed; bottom: 2rem; right: 2rem; width: 60px; height: 60px; border-radius: 8px; background: linear-gradient(135deg, var(--accent-primary), #ff6b6b); border: none; color: white; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 10px 30px rgba(229,9,20,0.4); z-index: 9999; transition: transform 0.3s; }
-        .scanner-fab:hover { transform: scale(1.05); }
-        
         .modal-content { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; }
         .modal-header { border-bottom: 1px solid var(--border-color); padding: 1rem 1.5rem; }
         .modal-title { color: var(--text-primary); }
@@ -739,7 +739,12 @@
                     <a href="{{ route('usuarios.index') }}" class="dd-item"><i class="bi bi-people"></i> Administrar Usuarios</a>
                     <button class="dd-item" onclick="abrirSelectorPerfiles(event)" href="#"><i class="bi bi-arrow-left-right"></i> Cambiar de Cuenta</button>
                     <div class="dd-divider"></div>
-                    <button class="dd-item dd-logout" onclick="document.getElementById('logout-form').submit();"><i class="bi bi-box-arrow-right"></i> Cerrar sesión</button>
+                    <form method="POST" action="{{ route('logout') }}" class="m-0 p-0 w-100">
+                        @csrf
+                        <button type="submit" class="dd-item dd-logout w-100 text-start" style="background: none; border: none; cursor: pointer; padding: 0;">
+                            <i class="bi bi-box-arrow-right"></i> Cambiar Usuario / Salir
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -777,44 +782,112 @@
         </div>
         
         <div id="panel-estadisticas" class="mt-4 pt-2">
-        <div class="d-flex justify-content-between align-items-center mb-4" style="flex-wrap: wrap; gap: 10px;">
-            <h4 class="mb-0 fw-bold">Resumen de Inventario</h4>
-            <a href="{{ route('catalogo') }}" class="btn-nuevo"><i class="bi bi-grid me-2"></i>Ir al Catálogo</a>
-        </div>
         
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon" style="color: var(--accent-primary);"><i class="bi bi-box-seam-fill"></i></div>
-                <div class="stat-value" id="totalProductos">{{ $totalProductos }}</div>
-                <div class="stat-label">Total Productos</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon" style="color: var(--accent-info);"><i class="bi bi-stack"></i></div>
-                <div class="stat-value" id="stockTotal">{{ number_format($stockTotal) }}</div>
-                <div class="stat-label">Unidades en Almacén</div>
-            </div>
-            <div class="stat-card" style="border-color: rgba(229,9,20,0.4) !important;">
-                <div class="stat-icon" style="color: var(--n-red);"><i class="bi bi-exclamation-triangle-fill"></i></div>
-                <div class="stat-value" id="alertasStock" style="color: var(--n-red);">{{ $alertasStock }}</div>
-                <div class="stat-label">Alertas de Bajo Stock</div>
-            </div>
-            <div class="stat-card" id="cardCapital">
-                <div class="stat-icon" style="color: #10b981;"><i class="bi bi-currency-dollar"></i></div>
-                <div class="stat-value" id="capitalInvertido" style="color: #10b981;">${{ number_format($capitalInvertido, 2) }}</div>
-                <div class="stat-label">Capital Invertido</div>
-                <div class="stat-sub" style="font-size:0.7rem;color:#64748b;margin-top:4px;font-family:'Consolas',monospace;">Eqv: Bs. {{ number_format($capitalInvertidoBs ?? 0, 2) }}</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon" style="color: var(--accent-primary);"><i class="bi bi-bank2"></i></div>
-                <div class="stat-value" id="tasaBcv">{{ number_format($tasaBcv ?? 0, 2) }}</div>
-                <div class="stat-label">Tasa BCV (Bs/USD)</div>
+        @if(Auth::user()->rol === 'admin')
+
+        <!-- ==========================================
+             VISTA DEL ADMINISTRADOR
+             ========================================== -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="text-white mb-0 font-weight-bold">Resumen de Inventario</h4>
+            <a href="{{ route('catalogo') }}" class="btn btn-danger" style="background-color: #E50914; border: none;">
+                <i class="bi bi-grid-3x3-gap"></i> Ir al Catálogo
+            </a>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="color: var(--accent-primary);"><i class="bi bi-box-seam-fill"></i></div>
+                        <div class="stat-value" id="totalProductos">{{ $totalProductos }}</div>
+                        <div class="stat-label">Total Productos</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="color: var(--accent-info);"><i class="bi bi-stack"></i></div>
+                        <div class="stat-value" id="stockTotal">{{ number_format($stockTotal) }}</div>
+                        <div class="stat-label">Unidades en Almacén</div>
+                    </div>
+                    <div class="stat-card" style="border-color: rgba(229,9,20,0.4) !important;">
+                        <div class="stat-icon" style="color: var(--n-red);"><i class="bi bi-exclamation-triangle-fill"></i></div>
+                        <div class="stat-value" id="alertasStock" style="color: var(--n-red);">{{ $alertasStock }}</div>
+                        <div class="stat-label">Alertas de Bajo Stock</div>
+                    </div>
+                    <div class="stat-card" id="cardCapital">
+                        <div class="stat-icon" style="color: #10b981;"><i class="bi bi-currency-dollar"></i></div>
+                        <div class="stat-value" id="capitalInvertido" style="color: #10b981;">${{ number_format($capitalInvertido, 2) }}</div>
+                        <div class="stat-label">Capital Invertido</div>
+                        <div class="stat-sub" style="font-size:0.7rem;color:#64748b;margin-top:4px;font-family:'Consolas',monospace;">Eqv: Bs. {{ number_format($capitalInvertidoBs ?? 0, 2) }}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="color: var(--accent-primary);"><i class="bi bi-bank2"></i></div>
+                        <div class="stat-value" id="tasaBcv">{{ number_format($tasaBcv ?? 0, 2) }}</div>
+                        <div class="stat-label">Tasa BCV (Bs/USD)</div>
+                    </div>
+                </div>
             </div>
         </div>
-        
-        <!-- Grid de Gráficas OSWA Inv -->
-        <div class="oswa-charts-grid mt-4">
+
+        <!-- ==========================================
+             2. SECCIÓN: ALERTAS CRÍTICAS (MEDIO)
+             ========================================== -->
+        <div class="oswa-alerts-container mb-4" style="background-color: #141414; border: 1px solid #2a2a2a; border-radius: 12px; padding: 20px;">
+            <h5 class="text-white mb-3" style="border-bottom: 1px solid #2a2a2a; padding-bottom: 10px;">
+                <i class="bi bi-exclamation-triangle text-danger"></i> Alertas Críticas del Inventario
+            </h5>
             
-            <!-- Gráfica 1: Top 5 Productos Más Vendidos -->
+            <div class="row">
+                <div class="col-md-6 mb-3 mb-md-0">
+                    <h6 class="text-secondary mb-3"><i class="bi bi-box-seam me-1"></i> Bajo Stock (Menos de 5 unidades)</h6>
+                    <ul class="list-group list-group-flush bg-transparent">
+                        @forelse($productosBajoStock as $prod)
+                            <li class="list-group-item bg-transparent text-white border-secondary border-opacity-25 px-0 d-flex justify-content-between align-items-center">
+                                {{ $prod->nombre }}
+                                <span class="badge bg-danger bg-opacity-25 text-danger border border-danger rounded-pill">Quedan {{ $prod->stock }}</span>
+                            </li>
+                        @empty
+                            <li class="list-group-item bg-transparent text-success px-0"><i class="bi bi-check-circle me-1"></i> Stock en niveles óptimos.</li>
+                        @endforelse
+                    </ul>
+                </div>
+                
+                <div class="col-md-6">
+                    <h6 class="text-secondary mb-3"><i class="bi bi-calendar-x me-1"></i> Próximos a Vencer (30 días o menos)</h6>
+                    <ul class="list-group list-group-flush bg-transparent">
+                        @forelse($productosPorVencer as $prod)
+                            <li class="list-group-item bg-transparent text-white border-secondary border-opacity-25 px-0 d-flex justify-content-between align-items-center">
+                                {{ $prod->nombre }}
+                                <span class="badge bg-warning bg-opacity-25 text-warning border border-warning rounded-pill">Vence: {{ \Carbon\Carbon::parse($prod->fecha_vencimiento)->format('d/m/Y') }}</span>
+                            </li>
+                        @empty
+                            <li class="list-group-item bg-transparent text-success px-0"><i class="bi bi-check-circle me-1"></i> Ningún producto por vencer.</li>
+                        @endforelse
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             3. SECCIÓN: GRÁFICAS (ABAJO)
+             ========================================== -->
+        <!-- 3.1 Gráfica Ancha (Tendencias de Salidas) - AHORA VA ARRIBA -->
+        <div class="oswa-chart-card full-width mb-4">
+            <div class="oswa-chart-header d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="oswa-icon-box oswa-icon-green"><i class="bi bi-graph-up-arrow"></i></div>
+                    <h5 class="oswa-chart-title">Tendencia de Salidas (Últimos 7 días)</h5>
+                </div>
+                <span class="oswa-live-badge">
+                    <span class="pulse-dot"></span> DATOS EN TIEMPO REAL
+                </span>
+            </div>
+            <div class="oswa-chart-body" style="min-height: 250px; position: relative;">
+                <canvas id="chartTendencia"></canvas>
+            </div>
+        </div>
+
+        <!-- 3.2 Grid de Gráficas (Top 5 y Distribución) - AHORA VAN ABAJO -->
+        <div class="oswa-charts-grid">
             <div class="oswa-chart-card">
                 <div class="oswa-chart-header">
                     <div class="d-flex align-items-center gap-3">
@@ -822,126 +895,102 @@
                         <h5 class="oswa-chart-title">Top 5: Productos Más Vendidos</h5>
                     </div>
                 </div>
-                <div class="oswa-chart-body">
-                    <canvas id="graficoVentas" height="250"></canvas>
+                <div class="oswa-chart-body" style="min-height: 300px; position: relative; display: flex; justify-content: center; align-items: center;" id="container-top-productos">
+                    <canvas id="chartTopProductos" style="display: none;"></canvas>
+                    <div id="empty-top-productos" class="text-center" style="color: #666;">
+                        <i class="bi bi-inbox fs-1 mb-2"></i>
+                        <p class="mb-0 font-monospace">Esperando primeros registros...</p>
+                    </div>
                 </div>
             </div>
 
-            <!-- Gráfica 2: Categorías -->
             <div class="oswa-chart-card">
                 <div class="oswa-chart-header">
                     <div class="d-flex align-items-center gap-3">
-                        <div class="oswa-icon-box"><i class="bi bi-pie-chart"></i></div>
+                        <div class="oswa-icon-box"><i class="bi bi-pie-chart-fill"></i></div>
                         <h5 class="oswa-chart-title">Distribución por Categorías</h5>
                     </div>
                 </div>
-                <div class="oswa-chart-body">
-                    <canvas id="chartCategorias" height="250"></canvas>
+                <div class="oswa-chart-body" style="min-height: 300px; position: relative;">
+                    <canvas id="chartCategorias"></canvas>
                 </div>
             </div>
-
-            <!-- Gráfica 3: Tendencia (Ancho Completo) -->
-            <div class="oswa-chart-card full-width">
-                <div class="oswa-chart-header d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="oswa-icon-box oswa-icon-green"><i class="bi bi-graph-up-arrow"></i></div>
-                        <h5 class="oswa-chart-title">Tendencia de Salidas (Últimos 7 días)</h5>
-                    </div>
-                    <span class="oswa-live-badge">
-                        <span class="pulse-dot"></span> Datos en Tiempo Real
-                    </span>
-                </div>
-                <div class="oswa-chart-body">
-                    <canvas id="chartTendencia" height="100"></canvas>
-                </div>
-            </div>
-
         </div>
         
-        <!-- Panel de Alertas Críticas -->
-        <div class="row mt-4">
+        @else
+
+        <!-- ==========================================
+             VISTA DEL EMPLEADO (Área Operativa)
+             ========================================== -->
+        <div class="row mb-4">
             <div class="col-12">
-                <div class="card" style="background: var(--bg-card); border: 1px solid var(--n-border); border-radius: 12px; box-shadow: 0 10px 20px rgba(0,0,0,0.5);">
-                    <div class="card-header border-bottom border-danger border-opacity-25 py-3">
-                        <h6 class="mb-0 text-white fw-bold"><i class="bi bi-exclamation-triangle text-danger me-2"></i> Tendencias de Vencimiento</h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <!-- Columna Stock -->
-                            <div class="col-md-6 mb-3 mb-md-0">
-                                <h6 class="text-secondary mb-3"><i class="bi bi-box-seam me-1"></i> Bajo Stock (Menos de 5 unidades)</h6>
-                                <ul class="list-group list-group-flush bg-transparent">
-                                    @forelse($productosBajoStock as $prod)
-                                        <li class="list-group-item bg-transparent text-white border-secondary border-opacity-25 px-0 d-flex justify-content-between align-items-center">
-                                            {{ $prod->nombre }}
-                                            <span class="badge bg-danger bg-opacity-25 text-danger border border-danger rounded-pill">Quedan {{ $prod->stock }}</span>
-                                        </li>
-                                    @empty
-                                        <li class="list-group-item bg-transparent text-success px-0"><i class="bi bi-check-circle me-1"></i> Stock en niveles óptimos.</li>
-                                    @endforelse
-                                </ul>
-                            </div>
-                            <!-- Columna Vencimientos -->
-                            <div class="col-md-6">
-                                <h6 class="text-secondary mb-3"><i class="bi bi-calendar-x me-1"></i> Próximos a Vencer (30 días o menos)</h6>
-                                <ul class="list-group list-group-flush bg-transparent">
-                                    @forelse($productosPorVencer as $prod)
-                                        <li class="list-group-item bg-transparent text-white border-secondary border-opacity-25 px-0 d-flex justify-content-between align-items-center">
-                                            {{ $prod->nombre }}
-                                            <span class="badge bg-warning bg-opacity-25 text-warning border border-warning rounded-pill">Vence: {{ \Carbon\Carbon::parse($prod->fecha_vencimiento)->format('d/m/Y') }}</span>
-                                        </li>
-                                    @empty
-                                        <li class="list-group-item bg-transparent text-success px-0"><i class="bi bi-check-circle me-1"></i> Ningún producto por vencer.</li>
-                                    @endforelse
-                                </ul>
-                            </div>
+                <div class="p-4" style="background-color: #141414; border: 1px solid #2a2a2a; border-radius: 12px; border-left: 5px solid #E50914;">
+                    <h3 class="text-white fw-bold mb-1">¡Hola, {{ Auth::user()->name }}!</h3>
+                    <p class="mb-0" style="color: #cccccc;">Bienvenido a tu panel operativo. ¿Qué deseas hacer hoy?</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tarjetas de Acceso Rápido -->
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 text-center" style="background-color: #1a1a1a; border: 1px solid #333; border-radius: 12px; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-8px)'" onmouseout="this.style.transform='translateY(0)'">
+                    <div class="card-body py-5">
+                        <div class="mb-3">
+                            <i class="bi bi-grid-3x3-gap" style="font-size: 3rem; color: #E50914;"></i>
                         </div>
+                        <h5 class="text-white fw-bold">Explorar Catálogo</h5>
+                        <p style="color: #aaaaaa; font-size: 0.9rem;">Busca productos y verifica el stock actual.</p>
+                        <a href="{{ url('/catalogo') }}" class="btn btn-outline-light w-100 mt-2">Ir al Catálogo</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 text-center" style="background-color: #1a1a1a; border: 1px solid #333; border-radius: 12px; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-8px)'" onmouseout="this.style.transform='translateY(0)'">
+                    <div class="card-body py-5">
+                        <div class="mb-3">
+                            <i class="bi bi-upc-scan" style="font-size: 3rem; color: #25D366;"></i>
+                        </div>
+                        <h5 class="text-white fw-bold">Escanear Producto</h5>
+                        <p style="color: #aaaaaa; font-size: 0.9rem;">Usa la cámara para buscar información al instante.</p>
+                        <a href="{{ url('/catalogo?openScanner=true') }}" class="btn btn-outline-success w-100 mt-2">Abrir Escáner</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 text-center" style="background-color: #1a1a1a; border: 1px solid #333; border-radius: 12px; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-8px)'" onmouseout="this.style.transform='translateY(0)'">
+                    <div class="card-body py-5">
+                        <div class="mb-3">
+                            <i class="bi bi-cart-plus" style="font-size: 3rem; color: #0dcaf0;"></i>
+                        </div>
+                        <h5 class="text-white fw-bold">Pedir Material</h5>
+                        <p style="color: #aaaaaa; font-size: 0.9rem;">Crea una requisición nueva para el administrador.</p>
+                        <a href="{{ url('/requisiciones/crear') }}" class="btn btn-outline-info w-100 mt-2">Crear Solicitud</a>
                     </div>
                 </div>
             </div>
         </div>
-        
-        @if($esAdmin && count($requisicionesPendientes) > 0)
-        <div class="d-flex justify-content-between align-items-center mt-5 mb-2">
-            <h5 class="mb-0"><i class="bi bi-clipboard-check me-2" style="color: var(--accent-warning);"></i>Requisiciones Pendientes</h5>
-            <span style="color:var(--accent-warning);font-weight:500;">{{ count($requisicionesPendientes) }} pendientes</span>
-        </div>
-        <div class="table-responsive" style="background: var(--bg-card); border: 1px solid var(--n-border); border-radius: 12px; padding: 1rem; box-shadow: 0 10px 20px rgba(0,0,0,0.5);">
-            <table class="table mb-0" style="color: var(--text-primary);">
-                <thead>
-                    <tr style="border-bottom: 1px solid var(--border-color);">
-                        <th>Empleado</th>
-                        <th>Producto</th>
-                        <th>Cantidad</th>
-                        <th>Fecha</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($requisicionesPendientes as $req)
-                    <tr style="border-bottom: 1px solid var(--border-color);">
-                        <td>{{ $req->user->name }}</td>
-                        <td>{{ $req->producto->nombre }}</td>
-                        <td><span class="badge bg-warning text-dark">{{ $req->cantidad }}</span></td>
-                        <td style="color: var(--text-secondary); font-size: 0.85rem;">{{ $req->created_at->format('d/m/Y H:i') }}</td>
-                        <td>
-                            <button class="btn btn-sm btn-success me-1" onclick="aprobarRequisicion({{ $req->id }})"><i class="bi bi-check-lg"></i></button>
-                            <button class="btn btn-sm btn-danger" onclick="rechazarRequisicion({{ $req->id }})"><i class="bi bi-x-lg"></i></button>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
+
         @endif
         
-        </div>
     </main>
     
-    <button class="bot-fab" onclick="toggleBotWindow()"><i class="bi bi-robot"></i></button>
-    <div class="floating-bot-window" id="botWindow">
-        <div class="bot-header"><span><i class="bi bi-robot me-2"></i> OSWA-Bot IA</span><button onclick="toggleBotWindow()"><i class="bi bi-x-lg"></i></button></div>
-        <div class="bot-chat-history" id="botChatHistory">
+    <button id="btn-chatbot-toggle" class="bot-fab"><i class="bi bi-robot"></i></button>
+    <div id="oswa-chatbot-window" class="oswa-chat-window">
+        <div class="oswa-chat-header d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-2">
+                <div class="bot-avatar"><i class="bi bi-robot"></i></div>
+                <div>
+                    <h6 class="mb-0 text-white fw-bold">OSWA Asistente</h6>
+                    <small style="color: #25D366; font-size: 0.75rem;">● En línea</small>
+                </div>
+            </div>
+            <button id="close-chatbot-btn" class="btn text-white p-0"><i class="bi bi-x-lg"></i></button>
+        </div>
+
+        <div class="oswa-chat-body" id="botChatHistory">
             <div class="chat-bubble bot-bubble">¡Epa! Soy la Inteligencia Artificial de tu inventario. ¿En qué te ayudo?</div>
         </div>
         <div class="oswa-quick-replies-container">
@@ -950,9 +999,11 @@
             <button type="button" class="bot-chip" onclick="enviarOpcionRapida('📊 Reporte de Stock')">📊 Reporte de Stock</button>
             <button type="button" class="bot-chip" onclick="enviarOpcionRapida('🛠️ Soporte')">🛠️ Soporte</button>
         </div>
-        <div class="bot-input-area">
-            <input type="text" id="botInput" placeholder="Pregúntame algo..." onkeypress="if(event.key==='Enter') enviarBot()">
-            <button onclick="enviarBot()"><i class="bi bi-send-fill"></i></button>
+        <div class="oswa-chat-footer">
+            <div class="input-group">
+                <input type="text" id="botInput" class="form-control" placeholder="Escribe tu consulta..." onkeypress="if(event.key==='Enter') enviarBot()">
+                <button class="btn btn-danger" id="send-chatbot-btn" onclick="enviarBot()"><i class="bi bi-send-fill"></i></button>
+            </div>
         </div>
     </div>
 
@@ -974,7 +1025,6 @@
         </div>
     </div>
 
-    <a href="{{ route('escaner') }}" class="scanner-fab" title="Escáner (Alt+E)"><i class="bi bi-upc-scan"></i></a>
     
     <div class="modal fade" id="modalCamaraUniversal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -1346,7 +1396,99 @@
                 document.getElementById('stat-distancia').textContent = destino.dist + ' km';
                 document.getElementById('stat-flete').textContent = '$' + (destino.dist * 0.25).toFixed(2);
                 document.getElementById('stat-tiempo').textContent = (destino.dist / 80).toFixed(1) + ' h';
-            });
+        });
+        }
+
+        document.getElementById('btn-chatbot-toggle').addEventListener('click', function() {
+            document.getElementById('oswa-chatbot-window').classList.toggle('show');
+        });
+
+        document.getElementById('close-chatbot-btn').addEventListener('click', function() {
+            document.getElementById('oswa-chatbot-window').classList.remove('show');
+        });
+
+        const oswaBotRespuestas = [
+            {
+                keywords: ['hola', 'buenas', 'epa', 'saludos', 'que tal'],
+                response: "¡Epa! Soy OSWA, tu asistente de inventario. 🤖 ¿Quieres saber sobre capital, vencimientos, stock o precios?"
+            },
+            {
+                keywords: ['vence', 'vencimiento', 'vencidos', 'caduca', 'expira'],
+                response: "⚠️ Revisa la sección de 'Alertas Críticas' en tu Dashboard. Ahí tienes el listado exacto de lo que está por caducar pronto."
+            },
+            {
+                keywords: ['capital', 'inversion', 'dinero', 'plata', 'total'],
+                response: "💰 El capital invertido y la tasa actual del BCV se calculan en tiempo real. Puedes ver los montos exactos en las tarjetas verdes del Resumen de Inventario."
+            },
+            {
+                keywords: ['precio', 'cuesta', 'valor', 'costo'],
+                response: "🏷️ Los precios detallados están en el Catálogo. Puedes usar la barra de búsqueda superior para encontrar el valor de un producto en específico."
+            },
+            {
+                keywords: ['stock', 'cantidad', 'quedan', 'disponible', 'inventario', 'falta'],
+                response: "📦 Si hay productos con menos de 5 unidades, te saldrán en las Alertas de Bajo Stock. Para el resto, revisa el Catálogo."
+            },
+            {
+                keywords: ['proveedor', 'proveedores', 'comprar', 'surtir'],
+                response: "🤝 Puedes registrar nuevas entradas, compras o contactar a las marcas directamente desde el módulo de Proveedores arriba en el menú."
+            },
+            {
+                keywords: ['gracias', 'listo', 'fino', 'ok', 'perfecto'],
+                response: "¡A la orden siempre! 😎 Avísame si necesitas algo más."
+            },
+            {
+                keywords: ['requisicion', 'pedir', 'solicitar', 'material'],
+                response: "📋 Para hacer una requisición, ve al Catálogo y dale clic al botón rojo 'Hacer Requisición'. Selecciona los productos y envía tu solicitud."
+            },
+            {
+                keywords: ['grafica', 'grafico', 'tendencia', 'venta'],
+                response: "📊 Las gráficas del Dashboard muestran el Top 5 de productos más vendidos, la distribución por categorías y la tendencia de salidas de los últimos 7 días."
+            },
+            {
+                keywords: ['soporte', 'ayuda', 'problema', 'error', 'falla', 'contacto', 'auxilio'],
+                response: "🛠️ ¿Tienes algún inconveniente con el sistema? ¿Necesitas reportarle un problema a Carlos o hablar con Yorgelis? <br><br> Escribe directamente haciendo clic en el contacto que necesites: <br><br> <div class='d-flex flex-wrap gap-2'><a href='https://wa.me/584122266083' target='_blank' class='btn btn-sm text-white' style='background-color: #25D366; border-radius: 6px; border: none;'><i class='bi bi-whatsapp'></i> Carlos</a> <a href='https://wa.me/584145207044' target='_blank' class='btn btn-sm text-white' style='background-color: #25D366; border-radius: 6px; border: none;'><i class='bi bi-whatsapp'></i> Yorgelis</a></div>"
+            },
+            {
+                keywords: ['ayuda', 'help', 'como', 'como uso', 'que puedo'],
+                response: "🛠️ Puedo ayudarte con info sobre: stock, precios, vencimientos, capital invertido, proveedores, gráficas y requisiciones. ¡Pregúntame lo que necesites!"
+            }
+        ];
+
+        function procesarMensajeBot(mensajeUsuario) {
+            let texto = mensajeUsuario.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            for (let item of oswaBotRespuestas) {
+                if (item.keywords.some(kw => texto.includes(kw))) {
+                    return item.response;
+                }
+            }
+            return "Oye, no capté bien la idea. Intenta preguntarme por el capital, vencimientos, stock, precios, proveedores o soporte.";
+        }
+
+        function agregarMensaje(texto, tipo) {
+            const container = document.getElementById('botChatHistory');
+            const bubble = document.createElement('div');
+            bubble.className = 'chat-bubble ' + (tipo === 'user' ? 'user-bubble' : 'bot-bubble');
+            bubble.innerHTML = texto;
+            container.appendChild(bubble);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function enviarBot() {
+            const input = document.getElementById('botInput');
+            const texto = input.value.trim();
+            if (!texto) return;
+            agregarMensaje(texto, 'user');
+            input.value = '';
+
+            setTimeout(() => {
+                const respuesta = procesarMensajeBot(texto);
+                agregarMensaje(respuesta, 'bot');
+            }, 500);
+        }
+
+        function enviarOpcionRapida(opcion) {
+            document.getElementById('botInput').value = opcion;
+            enviarBot();
         }
     </script>
 
@@ -1562,8 +1704,10 @@
         const ventasData = {!! json_encode($ventasProductos ?? []) !!};
 
         if (ventasLabels.length > 0) {
-            const ctx = document.getElementById('graficoVentas').getContext('2d');
-            new Chart(ctx, {
+            document.getElementById('chartTopProductos').style.display = 'block';
+            document.getElementById('empty-top-productos').style.display = 'none';
+            const ctxTop = document.getElementById('chartTopProductos').getContext('2d');
+            window.chartTop = new Chart(ctxTop, {
                 type: 'bar',
                 data: {
                     labels: ventasLabels,
@@ -1577,34 +1721,39 @@
                     }]
                 },
                 options: {
+                    animation: { duration: 1000 },
+                    hover: { animationDuration: 0 },
+                    responsiveAnimationDuration: 0,
+                    indexAxis: 'y',
                     responsive: true,
+                    maintainAspectRatio: false,
                     plugins: {
-                        legend: {
-                            labels: { color: '#e5e5e5', font: { family: 'Inter' } }
-                        }
+                        legend: { display: false }
                     },
                     scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: { color: '#2b2b2b' },
-                            ticks: { color: '#888', font: { family: 'Consolas', size: 12 } }
-                        },
                         x: {
+                            beginAtZero: true,
+                            grid: { color: '#2a2a2a' },
+                            ticks: { color: '#aaa' }
+                        },
+                        y: {
                             grid: { display: false },
-                            ticks: { color: '#e5e5e5', font: { family: 'Inter', size: 13 } }
+                            ticks: {
+                                color: '#f1f1f1',
+                                font: { size: 12 }
+                            }
                         }
                     }
                 }
             });
         }
 
-        // Gráfico de Categorías (Doughnut)
         const categoriasLabels = {!! json_encode(array_keys($categorias->toArray() ?? [])) !!};
         const categoriasData = {!! json_encode(array_values($categorias->toArray() ?? [])) !!};
         
         if (categoriasLabels.length > 0) {
             const ctxCat = document.getElementById('chartCategorias').getContext('2d');
-            new Chart(ctxCat, {
+            window.chartCat = new Chart(ctxCat, {
                 type: 'doughnut',
                 data: {
                     labels: categoriasLabels,
@@ -1616,7 +1765,11 @@
                     }]
                 },
                 options: {
+                    animation: { duration: 1000 },
+                    hover: { animationDuration: 0 },
+                    responsiveAnimationDuration: 0,
                     responsive: true,
+                    maintainAspectRatio: false,
                     plugins: {
                         legend: {
                             position: 'bottom',
@@ -1628,47 +1781,44 @@
             });
         }
 
-        // Gráfico de Tendencia (Línea - Últimos 7 días)
-        const diasLabels = [];
-        const salidasData = [];
-        const hoy = new Date();
-        for (let i = 6; i >= 0; i--) {
-            const dia = new Date(hoy);
-            dia.setDate(dia.getDate() - i);
-            diasLabels.push(dia.toLocaleDateString('es-VE', { day: '2-digit', month: 'short' }));
-            salidasData.push(Math.floor(Math.random() * 20) + 5);
-        }
+        const diasLabels = {!! json_encode($labelsTendencia ?? []) !!};
+        const salidasData = {!! json_encode($datosTendencia ?? []) !!};
 
-        const ctxTrend = document.getElementById('chartTendencia').getContext('2d');
-        const gradient = ctxTrend.createLinearGradient(0, 0, 0, 300);
-        gradient.addColorStop(0, 'rgba(37, 211, 102, 0.3)');
-        gradient.addColorStop(1, 'rgba(37, 211, 102, 0.0)');
+        if (diasLabels.length > 0) {
+            const ctxTrend = document.getElementById('chartTendencia').getContext('2d');
+            const gradient = ctxTrend.createLinearGradient(0, 0, 0, 300);
+            gradient.addColorStop(0, 'rgba(37, 211, 102, 0.3)');
+            gradient.addColorStop(1, 'rgba(37, 211, 102, 0.0)');
 
-        new Chart(ctxTrend, {
-            type: 'line',
-            data: {
-                labels: diasLabels,
-                datasets: [{
-                    label: 'Salidas Diarias',
-                    data: salidasData,
-                    borderColor: '#25D366',
-                    backgroundColor: gradient,
-                    borderWidth: 2,
-                    fill: true,
-                    tension: 0.4,
-                    pointBackgroundColor: '#25D366',
-                    pointBorderColor: '#fff',
-                    pointBorderWidth: 1,
-                    pointRadius: 4
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        labels: { color: '#e5e5e5', font: { family: 'Inter' } }
-                    }
+            window.chartTendencia = new Chart(ctxTrend, {
+                type: 'line',
+                data: {
+                    labels: diasLabels,
+                    datasets: [{
+                        label: 'Salidas Diarias',
+                        data: salidasData,
+                        borderColor: '#25D366',
+                        backgroundColor: gradient,
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#25D366',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 1,
+                        pointRadius: 4
+                    }]
                 },
+                options: {
+                    animation: { duration: 1000 },
+                    hover: { animationDuration: 0 },
+                    responsiveAnimationDuration: 0,
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: '#e5e5e5', font: { family: 'Inter' } }
+                        }
+                    },
                 scales: {
                     y: {
                         beginAtZero: true,
@@ -1682,6 +1832,7 @@
                 }
             }
         });
+        }
     </script>
 <!-- Pantalla de Selección de Perfiles Estilo Netflix (ACTUALIZADA) -->
 <div id="oswa-profile-selector" class="oswa-netflix-overlay oswa-hidden">

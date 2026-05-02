@@ -69,11 +69,6 @@ class InventarioController extends Controller
         $categorias = $productos->groupBy('categoria')->map(fn($group) => $group->count());
         $ultimoMovimiento = Movimiento::with('producto')->latest()->first();
         $esAdmin = Auth::check() && Auth::user()->rol === 'admin';
-        
-        $requisicionesPendientes = [];
-        if ($esAdmin) {
-            $requisicionesPendientes = Requisicion::with(['user', 'producto'])->where('estado', 'Pendiente')->latest()->get();
-        }
 
         // Datos para Alertas Visuales
         $productosBajoStock = Producto::where('stock', '<=', 5)->get();
@@ -99,13 +94,65 @@ class InventarioController extends Controller
 
         $users = User::where('is_active', true)->orderBy('name')->get();
 
+        $labelsTendencia = [];
+        $datosTendencia = [];
+        for ($i = 6; $i >= 0; $i--) {
+            $fecha = \Carbon\Carbon::now()->subDays($i);
+            $labelsTendencia[] = $fecha->translatedFormat('d-M');
+            $datosTendencia[] = (int) Movimiento::where('tipo', 'Salida')
+                ->whereDate('created_at', $fecha->format('Y-m-d'))
+                ->sum('cantidad');
+        }
+
         return view('inventario.index', compact(
             'productos', 'totalProductos', 'stockTotal', 'alertasStock',
             'capitalInvertido', 'tasaBcv', 'capitalInvertidoBs', 'stockSaludable', 'stockCritico',
-            'categorias', 'ultimoMovimiento', 'esAdmin', 'requisicionesPendientes',
+            'categorias', 'ultimoMovimiento', 'esAdmin',
             'productosBajoStock', 'productosPorVencer', 'nombresProductos', 'ventasProductos',
-            'users'
+            'users', 'labelsTendencia', 'datosTendencia'
         ));
+    }
+
+    public function getChartsData()
+    {
+        $topVentas = Movimiento::select('codigo_producto', DB::raw('SUM(cantidad) as total_salidas'))
+            ->where('tipo', 'Salida')
+            ->groupBy('codigo_producto')
+            ->orderByDesc('total_salidas')
+            ->take(5)
+            ->get();
+
+        $topLabels = [];
+        $topData = [];
+        foreach ($topVentas as $venta) {
+            $prod = Producto::where('codigo', $venta->codigo_producto)->first();
+            $topLabels[] = $prod ? $prod->nombre : $venta->codigo_producto;
+            $topData[] = (int) $venta->total_salidas;
+        }
+
+        $productos = Producto::all();
+        $categorias = $productos->groupBy('categoria')->map(fn($group) => $group->count());
+
+        $diasLabels = [];
+        $salidasData = [];
+        $hoy = now();
+        for ($i = 6; $i >= 0; $i--) {
+            $fecha = $hoy->copy()->subDays($i);
+            $diasLabels[] = $fecha->translatedFormat('d-M');
+            $salidas = Movimiento::where('tipo', 'Salida')
+                ->whereDate('created_at', $fecha)
+                ->sum('cantidad');
+            $salidasData[] = (int) $salidas;
+        }
+
+        return response()->json([
+            'top_productos' => $topData,
+            'top_labels' => $topLabels,
+            'categorias' => array_values($categorias->toArray()),
+            'categorias_labels' => array_keys($categorias->toArray()),
+            'tendencias' => $salidasData,
+            'tendencias_labels' => $diasLabels
+        ]);
     }
 
     // --- CATÁLOGO GENERAL DE PRODUCTOS ---
@@ -115,7 +162,8 @@ class InventarioController extends Controller
         $esAdmin = Auth::check() && Auth::user()->rol === 'admin';
         $auditorias = Movimiento::with(['producto', 'usuario'])->orderBy('created_at', 'desc')->limit(200)->get();
         $proveedores = \App\Models\Proveedor::all();
-        return view('inventario.catalogo', compact('productos', 'esAdmin', 'auditorias', 'proveedores'));
+        $requisicionesPendientes = $esAdmin ? Requisicion::with(['user', 'producto'])->where('estado', 'Pendiente')->latest()->get() : [];
+        return view('inventario.catalogo', compact('productos', 'esAdmin', 'auditorias', 'proveedores', 'requisicionesPendientes'));
     }
 
     // --- PROVEEDORES ---
@@ -639,6 +687,12 @@ class InventarioController extends Controller
     }
 
     // --- SISTEMA DE REQUISICIONES ---
+    public function crearRequisicion()
+    {
+        $productos = Producto::where('stock', '>', 0)->orderBy('nombre', 'asc')->get();
+        return view('inventario.requisiciones.crear', compact('productos'));
+    }
+
     public function solicitarRequisicion(Request $request)
     {
         $request->validate([
@@ -658,18 +712,33 @@ class InventarioController extends Controller
         return response()->json(['success' => true]);
     }
 
-    public function aprobarRequisicion(Request $request)
+    public function aprobarRequisicion($id)
     {
-        $request->validate(['id' => 'required|integer']);
         if (!Auth::check() || Auth::user()->rol !== 'admin') return response()->json(['success' => false, 'message' => 'No autorizado'], 403);
 
-        $requisicion = Requisicion::with('producto')->findOrFail($request->id);
-        $requisicion->estado = 'Aprobada';
-        $requisicion->save();
+        try {
+            DB::beginTransaction();
 
-        $producto = $requisicion->producto;
-        if ($producto && $producto->stock >= $requisicion->cantidad) {
+            $requisicion = Requisicion::with('producto')->findOrFail($id);
+
+            if ($requisicion->estado !== 'Pendiente') {
+                DB::rollBack();
+                return response()->json(['success' => false, 'message' => 'La requisición ya fue procesada.']);
+            }
+
+            $producto = $requisicion->producto;
+            if (!$producto) {
+                DB::rollBack();
+                return response()->json(['success' => false, 'message' => 'Producto no encontrado.']);
+            }
+
+            if ($producto->stock < $requisicion->cantidad) {
+                DB::rollBack();
+                return response()->json(['success' => false, 'message' => 'Stock insuficiente para aprobar esta solicitud.']);
+            }
+
             $producto->decrement('stock', $requisicion->cantidad);
+
             $fecha = now()->format('Y-m-d H:i:s');
             $firma = hash('sha256', $producto->codigo . 'Salida' . $requisicion->cantidad . $fecha);
             Movimiento::create([
@@ -681,22 +750,28 @@ class InventarioController extends Controller
                 'firma_digital' => $firma,
                 'created_at' => $fecha
             ]);
-            return response()->json(['success' => true, 'message' => 'Requisición aprobada y stock actualizado']);
-        }
 
-        return response()->json(['success' => false, 'message' => 'Stock insuficiente para aprobar esta requisición']);
+            $requisicion->estado = 'Aprobada';
+            $requisicion->save();
+
+            DB::commit();
+            return response()->json(['success' => true, 'message' => 'Requisición aprobada y stock actualizado.']);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['success' => false, 'message' => 'Error al procesar: ' . $e->getMessage()]);
+        }
     }
 
-    public function rechazarRequisicion(Request $request)
+    public function rechazarRequisicion($id)
     {
-        $request->validate(['id' => 'required|integer']);
         if (!Auth::check() || Auth::user()->rol !== 'admin') return response()->json(['success' => false, 'message' => 'No autorizado'], 403);
 
-        $requisicion = Requisicion::findOrFail($request->id);
+        $requisicion = Requisicion::findOrFail($id);
         $requisicion->estado = 'Rechazada';
         $requisicion->save();
 
-        return response()->json(['success' => true, 'message' => 'Requisición rechazada']);
+        return response()->json(['success' => true, 'message' => 'Requisición rechazada.']);
     }
 
     public function respaldarBaseDatos()

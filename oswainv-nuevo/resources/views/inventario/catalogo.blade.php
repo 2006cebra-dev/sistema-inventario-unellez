@@ -101,6 +101,12 @@
         
         .btn-nuevo { background: linear-gradient(135deg, var(--accent-primary), #ff6b6b); color: white; padding: 10px 20px; border-radius: 4px; border: none; font-weight: 600; cursor: pointer; transition: all 0.3s; }
         .btn-nuevo:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(229,9,20,0.4); }
+
+        .btn-requisicion-empleado { background-color: #E50914; color: #fff; border: none; border-radius: 8px; padding: 10px 20px; font-weight: 600; font-size: 0.85rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: all 0.3s; }
+        .btn-requisicion-empleado:hover { background-color: #ff0f1b; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(229,9,20,0.4); color: #fff; }
+
+        .btn-requisicion-admin { background-color: transparent; color: #e5e5e5; border: 1px solid #444; border-radius: 8px; padding: 10px 20px; font-weight: 600; font-size: 0.85rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: all 0.3s; }
+        .btn-requisicion-admin:hover { background-color: rgba(255,255,255,0.08); border-color: #E50914; color: #E50914; transform: translateY(-2px); }
         
         .theme-toggle { background: none; border: none; color: #b3b3b3; font-size: 1.1rem; cursor: pointer; padding: 6px; border-radius: 50%; transition: all 0.2s; }
         .theme-toggle:hover { background: rgba(255,255,255,0.1); color: #fff; }
@@ -177,8 +183,16 @@
         .professional-footer .heart-icon { color: var(--accent-danger); animation: heartbeat 1.5s infinite; display: inline-block; }
         @keyframes heartbeat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
 
-        .scanner-fab { position: fixed; bottom: 30px; right: 30px; width: 56px; height: 56px; border-radius: 16px; background: linear-gradient(135deg, var(--accent-primary), #B20710); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; text-decoration: none; box-shadow: 0 4px 20px rgba(229,9,20,0.4); transition: all 0.3s; z-index: 900; }
+        .scanner-fab { position: fixed; bottom: 30px; right: 30px; width: 56px; height: 56px; border-radius: 16px; background: linear-gradient(135deg, var(--accent-primary), #B20710); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; border: none; cursor: pointer; box-shadow: 0 4px 20px rgba(229,9,20,0.4); transition: all 0.3s; z-index: 900; }
         .scanner-fab:hover { transform: scale(1.1); box-shadow: 0 6px 25px rgba(229,9,20,0.6); }
+
+        @keyframes scan { 0% { top: 10%; } 50% { top: 90%; } 100% { top: 10%; } }
+        .scanner-view-container { position: relative; width: 100%; height: 300px; background: #000; overflow: hidden; }
+        .scanner-view-container video { width: 100%; height: 100%; object-fit: cover; }
+        .scanner-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; box-shadow: inset 0 0 0 50px rgba(0,0,0,0.5); pointer-events: none; }
+        .laser-line { width: 80%; height: 2px; background: #E50914; position: absolute; left: 10%; top: 50%; box-shadow: 0 0 10px #E50914; animation: scan 2s infinite linear; }
+        .oswa-input-scanner::placeholder { color: #999 !important; }
+        .oswa-input-scanner:focus { background-color: #2a2a2a !important; border-color: #E50914 !important; color: white !important; box-shadow: none; }
 
         .modal-content { background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--n-border); border-radius: 12px; }
         .modal-header { border-bottom: 1px solid var(--n-border); }
@@ -191,19 +205,19 @@
         
         .bot-fab { position: fixed; bottom: 100px; right: 30px; width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, #0984e3, #00b894); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; border: none; cursor: pointer; box-shadow: 0 4px 20px rgba(9,132,227,0.4); transition: all 0.3s; z-index: 900; }
         .bot-fab:hover { transform: scale(1.1); }
-        .floating-bot-window { position: fixed; bottom: 170px; right: 30px; width: 350px; height: 450px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.6); z-index: 901; display: none; flex-direction: column; overflow: hidden; }
-        .floating-bot-window.show { display: flex; }
-        .bot-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: linear-gradient(90deg, #0984e3, #00b894); color: white; font-weight: 600; }
-        .bot-header button { background: none; border: none; color: white; cursor: pointer; }
-        .bot-chat-history { flex: 1; padding: 12px; overflow-y: auto; }
+        .oswa-chat-window { position: fixed; bottom: 170px; right: 30px; width: 350px; height: 450px; background: #141414; border: 1px solid #2a2a2a; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.6); z-index: 901; display: none; flex-direction: column; overflow: hidden; }
+        .oswa-chat-window.show { display: flex; }
+        .oswa-chat-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: #0f0f0f; border-bottom: 1px solid #2a2a2a; }
+        .bot-avatar { background-color: #E50914; color: white; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+        .oswa-chat-body { flex: 1; padding: 12px; overflow-y: auto; background: #141414; }
         .chat-bubble { padding: 8px 12px; border-radius: 12px; margin-bottom: 8px; font-size: 0.9rem; max-width: 80%; }
         .bot-bubble { background: #222; color: #ddd; }
         .user-bubble { background: var(--accent-primary); color: white; margin-left: auto; }
-        .bot-input-area { display: flex; padding: 8px; border-top: 1px solid var(--border-color); }
-        .bot-input-area input { flex: 1; background: #222; border: none; padding: 8px 12px; border-radius: 4px; color: white; }
-        .bot-input-area button { background: var(--accent-primary); border: none; padding: 0 12px; color: white; border-radius: 4px; margin-left: 6px; cursor: pointer; }
+        .oswa-chat-footer { display: flex; padding: 8px; border-top: 1px solid #2a2a2a; background: #0f0f0f; }
+        .oswa-chat-footer input { flex: 1; background: #222; border: 1px solid #333; padding: 8px 12px; border-radius: 4px; color: white; }
+        .oswa-chat-footer input:focus { background: #2a2a2a; border-color: #E50914; box-shadow: none; }
 
-        @media (max-width: 767px) { .bot-fab, .floating-bot-window { display: none !important; } }
+        @media (max-width: 767px) { .bot-fab, .oswa-chat-window { display: none !important; } }
 
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: #0a0a0a; border-left: 1px solid #1a1a1a; }
@@ -280,7 +294,11 @@
                     <span class="status-text text-white" style="font-size: 0.8rem;">En línea</span>
                 </div>
                 <div class="user-info mb-3 d-flex align-items-center gap-2">
-                    <div class="user-avatar">{{ strtoupper(substr(auth()->user()?->name ?? 'U', 0, 1)) }}</div>
+                    @if(auth()->user()?->profile_photo_path)
+                        <img src="{{ asset('storage/' . auth()->user()->profile_photo_path) }}" alt="{{ auth()->user()->name }}" style="width: 36px; height: 36px; object-fit: cover; border-radius: 4px; border: 1px solid #333;">
+                    @else
+                        <div class="user-avatar">{{ strtoupper(substr(auth()->user()?->name ?? 'U', 0, 1)) }}</div>
+                    @endif
                     <div>
                         <div class="text-white fw-bold" style="font-size: 0.9rem;">{{ auth()->user()?->name ?? 'Usuario' }}</div>
                         <div class="text-secondary" style="font-size: 0.75rem;">{{ auth()->user()?->email ?? 'Sin correo' }}</div>
@@ -300,7 +318,11 @@
             </div>
             <div class="user-dropdown" id="userDropdown">
                 <div class="d-flex align-items-center gap-2" onclick="toggleUserDropdown()">
-                    <div class="user-avatar">{{ strtoupper(substr(auth()->user()?->name ?? 'U', 0, 1)) }}</div>
+                    @if(auth()->user()?->profile_photo_path)
+                        <img src="{{ asset('storage/' . auth()->user()->profile_photo_path) }}" alt="{{ auth()->user()->name }}" style="width: 36px; height: 36px; object-fit: cover; border-radius: 4px; border: 1px solid #333;">
+                    @else
+                        <div class="user-avatar">{{ strtoupper(substr(auth()->user()?->name ?? 'U', 0, 1)) }}</div>
+                    @endif
                     <i class="bi bi-caret-down-fill" id="dropdownArrow" style="color:#888;font-size:0.7rem;transition:transform 0.2s;"></i>
                 </div>
                 <div class="dropdown-menu-netflix" id="userDropdownMenu">
@@ -316,7 +338,12 @@
                     @endif
                     <button class="dd-item" onclick="cambiarCuenta(event)"><i class="bi bi-arrow-left-right"></i> Cambiar de Cuenta</button>
                     <div class="dd-divider"></div>
-                    <button class="dd-item dd-logout" onclick="document.getElementById('logout-form').submit();"><i class="bi bi-box-arrow-right"></i> Cerrar sesión</button>
+                    <form method="POST" action="{{ route('logout') }}" class="m-0 p-0 w-100">
+                        @csrf
+                        <button type="submit" class="dd-item dd-logout w-100 text-start" style="background: none; border: none; cursor: pointer; padding: 0;">
+                            <i class="bi bi-box-arrow-right"></i> Cambiar Usuario / Salir
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -334,12 +361,23 @@
                 </div>
                 <h2 class="mb-0 fw-bold text-white" style="letter-spacing: 0.5px;">Catálogo General</h2>
             </div>
-            
-            @if($esAdmin)
-            <button class="btn-nuevo" data-bs-toggle="modal" data-bs-target="#modalProducto" onclick="document.getElementById('prodId').value='';document.getElementById('prodNombre').value='';document.getElementById('prodPrecio').value='';document.getElementById('prodStock').value='';document.getElementById('prodCategoria').value='';document.getElementById('prod-vencimiento').value='';document.getElementById('prod-proveedor').value='';document.getElementById('modalProductoTitle').innerHTML='<i class=\'bi bi-box-seam text-danger me-2\'></i> Nuevo Producto'">
-                <i class="bi bi-plus-lg me-2"></i>Nuevo Producto
-            </button>
-            @endif
+
+            <div class="d-flex gap-2 align-items-center">
+                @if(!Auth::check() || Auth::user()->rol === 'empleado')
+                <a href="{{ route('requisiciones.crear') }}" class="btn-requisicion-empleado">
+                    <i class="bi bi-cart-plus"></i> Hacer Requisición
+                </a>
+                @endif
+
+                @if($esAdmin)
+                <a href="#" class="btn-requisicion-admin" onclick="mostrarRequisicionesPendientes(); return false;">
+                    <i class="bi bi-inbox"></i> Ver Solicitudes Pendientes
+                </a>
+                <button class="btn-nuevo" data-bs-toggle="modal" data-bs-target="#modalProducto" onclick="document.getElementById('prodId').value='';document.getElementById('prodNombre').value='';document.getElementById('prodPrecio').value='';document.getElementById('prodStock').value='';document.getElementById('prodCategoria').value='';document.getElementById('prod-vencimiento').value='';document.getElementById('prod-proveedor').value='';document.getElementById('modalProductoTitle').innerHTML='<i class=\'bi bi-box-seam text-danger me-2\'></i> Nuevo Producto'">
+                    <i class="bi bi-plus-lg me-2"></i>Nuevo Producto
+                </button>
+                @endif
+            </div>
         </div>
 
         <!-- SISTEMA DE PESTAÑAS (TABS) -->
@@ -548,7 +586,7 @@
         </div>
     </footer>
 
-    <a href="{{ route('escaner') }}" class="scanner-fab" title="Escáner (Alt+E)"><i class="bi bi-upc-scan"></i></a>
+    <button class="scanner-fab" data-bs-toggle="modal" data-bs-target="#scannerModal" title="Escáner (Alt+E)"><i class="bi bi-upc-scan"></i></button>
 
     <!-- MODAL: NUEVO / EDITAR PRODUCTO -->
     <div class="modal fade" id="modalProducto" tabindex="-1" aria-hidden="true">
@@ -645,6 +683,44 @@
         </div>
     </div>
 
+    <!-- MODAL: ESCÁNER PREMIUM -->
+    <div class="modal fade" id="scannerModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="background-color: #141414; border: 1px solid #333; border-radius: 12px;">
+                <div class="modal-header" style="border-bottom: 1px solid #2a2a2a;">
+                    <h5 class="modal-title text-white"><i class="bi bi-upc-scan text-danger me-2"></i> Escáner de Inventario</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <div class="scanner-view-container">
+                        <div id="reader" style="width:100%;height:100%;"></div>
+                        <div class="scanner-overlay">
+                            <div class="laser-line"></div>
+                        </div>
+                    </div>
+                    <div class="p-3" style="background:#0f0f0f;">
+                        <div class="row align-items-center mb-3">
+                            <div class="col-10">
+                                <select id="camera-selector" class="form-select form-select-sm text-white" style="background-color: #222; border-color: #444;">
+                                    <option>Seleccionar cámara...</option>
+                                </select>
+                            </div>
+                            <div class="col-2 text-end">
+                                <button id="btn-flash" class="btn btn-sm btn-outline-warning w-100" title="Linterna"><i class="bi bi-lightning-fill"></i></button>
+                            </div>
+                        </div>
+                        <hr style="border-color: #333;">
+                        <label class="mb-1 fw-bold" style="color: #e0e0e0; font-size: 0.85rem;">¿No lee el código?</label>
+                        <div class="input-group input-group-sm">
+                            <input type="text" class="form-control text-white border-secondary oswa-input-scanner" id="codigo-manual" placeholder="Escribir código manualmente..." style="background-color: #222;">
+                            <button class="btn btn-danger" id="btn-buscar-manual"><i class="bi bi-search"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">@csrf</form>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -676,6 +752,16 @@
                     card.style.display = (nombre.includes(texto) || codigo.includes(texto)) ? '' : 'none';
                 });
             });
+
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('openScanner') === 'true') {
+                window.history.replaceState({}, document.title, window.location.pathname);
+                const scannerModalEl = document.getElementById('scannerModal');
+                if (scannerModalEl) {
+                    const scannerModal = new bootstrap.Modal(scannerModalEl);
+                    scannerModal.show();
+                }
+            }
 
             // MAPA DE TRANSFERENCIA
             const modalTransferir = document.getElementById('modalTransferir');
@@ -875,6 +961,52 @@ function actualizarStock(idProducto, operacion, btnElement) {
         function mostrarAtajos() { Swal.fire('Atajos', '<ul style="text-align:left;"><li><b>Alt+E</b>: Escáner</li><li><b>Alt+T</b>: Cambiar Tema</li></ul>', 'info'); }
         function cambiarCuenta(e) { e.preventDefault(); document.getElementById('logout-form').submit(); }
 
+        function mostrarRequisicionesPendientes() {
+            const reqs = @json($requisicionesPendientes ?? []);
+            if (reqs.length === 0) {
+                Swal.fire('Sin Solicitudes', 'No hay requisiciones pendientes en este momento.', 'info');
+                return;
+            }
+            let html = '<div style="text-align:left; max-height:400px; overflow-y:auto;">';
+            reqs.forEach(r => {
+                html += '<div style="padding:12px; border-bottom:1px solid #333; display:flex; justify-content:space-between; align-items:center;">';
+                html += '<div><strong>' + r.user.name + '</strong> solicita ';
+                html += '<b>' + r.producto.nombre + '</b> × ' + r.cantidad;
+                html += '<br><small style="color:#888;">' + r.created_at + '</small></div>';
+                html += '<div style="display:flex; gap:6px; flex-shrink:0;">';
+                html += '<button onclick="procesarRequisicion(' + r.id + ', \'aprobar\')" style="background:#00b894; color:#fff; border:none; border-radius:6px; padding:6px 12px; cursor:pointer; font-size:0.8rem;"><i class="bi bi-check-lg"></i> Aprobar</button>';
+                html += '<button onclick="procesarRequisicion(' + r.id + ', \'rechazar\')" style="background:#e74c3c; color:#fff; border:none; border-radius:6px; padding:6px 12px; cursor:pointer; font-size:0.8rem;"><i class="bi bi-x-lg"></i> Rechazar</button>';
+                html += '</div></div>';
+            });
+            html += '</div>';
+            Swal.fire({ title: 'Solicitudes Pendientes', html: html, showConfirmButton: false, width: '650px' });
+        }
+
+        async function procesarRequisicion(id, accion) {
+            try {
+                const response = await fetch('/requisiciones/' + id + '/' + accion, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    Swal.close();
+                    Swal.fire('¡Listo!', data.message, 'success').then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire('Error', data.message, 'error');
+                }
+            } catch (error) {
+                Swal.fire('Error', 'Hubo un problema de conexión.', 'error');
+            }
+        }
+
         function exportarTablaCSV(nombreArchivo) {
             const tabla = document.getElementById('tablaAuditoria');
             if (!tabla) { Swal.fire('Error', 'No hay datos para exportar', 'warning'); return; }
@@ -893,6 +1025,166 @@ function actualizarStock(idProducto, operacion, btnElement) {
             link.download = nombreArchivo;
             link.click();
         }
+
+        let html5QrCode = null;
+        document.getElementById('scannerModal').addEventListener('shown.bs.modal', async function() {
+            try {
+                html5QrCode = new Html5Qrcode("reader");
+                const cameras = await Html5Qrcode.getCameras();
+                const selector = document.getElementById('camera-selector');
+                selector.innerHTML = '';
+                cameras.forEach((cam, i) => {
+                    const opt = document.createElement('option');
+                    opt.value = cam.id;
+                    opt.text = cam.label || 'Cámara ' + (i + 1);
+                    selector.appendChild(opt);
+                });
+                if (cameras.length > 0) {
+                    html5QrCode.start(cameras[0].id, { fps: 15, qrbox: { width: 250, height: 150 } }, function(decodedText) {
+                        html5QrCode.stop().then(() => {
+                            bootstrap.Modal.getInstance(document.getElementById('scannerModal')).hide();
+                            Swal.fire({ title: 'Código detectado', text: decodedText, icon: 'success' }).then(() => {
+                                document.getElementById('codigo-manual').value = decodedText;
+                            });
+                        });
+                    });
+                }
+            } catch (e) { console.error('Error inicializando escáner:', e); }
+        });
+
+        document.getElementById('scannerModal').addEventListener('hidden.bs.modal', function() {
+            if (html5QrCode && html5QrCode.isScanning) {
+                html5QrCode.stop().catch(() => {});
+                html5QrCode.clear();
+                html5QrCode = null;
+            }
+        });
+
+        document.getElementById('camera-selector').addEventListener('change', async function() {
+            if (html5QrCode && html5QrCode.isScanning) {
+                await html5QrCode.stop();
+                html5QrCode.start(this.value, { fps: 15, qrbox: { width: 250, height: 150 } }, function(decodedText) {
+                    html5QrCode.stop().then(() => {
+                        bootstrap.Modal.getInstance(document.getElementById('scannerModal')).hide();
+                        Swal.fire({ title: 'Código detectado', text: decodedText, icon: 'success' });
+                    });
+                });
+            }
+        });
+
+        async function procesarCodigoEscaneado(codigo) {
+            if (!navigator.onLine) {
+                Swal.fire('Error', 'No hay internet para buscar el código.', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/productos/buscar-codigo/${codigo}`, {
+                    headers: { 'Accept': 'application/json' }
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Producto Encontrado',
+                        text: `${data.producto.nombre} - Stock: ${data.producto.stock || data.producto.cantidad}`,
+                        background: '#141414', color: '#fff', confirmButtonColor: '#E50914'
+                    });
+                    bootstrap.Modal.getInstance(document.getElementById('scannerModal')).hide();
+                } else {
+                    let origen = codigo.startsWith('759') ? 'venezolano' : 'desconocido';
+                    Swal.fire({
+                        icon: 'question',
+                        title: 'Código no registrado',
+                        text: `El código ${codigo} (Origen: ${origen}) no existe en tu base de datos. ¿Deseas registrar este nuevo producto?`,
+                        showCancelButton: true,
+                        confirmButtonText: 'Sí, registrar',
+                        cancelButtonText: 'Cancelar',
+                        background: '#141414', color: '#fff', confirmButtonColor: '#25D366', cancelButtonColor: '#E50914'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = `/productos/crear?codigo=${codigo}`;
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error("Error buscando el código:", error);
+                Swal.fire('Error', 'No se pudo conectar con el servidor.', 'error');
+            }
+        }
+
+        document.getElementById('btn-buscar-manual').addEventListener('click', function() {
+            const codigo = document.getElementById('codigo-manual').value.trim();
+            if (!codigo) { Swal.fire('Campo vacío', 'Escribe un código de producto', 'warning'); return; }
+            procesarCodigoEscaneado(codigo);
+        });
+
+        document.getElementById('codigo-manual').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') document.getElementById('btn-buscar-manual').click();
+        });
+
+        window.addEventListener('offline', () => {
+            Swal.fire({
+                icon: 'warning',
+                title: '¡Sin Conexión!',
+                text: 'Se ha perdido el internet. El escáner necesita conexión para buscar los productos en la base de datos.',
+                confirmButtonColor: '#E50914',
+                background: '#141414',
+                color: '#fff'
+            });
+        });
+
+        window.addEventListener('online', () => {
+            const Toast = Swal.mixin({
+                toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true, background: '#141414', color: '#fff'
+            });
+            Toast.fire({ icon: 'success', title: 'Conexión restaurada' });
+        });
+
+        let html5QrCode = null;
+        document.getElementById('scannerModal').addEventListener('shown.bs.modal', async function() {
+            try {
+                html5QrCode = new Html5Qrcode("reader");
+                const cameras = await Html5Qrcode.getCameras();
+                const selector = document.getElementById('camera-selector');
+                selector.innerHTML = '';
+                cameras.forEach((cam, i) => {
+                    const opt = document.createElement('option');
+                    opt.value = cam.id;
+                    opt.text = cam.label || 'Cámara ' + (i + 1);
+                    selector.appendChild(opt);
+                });
+                if (cameras.length > 0) {
+                    html5QrCode.start(cameras[0].id, { fps: 15, qrbox: { width: 250, height: 150 } }, async function(decodedText) {
+                        await html5QrCode.stop();
+                        bootstrap.Modal.getInstance(document.getElementById('scannerModal')).hide();
+                        document.getElementById('codigo-manual').value = decodedText;
+                        procesarCodigoEscaneado(decodedText);
+                    });
+                }
+            } catch (e) { console.error('Error inicializando escáner:', e); }
+        });
+
+        document.getElementById('scannerModal').addEventListener('hidden.bs.modal', function() {
+            if (html5QrCode && html5QrCode.isScanning) {
+                html5QrCode.stop().catch(() => {});
+                html5QrCode.clear();
+                html5QrCode = null;
+            }
+        });
+
+        document.getElementById('camera-selector').addEventListener('change', async function() {
+            if (html5QrCode && html5QrCode.isScanning) {
+                await html5QrCode.stop();
+                html5QrCode.start(this.value, { fps: 15, qrbox: { width: 250, height: 150 } }, async function(decodedText) {
+                    await html5QrCode.stop();
+                    bootstrap.Modal.getInstance(document.getElementById('scannerModal')).hide();
+                    document.getElementById('codigo-manual').value = decodedText;
+                    procesarCodigoEscaneado(decodedText);
+                });
+            }
+        });
     </script>
 </body>
 </html>

@@ -205,7 +205,11 @@
                     <span class="status-text text-white" style="font-size: 0.8rem;">En línea</span>
                 </div>
                 <div class="user-info mb-3 d-flex align-items-center gap-2">
-                    <div class="user-avatar">{{ strtoupper(substr(auth()->user()?->name ?? 'U', 0, 1)) }}</div>
+                    @if(auth()->user()?->profile_photo_path)
+                        <img src="{{ asset('storage/' . auth()->user()->profile_photo_path) }}" alt="{{ auth()->user()->name }}" style="width: 36px; height: 36px; object-fit: cover; border-radius: 4px; border: 1px solid #333;">
+                    @else
+                        <div class="user-avatar">{{ strtoupper(substr(auth()->user()?->name ?? 'U', 0, 1)) }}</div>
+                    @endif
                     <div>
                         <div class="text-white fw-bold" style="font-size: 0.9rem;">{{ auth()->user()?->name ?? 'Usuario' }}</div>
                         <div class="text-secondary" style="font-size: 0.75rem;">{{ auth()->user()?->email ?? 'Sin correo' }}</div>
@@ -225,7 +229,11 @@
             </div>
             <div class="user-dropdown" id="userDropdown">
                 <div class="d-flex align-items-center gap-2" onclick="toggleUserDropdown()">
-                    <div class="user-avatar">{{ strtoupper(substr(auth()->user()?->name ?? 'U', 0, 1)) }}</div>
+                    @if(auth()->user()?->profile_photo_path)
+                        <img src="{{ asset('storage/' . auth()->user()->profile_photo_path) }}" alt="{{ auth()->user()->name }}" style="width: 36px; height: 36px; object-fit: cover; border-radius: 4px; border: 1px solid #333;">
+                    @else
+                        <div class="user-avatar">{{ strtoupper(substr(auth()->user()?->name ?? 'U', 0, 1)) }}</div>
+                    @endif
                     <i class="bi bi-caret-down-fill" id="dropdownArrow" style="color:#888;font-size:0.7rem;transition:transform 0.2s;"></i>
                 </div>
                 <div class="dropdown-menu-netflix" id="userDropdownMenu">
@@ -241,7 +249,12 @@
                     @endif
                     <button class="dd-item" onclick="cambiarCuenta(event)"><i class="bi bi-arrow-left-right"></i> Cambiar de Cuenta</button>
                     <div class="dd-divider"></div>
-                    <button class="dd-item dd-logout" onclick="document.getElementById('logout-form').submit();"><i class="bi bi-box-arrow-right"></i> Cerrar sesión</button>
+                    <form method="POST" action="{{ route('logout') }}" class="m-0 p-0 w-100">
+                        @csrf
+                        <button type="submit" class="dd-item dd-logout w-100 text-start" style="background: none; border: none; cursor: pointer; padding: 0;">
+                            <i class="bi bi-box-arrow-right"></i> Cambiar Usuario / Salir
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>

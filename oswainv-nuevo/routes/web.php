@@ -18,6 +18,7 @@ Route::get('/home', fn() => redirect()->to('/dashboard'))->name('home');
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [InventarioController::class, 'index'])->name('inventario');
+    Route::get('/api/dashboard/graficas', [InventarioController::class, 'getChartsData'])->name('api.graficas');
     Route::get('/catalogo', [InventarioController::class, 'catalogo'])->name('catalogo');
     Route::get('/proveedores', [InventarioController::class, 'proveedores'])->name('proveedores');
     Route::post('/proveedores/guardar', [InventarioController::class, 'storeProveedor'])->name('proveedores.store');
@@ -47,9 +48,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/usuarios/estatus', [InventarioController::class, 'cambiarEstatusUsuario'])->name('usuarios.cambiarEstatus');
     
     // --- SISTEMA DE REQUISICIONES ---
+    Route::get('/requisiciones/crear', [InventarioController::class, 'crearRequisicion'])->name('requisiciones.crear');
     Route::post('/requisiciones/solicitar', [InventarioController::class, 'solicitarRequisicion'])->name('requisiciones.solicitar');
-    Route::post('/requisiciones/aprobar', [InventarioController::class, 'aprobarRequisicion'])->name('requisiciones.aprobar');
-    Route::post('/requisiciones/rechazar', [InventarioController::class, 'rechazarRequisicion'])->name('requisiciones.rechazar');
+    Route::post('/requisiciones/{id}/aprobar', [InventarioController::class, 'aprobarRequisicion'])->name('requisiciones.aprobar');
+    Route::post('/requisiciones/{id}/rechazar', [InventarioController::class, 'rechazarRequisicion'])->name('requisiciones.rechazar');
     
     // --- RESPALDO DE BASE DE DATOS (Solo Admin) ---
     Route::get('/respaldo-db', [BackupController::class, 'download'])->name('respaldo.db');
