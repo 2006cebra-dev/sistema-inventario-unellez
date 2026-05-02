@@ -97,11 +97,14 @@ class InventarioController extends Controller
             $ventasProductos[] = (int) $venta->total_salidas;
         }
 
+        $users = User::where('is_active', true)->orderBy('name')->get();
+
         return view('inventario.index', compact(
             'productos', 'totalProductos', 'stockTotal', 'alertasStock',
             'capitalInvertido', 'tasaBcv', 'capitalInvertidoBs', 'stockSaludable', 'stockCritico',
             'categorias', 'ultimoMovimiento', 'esAdmin', 'requisicionesPendientes',
-            'productosBajoStock', 'productosPorVencer', 'nombresProductos', 'ventasProductos'
+            'productosBajoStock', 'productosPorVencer', 'nombresProductos', 'ventasProductos',
+            'users'
         ));
     }
 

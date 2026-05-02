@@ -1,8 +1,11 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
 use App\Http\Controllers\InventarioController;
 use App\Http\Controllers\BackupController;
+use App\Http\Controllers\ProfileController;
 
 // Ruta pública de la Landing Page
 Route::get('/', function () {
@@ -50,4 +53,19 @@ Route::middleware(['auth'])->group(function () {
     
     // --- RESPALDO DE BASE DE DATOS (Solo Admin) ---
     Route::get('/respaldo-db', [BackupController::class, 'download'])->name('respaldo.db');
+    
+    // --- CAMBIO DE PERFIL NETFLIX ---
+    Route::post('/cambiar-perfil-netflix', function (Request $request) {
+        $request->validate(['user_id' => 'required|integer']);
+        $loginExitoso = Auth::loginUsingId($request->user_id);
+        if ($loginExitoso) {
+            return response()->json(['success' => true, 'redirect' => url('/dashboard')]);
+        }
+        return response()->json(['success' => false, 'message' => 'Usuario no encontrado'], 404);
+    })->name('perfil.cambiar');
+    
+    // --- GESTIÓN DE PERFILES ---
+    Route::post('/perfiles/crear', [ProfileController::class, 'store'])->name('perfil.crear');
+    Route::post('/perfiles/actualizar/{id}', [ProfileController::class, 'update'])->name('perfil.actualizar');
+    Route::delete('/perfiles/eliminar/{id}', [ProfileController::class, 'destroy'])->name('perfil.eliminar');
 });

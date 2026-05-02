@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>OSWA Inv - Gestión de Inventario</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -595,7 +596,11 @@
                     <span class="status-text text-white" style="font-size: 0.8rem;">En línea</span>
                 </div>
                 <div class="user-info mb-3 d-flex align-items-center gap-2">
-                    <div class="user-avatar">{{ strtoupper(substr(auth()->user()?->name ?? 'U', 0, 1)) }}</div>
+                    @if(auth()->user()?->profile_photo_path)
+                        <img src="{{ asset('storage/' . auth()->user()->profile_photo_path) }}" alt="{{ auth()->user()->name }}" style="width: 32px; height: 32px; object-fit: cover; border-radius: 4px; border: 1px solid #333;">
+                    @else
+                        <div class="user-avatar">{{ strtoupper(substr(auth()->user()?->name ?? 'U', 0, 1)) }}</div>
+                    @endif
                     <div>
                         <div class="text-white fw-bold" style="font-size: 0.9rem;">{{ auth()->user()?->name ?? 'Usuario' }}</div>
                         <div class="text-secondary" style="font-size: 0.8rem;">{{ auth()->user()?->rol ?? 'empleado' }}</div>
@@ -618,7 +623,11 @@
             </div>
             <div class="user-dropdown" id="userDropdown">
                 <div class="d-flex align-items-center gap-2" onclick="toggleUserDropdown()">
-                    <div class="user-avatar">{{ strtoupper(substr(auth()->user()?->name ?? 'U', 0, 1)) }}</div>
+                    @if(auth()->user()?->profile_photo_path)
+                        <img src="{{ asset('storage/' . auth()->user()->profile_photo_path) }}" alt="{{ auth()->user()->name }}" style="width: 32px; height: 32px; object-fit: cover; border-radius: 4px; border: 1px solid #333;">
+                    @else
+                        <div class="user-avatar">{{ strtoupper(substr(auth()->user()?->name ?? 'U', 0, 1)) }}</div>
+                    @endif
                     <i class="bi bi-caret-down-fill" id="dropdownArrow" style="color:#888;font-size:0.7rem;transition:transform 0.2s;"></i>
                 </div>
                 <div class="dropdown-menu-netflix" id="userDropdownMenu">
@@ -630,7 +639,7 @@
                     <button class="dd-item" onclick="mostrarMiCuenta()"><i class="bi bi-person-circle"></i> Mi Cuenta</button>
                     <button class="dd-item" onclick="mostrarAtajos()"><i class="bi bi-keyboard"></i> Atajos de Teclado</button>
                     <a href="{{ route('usuarios.index') }}" class="dd-item"><i class="bi bi-people"></i> Administrar Usuarios</a>
-                    <button class="dd-item" onclick="cambiarCuenta(event)"><i class="bi bi-arrow-left-right"></i> Cambiar de Cuenta</button>
+                    <button class="dd-item" onclick="abrirSelectorPerfiles(event)" href="#"><i class="bi bi-arrow-left-right"></i> Cambiar de Cuenta</button>
                     <div class="dd-divider"></div>
                     <button class="dd-item dd-logout" onclick="document.getElementById('logout-form').submit();"><i class="bi bi-box-arrow-right"></i> Cerrar sesión</button>
                 </div>
@@ -934,449 +943,279 @@
         
         function mostrarMiCuenta() {
             document.getElementById('userDropdownMenu').style.display = 'none';
+            const photoPath = @json(auth()->user()?->profile_photo_path);
+            const userName = @json(auth()->user()?->name ?? 'Usuario');
+            const userEmail = @json(auth()->user()?->email ?? 'Sin correo');
+            const initial = userName.charAt(0).toUpperCase();
+            
+            let avatarHtml;
+            if (photoPath) {
+                avatarHtml = `<img src="{{ asset('storage') }}/${photoPath}" alt="${userName}" style="width:60px;height:60px;object-fit:cover;border-radius:8px;border:1px solid #444;">`;
+            } else {
+                avatarHtml = `<div style="width:60px;height:60px;background-color:#E50914;color:white;border-radius:8px;display:flex;justify-content:center;align-items:center;font-weight:bold;font-size:1.8rem;">${initial}</div>`;
+            }
+            
             Swal.fire({
                 title: 'Mi Cuenta',
                 html: `<div style="text-align:left;background:var(--bg-card);border-radius:8px;padding:16px;">
-                    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
-                        <div style="width:48px;height:48px;background:var(--accent-primary);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:700;color:#fff;">{{ strtoupper(substr(auth()->user()?->name ?? 'U', 0, 1)) }}</div>
+                    <div style="background-color:#222;border-radius:8px;padding:15px;display:flex;align-items:center;gap:15px;margin-bottom:16px;">
+                        <div>${avatarHtml}</div>
                         <div>
-                            <div style="font-size:1.1rem;font-weight:700;color:var(--text-primary);">{{ auth()->user()?->name ?? 'Usuario' }}</div>
-                            <div style="color:var(--text-secondary);font-size:0.85rem;">{{ auth()->user()?->email ?? 'Sin correo' }}</div>
+                            <h5 style="color:white;margin:0;font-weight:bold;">${userName}</h5>
+                            <p style="color:#aaa;margin:0;font-size:0.9rem;">${userEmail}</p>
                         </div>
                     </div>
                 </div>`,
                 confirmButtonText: 'Cerrar', confirmButtonColor: '#E50914', background: 'var(--bg-dark)', color: 'var(--text-primary)'
             });
         }
-        
-        function mostrarAtajos() {
+
+        const csrfTokenProfile = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
+        let modoEdicionActivo = false;
+
+        window.abrirSelectorPerfiles = function(e) {
+            if (e) e.preventDefault();
             document.getElementById('userDropdownMenu').style.display = 'none';
-            Swal.fire({
-                title: 'Atajos de Teclado',
-                html: `<div style="text-align:left;">
-                    <p><kbd>Alt + B</kbd> Buscar productos</p>
-                    <p><kbd>Alt + E</kbd> Abrir Escáner</p>
-                    <p><kbd>Alt + N</kbd> Nuevo Producto</p>
-                </div>`,
-                confirmButtonText: 'Entendido', confirmButtonColor: '#E50914', background: 'var(--bg-card)', color: 'var(--text-primary)'
-            });
-        }
-        
-        function cambiarCuenta(e) {
-            e.preventDefault();
-            document.getElementById('userDropdownMenu').style.display = 'none';
-            Swal.fire({
-                title: 'Cambiando de cuenta...', text: 'Cerrando sesión actual', icon: 'info', timer: 1500, showConfirmButton: false, background: 'var(--bg-card)', color: 'var(--text-primary)'
-            }).then(() => { document.getElementById('logout-form').submit(); });
-        }
-        
-        document.addEventListener('keydown', function(e) {
-            if (e.altKey) {
-                switch(e.key.toLowerCase()) {
-                    case 'b': e.preventDefault(); document.getElementById('topbarSearchInput').focus(); break;
-                    case 'e': e.preventDefault(); document.querySelector('.scanner-fab').click(); break;
-                }
-            }
-        });
-        
-        // BÚSQUEDA
-        document.getElementById('topbarSearchInput').addEventListener('input', function() {
-            const texto = this.value.toLowerCase();
-            document.querySelectorAll('.product-card').forEach(card => {
-                const nombre = (card.dataset.nombre || '').toLowerCase();
-                const codigo = (card.dataset.codigo || '').toLowerCase();
-                card.style.display = (nombre.includes(texto) || codigo.includes(texto)) ? '' : 'none';
-            });
-        });
-        
-        // GRÁFICOS INICIALES
-        const categoriaData = @json($categorias);
-        const categoriaChart = new Chart(document.getElementById('categoriaChart'), {
-            type: 'doughnut',
-            data: { labels: Object.keys(categoriaData).length ? Object.keys(categoriaData) : ['Sin datos'], datasets: [{ data: Object.keys(categoriaData).length ? Object.values(categoriaData) : [1], backgroundColor: ['#E50914','#00b894','#fdcb6e','#0984e3','#e74c3c'], borderWidth: 0 }] },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#b3b3b3' } } } }
-        });
-        
-        const stockChart = new Chart(document.getElementById('inventarioChart'), {
-            type: 'doughnut',
-            data: { 
-                labels: ['Óptimos', 'Por Vencer', 'Agotados'], 
-                datasets: [{ 
-                    data: [65, 15, 5], 
-                    backgroundColor: ['rgba(0, 184, 148, 0.8)', 'rgba(253, 203, 110, 0.8)', 'rgba(229, 9, 20, 0.8)'], 
-                    borderColor: '#141414', 
-                    borderWidth: 3, 
-                    hoverOffset: 10 
-                }] 
-            },
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false, 
-                plugins: { 
-                    legend: { 
-                        position: 'bottom', 
-                        labels: { color: '#b3b3b3', font: { family: 'Inter', size: 11 } } 
-                    } 
-                }, 
-                cutout: '75%' 
-            }
-        });
-        
-        const ventasChart = new Chart(document.getElementById('ventasChart'), {
-            type: 'line',
-            data: { 
-                labels: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'], 
-                datasets: [{ 
-                    label: 'Salidas de Inventario', 
-                    data: [12, 19, 8, 15, 22, 14, 18], 
-                    borderColor: '#E50914', 
-                    backgroundColor: 'rgba(229, 9, 20, 0.1)', 
-                    borderWidth: 3, 
-                    tension: 0.4, 
-                    fill: true, 
-                    pointBackgroundColor: '#E50914', 
-                    pointBorderColor: '#fff', 
-                    pointBorderWidth: 2, 
-                    pointRadius: 4, 
-                    pointHoverRadius: 6 
-                }] 
-            },
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false, 
-                plugins: { 
-                    legend: { display: false },
-                    tooltip: { 
-                        backgroundColor: '#181818', 
-                        borderColor: '#2b2b2b', 
-                        borderWidth: 1, 
-                        titleColor: '#fff', 
-                        bodyColor: '#b3b3b3' 
-                    }
-                }, 
-                scales: { 
-                    x: { grid: { color: '#2b2b2b' }, ticks: { color: '#b3b3b3' } }, 
-                    y: { grid: { color: '#2b2b2b' }, ticks: { color: '#b3b3b3' }, beginAtZero: true } 
-                } 
-            }
-        });
-        
-        // ESTADO DE RED
-        function updateStatusIndicator() {
-            const indicators = document.querySelectorAll('.status-indicator');
-            indicators.forEach(indicator => {
-                const dot = indicator.querySelector('.status-dot');
-                const text = indicator.querySelector('.status-text');
+            document.getElementById('oswa-profile-selector').classList.remove('oswa-hidden');
+        };
 
-                if (navigator.onLine) {
-                    indicator.classList.replace('offline', 'online');
-                    dot.style.background = '#00b894';
-                    dot.style.boxShadow = '0 0 6px rgba(0,184,148,0.6)';
-                    if(text) text.textContent = 'En línea';
-                } else {
-                    indicator.classList.replace('online', 'offline');
-                    dot.style.background = '#e74c3c';
-                    dot.style.boxShadow = '0 0 6px rgba(231,76,60,0.6)';
-                    if(text) text.textContent = 'Sin red';
-                }
-            });
-        }
-        window.addEventListener('online', updateStatusIndicator);
-        window.addEventListener('offline', updateStatusIndicator);
-        updateStatusIndicator();
-        
-        // TEMAS
-        function initTheme() {
-            const saved = localStorage.getItem('theme') || 'dark';
-            document.body.setAttribute('data-theme', saved);
-            const icon = document.querySelector('.theme-toggle i');
-            if (icon) icon.className = saved === 'dark' ? 'bi bi-moon-fill' : 'bi bi-sun-fill';
-        }
-        function toggleTheme() {
-            const nuevo = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-            document.body.setAttribute('data-theme', nuevo);
-            localStorage.setItem('theme', nuevo);
-            const icon = document.querySelector('.theme-toggle i');
-            if (icon) icon.className = nuevo === 'dark' ? 'bi bi-moon-fill' : 'bi bi-sun-fill';
-        }
-        initTheme();
-        
-        function showNotification(icon, title, isError = false) {
-            Swal.fire({ toast: true, position: 'top-end', icon: icon, title: title, showConfirmButton: false, timer: 2000, background: isError ? '#dc3545' : '#00b894', color: '#fff' });
-        }
-        
-        // --- LA MAGIA DEL STOCK CORREGIDA (NO BORRA GRÁFICOS) ---
-        async function ajustarStock(productoId, accion) {
-            const stockInput = document.getElementById('stock-' + productoId);
-            const isIncrement = accion === 'sumar';
-            try {
-                const response = await fetch('{{ route('ajustar.stock') }}', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken }, body: JSON.stringify({ id: productoId, accion: accion }) });
-                const data = await response.json();
-                if (data.success) {
-                    stockInput.value = data.nuevo_stock;
-                    
-                    const floatEl = document.createElement('span');
-                    floatEl.style.cssText = 'position:absolute; z-index:100; font-size:1rem; font-weight:bold; pointer-events:none;';
-                    floatEl.className = isIncrement ? 'float-plus' : 'float-minus';
-                    floatEl.innerText = isIncrement ? '+1' : '-1';
-                    stockInput.parentElement.appendChild(floatEl);
-                    setTimeout(() => floatEl.remove(), 800);
-                    
-                    stockInput.classList.add(isIncrement ? 'flash-green' : 'flash-red');
-                    setTimeout(() => stockInput.classList.remove('flash-green', 'flash-red'), 400);
-                    
-                    const card = document.querySelector('.product-card[data-producto-id="' + productoId + '"]');
-                    if (card) {
-                        card.className = 'product-card ' + (data.nuevo_stock <= 2 ? 'stock-critical' : (data.nuevo_stock <= 5 ? 'stock-low' : 'stock-normal'));
-                        card.dataset.stock = data.nuevo_stock;
-                    }
-                    actualizarTodo(data);
-                    showNotification('success', data.nuevo_stock === 0 ? '¡Stock agotado!' : 'Stock actualizado');
-                }
-            } catch (e) { showNotification('error', 'Error de conexión', true); }
-        }
-        
-        async function ajustarStockDirecto(productoId, valor) {
-            const nuevoValor = Math.max(0, parseInt(valor) || 0);
-            try {
-                const response = await fetch('{{ route('ajustar.stock') }}', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken }, body: JSON.stringify({ id: productoId, accion: 'set', valor: nuevoValor }) });
-                const data = await response.json();
-                if (data.success) {
-                    document.getElementById('stock-' + productoId).value = data.nuevo_stock;
-                    const card = document.querySelector('.product-card[data-producto-id="' + productoId + '"]');
-                    if (card) {
-                        card.className = 'product-card ' + (data.nuevo_stock <= 2 ? 'stock-critical' : (data.nuevo_stock <= 5 ? 'stock-low' : 'stock-normal'));
-                        card.dataset.stock = data.nuevo_stock;
-                    }
-                    actualizarTodo(data);
-                    showNotification('success', 'Stock actualizado');
-                }
-            } catch (e) { showNotification('error', 'Error', true); }
-        }
-        
-        function actualizarTodo(data) {
-            if(document.getElementById('totalProductos')) document.getElementById('totalProductos').textContent = data.total_productos || {{ $totalProductos }};
-            if(document.getElementById('stockTotal')) document.getElementById('stockTotal').textContent = Number(data.stock_total || 0).toLocaleString();
-            if(document.getElementById('alertasStock')) document.getElementById('alertasStock').textContent = data.alertas_stock || 0;
-            if(document.getElementById('capitalInvertido')) document.getElementById('capitalInvertido').textContent = '$' + Number(data.capital_invertido || 0).toLocaleString('en', { minimumFractionDigits: 2 });
-            
-            const bsElement = document.querySelector('#cardCapital .stat-sub');
-            if(bsElement) bsElement.textContent = 'Eqv: Bs. ' + Number(data.capital_invertido_bs || 0).toLocaleString('en', { minimumFractionDigits: 2 });
+        window.cerrarSelectorPerfiles = function() {
+            document.getElementById('oswa-profile-selector').classList.add('oswa-hidden');
+        };
 
-            if(document.getElementById('tasaBcv')) document.getElementById('tasaBcv').textContent = Number(data.tasa_bcv || 0).toLocaleString('en', { minimumFractionDigits: 2 });
-
-            let saludable = 0; let critico = 0;
-            document.querySelectorAll('.product-card').forEach(card => {
-                const stock = parseInt(card.dataset.stock) || 0;
-                if (stock <= 5) critico++; else saludable++;
-            });
-
-            if (typeof stockChart !== 'undefined') {
-                stockChart.update();
-            }
-        }
-        
-        // BOT
-        function enviarOpcionRapida(texto) {
-            const inputBot = document.getElementById('botInput');
-            if (inputBot) {
-                inputBot.value = texto;
-                enviarBot();
-            }
-        }
-
-        function toggleBotWindow() {
-            document.getElementById('botWindow').classList.toggle('show');
-        }
-        async function enviarBot() {
-            const input = document.getElementById('botInput');
-            const pregunta = input.value.trim();
-            if (!pregunta) return;
-            const chatHistory = document.getElementById('botChatHistory');
-            chatHistory.innerHTML += `<div class="chat-bubble user-bubble">${pregunta}</div>`;
-            input.value = '';
-            chatHistory.scrollTop = chatHistory.scrollHeight;
-
-            // Interceptación de Quick Replies
-            if (pregunta.includes('Ver Catálogo')) {
-                setTimeout(() => {
-                    const html = '¡Claro! Puedes ver y gestionar todos los productos de tu inventario haciendo clic aquí: <br><br><a href="/catalogo" style="display:inline-block; padding:6px 12px; background:#E50914; color:#fff; text-decoration:none; border-radius:4px; font-size:0.85rem; font-weight:bold;">📦 Ir al Catálogo</a>';
-                    chatHistory.innerHTML += `<div class="chat-bubble bot-bubble">${html}</div>`;
-                    chatHistory.scrollTop = chatHistory.scrollHeight;
-                }, 500);
-                return;
-            } else if (pregunta.includes('Añadir Proveedor')) {
-                setTimeout(() => {
-                    const html = 'Para registrar una nueva alianza comercial, dirígete al módulo de proveedores: <br><br><a href="/proveedores" style="display:inline-block; padding:6px 12px; background:#E50914; color:#fff; text-decoration:none; border-radius:4px; font-size:0.85rem; font-weight:bold;">🤝 Ir a Proveedores</a>';
-                    chatHistory.innerHTML += `<div class="chat-bubble bot-bubble">${html}</div>`;
-                    chatHistory.scrollTop = chatHistory.scrollHeight;
-                }, 500);
-                return;
-            } else if (pregunta.includes('Reporte de Stock')) {
-                setTimeout(() => {
-                    const html = '📊 Para auditar el stock general, te recomiendo ir a la sección de <b>Estadísticas</b> en el menú principal o usar el botón de "Exportar" dentro del Catálogo de productos.';
-                    chatHistory.innerHTML += `<div class="chat-bubble bot-bubble">${html}</div>`;
-                    chatHistory.scrollTop = chatHistory.scrollHeight;
-                }, 500);
-                return;
-            } else if (pregunta.includes('Soporte')) {
-                setTimeout(() => {
-                    const numeroAdmin = "584122266083";
-                    const mensajeBase = "Hola soporte de OSWA Inv. Necesito ayuda con el siguiente problema: ";
-                    const enlaceChat = `https://wa.me/${numeroAdmin}?text=${encodeURIComponent(mensajeBase)}`;
-                    const html = `🛠️ ¡Entendido! Te voy a comunicar en vivo con <b>Carlos (Administrador del Sistema)</b> para que te atienda personalmente.<br><br>
-                    <a href="${enlaceChat}" target="_blank" style="display:flex; align-items:center; justify-content:center; gap:8px; padding:10px 15px; background:#25D366; color:#fff; text-decoration:none; border-radius:4px; font-size:0.9rem; font-weight:bold; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
-                        <i class="bi bi-whatsapp"></i> Iniciar Chat de Soporte
-                    </a>`;
-                    chatHistory.innerHTML += `<div class="chat-bubble bot-bubble">${html}</div>`;
-                    chatHistory.scrollTop = chatHistory.scrollHeight;
-                }, 500);
-                return;
-            }
-
-            // Flujo normal: enviar al backend
-            const loadingId = 'loading-' + Date.now();
-            chatHistory.innerHTML += `<div id="${loadingId}" class="chat-bubble bot-bubble">Pensando...</div>`;
-            chatHistory.scrollTop = chatHistory.scrollHeight;
+        window.ejecutarCambioPerfil = async function(userId) {
+            document.body.style.cursor = 'wait';
+            const overlay = document.getElementById('oswa-profile-selector');
+            overlay.style.opacity = '0.5';
+            overlay.style.pointerEvents = 'none';
 
             try {
-                const response = await fetch('/oswa-bot', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken }, body: JSON.stringify({ pregunta: pregunta }) });
-                const data = await response.json();
-                document.getElementById(loadingId).remove();
-                chatHistory.innerHTML += `<div class="chat-bubble bot-bubble">${data.respuesta}</div>`;
-            } catch (e) { 
-                document.getElementById(loadingId).remove();
-                chatHistory.innerHTML += `<div class="chat-bubble bot-bubble" style="color: #e74c3c;">Error de conexión.</div>`;
-            }
-            chatHistory.scrollTop = chatHistory.scrollHeight;
-        }
-        
-        // CRUD PRODUCTOS
-        async function eliminarProducto(id) {
-            const confirm = await Swal.fire({ title: '¿Eliminar?', text: 'No se puede deshacer', icon: 'warning', showCancelButton: true, confirmButtonText: 'Sí', cancelButtonText: 'Cancelar' });
-            if (confirm.isConfirmed) {
-                try {
-                    const response = await fetch('{{ route('eliminar.producto') }}', { method: 'DELETE', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken }, body: JSON.stringify({ id: id }) });
-                    const data = await response.json();
-                    if (data.success) { showNotification('success', 'Eliminado'); setTimeout(() => location.reload(), 1500); }
-                } catch (e) { showNotification('error', 'Error', true); }
-            }
-        }
-        
-        // REQUISICIONES
-        function abrirRequisicion(productoId, nombre) {
-            document.getElementById('requisicionProducto').value = nombre;
-            document.getElementById('requisicionProductoId').value = productoId;
-            document.getElementById('requisicionCantidad').value = '';
-            new bootstrap.Modal(document.getElementById('requisicionModal')).show();
-        }
-        
-        document.getElementById('requisicionForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            try {
-                const formData = new FormData(this);
-                const response = await fetch('{{ route('requisiciones.solicitar') }}', {
+                const response = await fetch('/cambiar-perfil-netflix', {
                     method: 'POST',
-                    headers: { 'X-CSRF-TOKEN': csrfToken },
-                    body: new URLSearchParams(Object.fromEntries(formData))
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfTokenProfile,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ user_id: userId })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    window.location.href = data.redirect;
+                } else {
+                    alert('Error al cambiar de cuenta. Verifica los IDs en la base de datos.');
+                    restaurarVistaSelector();
+                }
+            } catch (error) {
+                console.error("Error en la conexión:", error);
+                alert('Hubo un error de conexión con el servidor.');
+                restaurarVistaSelector();
+            }
+        }
+
+        function restaurarVistaSelector() {
+            document.body.style.cursor = 'default';
+            const overlay = document.getElementById('oswa-profile-selector');
+            overlay.style.opacity = '1';
+            overlay.style.pointerEvents = 'auto';
+        }
+
+        window.seleccionarPerfilConCarga = function(userId) {
+            document.getElementById('oswa-global-loader').classList.remove('oswa-hidden');
+            ejecutarAnimacionCarga('AUTENTICANDO CREDENCIALES Y PERMISOS...', false, function() {
+                window.ejecutarCambioPerfil(userId);
+            });
+        }
+
+        window.toggleModoAdministracionPerfiles = function() {
+            modoEdicionActivo = !modoEdicionActivo;
+            const btnManage = document.querySelector('.oswa-btn-manage');
+            const btnCancel = document.querySelector('.oswa-btn-cancel');
+            const iconosEdicion = document.querySelectorAll('.oswa-edit-icon');
+
+            if (modoEdicionActivo) {
+                btnManage.classList.add('oswa-hidden');
+                btnCancel.classList.remove('oswa-hidden');
+                iconosEdicion.forEach(icon => icon.classList.remove('oswa-hidden'));
+            } else {
+                btnManage.classList.remove('oswa-hidden');
+                btnCancel.classList.add('oswa-hidden');
+                iconosEdicion.forEach(icon => icon.classList.add('oswa-hidden'));
+            }
+        }
+
+        window.abrirModalCreacion = function() {
+            document.getElementById('oswa-modal-create').classList.remove('oswa-hidden');
+        }
+        window.cerrarModalCreacion = function() {
+            document.getElementById('oswa-modal-create').classList.add('oswa-hidden');
+        }
+        window.enviarFormularioCreacion = async function(e) {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const result = await fetchPostRequest('{{ route("perfil.crear") }}', formData);
+            if (result.success) window.location.reload();
+        }
+
+        window.abrirModalEdicion = function(userId, userName) {
+            document.getElementById('edit-user-id').value = userId;
+            document.getElementById('edit-user-name').value = userName;
+            const previewAvatar = document.getElementById('oswa-edit-avatar-preview');
+            previewAvatar.innerText = userName.charAt(0).toUpperCase();
+            previewAvatar.style.backgroundImage = 'none';
+            document.getElementById('oswa-modal-edit').classList.remove('oswa-hidden');
+        }
+        window.cerrarModalEdicion = function() {
+            document.getElementById('oswa-modal-edit').classList.add('oswa-hidden');
+        }
+
+        window.previewPhoto = function(event) {
+            const reader = new FileReader();
+            reader.onload = function(){
+                const output = document.getElementById('oswa-edit-avatar-preview');
+                output.innerText = '';
+                output.style.backgroundImage = `url(${reader.result})`;
+                output.style.backgroundSize = 'cover';
+                output.style.backgroundPosition = 'center';
+            };
+            reader.readAsDataURL(event.target.files[0]);
+        }
+
+        window.enviarFormularioEdicion = async function(e) {
+            e.preventDefault();
+            const form = e.target;
+            const userId = document.getElementById('edit-user-id').value;
+            const nuevoNombre = document.getElementById('edit-user-name').value;
+            const formData = new FormData(form);
+
+            const btnSubmit = form.querySelector('button[type="submit"]');
+            const btnOriginalText = btnSubmit.innerText;
+            btnSubmit.innerText = "Guardando...";
+            btnSubmit.disabled = true;
+
+            try {
+                const result = await fetchPostRequest(`/perfiles/actualizar/${userId}`, formData);
+
+                if (result.success) {
+                    cerrarModalEdicion();
+                    const avatarContainer = document.querySelector(`div[onclick="seleccionarPerfilConCarga(${userId})"]`);
+                    if (avatarContainer) {
+                        const nameSpan = avatarContainer.nextElementSibling;
+                        if (nameSpan && nameSpan.classList.contains('oswa-name')) {
+                            nameSpan.innerText = nuevoNombre;
+                        }
+                        const previewDiv = document.getElementById('oswa-edit-avatar-preview');
+                        const nuevaImagenBg = previewDiv.style.backgroundImage;
+                        if (nuevaImagenBg && nuevaImagenBg !== 'none' && nuevaImagenBg !== '') {
+                            const urlFoto = nuevaImagenBg.slice(4, -1).replace(/"/g, "");
+                            avatarContainer.innerHTML = `<img src="${urlFoto}" alt="${nuevoNombre}" class="oswa-avatar" style="width: 100%; height: 100%; object-fit: cover;">`;
+                        }
+                    }
+                } else {
+                    alert('Hubo un problema al guardar el perfil en el servidor.');
+                }
+            } catch (error) {
+                console.error("Error al guardar:", error);
+            } finally {
+                btnSubmit.innerText = btnOriginalText;
+                btnSubmit.disabled = false;
+            }
+        }
+
+        window.eliminarPerfil = async function() {
+            const userId = document.getElementById('edit-user-id').value;
+            const userName = document.getElementById('edit-user-name').value;
+            if (!confirm(`⚠️ ¿Estás 100% seguro de que deseas eliminar el perfil de "${userName}"? Esta acción no se puede deshacer y borrará sus datos de acceso.`)) {
+                return;
+            }
+            document.body.style.cursor = 'wait';
+            const btnDelete = document.querySelector('.oswa-btn-delete');
+            const originalText = btnDelete.innerText;
+            btnDelete.innerText = "Eliminando...";
+            btnDelete.disabled = true;
+            try {
+                const response = await fetch(`/perfiles/eliminar/${userId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': csrfTokenProfile,
+                        'Accept': 'application/json'
+                    }
+                });
+                const result = await response.json();
+                if (result.success) {
+                    window.location.reload();
+                } else {
+                    alert(result.message || 'Error al eliminar el perfil.');
+                }
+            } catch (error) {
+                console.error("Error al eliminar:", error);
+                alert('Hubo un error de conexión con el servidor.');
+            } finally {
+                document.body.style.cursor = 'default';
+                btnDelete.innerText = originalText;
+                btnDelete.disabled = false;
+            }
+        }
+
+        async function fetchPostRequest(url, formData) {
+            document.body.style.cursor = 'wait';
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': csrfTokenProfile,
+                        'Accept': 'application/json'
+                    },
+                    body: formData
                 });
                 const data = await response.json();
-                if (data.success) {
-                    Swal.fire({ icon: 'success', title: 'Solicitud enviada', text: 'El administrador revisará tu pedido', timer: 2000, showConfirmButton: false });
-                    bootstrap.Modal.getInstance(document.getElementById('requisicionModal')).hide();
-                }
-            } catch (e) { showNotification('error', 'Error al enviar', true); }
-        });
-        
-        async function aprobarRequisicion(id) {
-            Swal.fire({ title: '¿Aprobar requisición?', text: 'Se descontará el stock del producto', icon: 'question', showCancelButton: true, confirmButtonText: 'Aprobar', cancelButtonText: 'Cancelar', confirmButtonColor: '#00b894' }).then(async (result) => {
-                if (result.isConfirmed) {
-                    try {
-                        const response = await fetch('{{ route('requisiciones.aprobar') }}', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
-                            body: JSON.stringify({ id: id })
-                        });
-                        const data = await response.json();
-                        if (data.success) {
-                            Swal.fire({ icon: 'success', title: 'Aprobada', text: data.message, timer: 2000, showConfirmButton: false });
-                            setTimeout(() => location.reload(), 1500);
-                        } else {
-                            Swal.fire({ icon: 'error', title: 'Error', text: data.message });
-                        }
-                    } catch (e) { showNotification('error', 'Error de conexión', true); }
-                }
-            });
-        }
-        
-        async function rechazarRequisicion(id) {
-            Swal.fire({ title: '¿Rechazar requisición?', icon: 'warning', showCancelButton: true, confirmButtonText: 'Rechazar', cancelButtonText: 'Cancelar', confirmButtonColor: '#e74c3c' }).then(async (result) => {
-                if (result.isConfirmed) {
-                    try {
-                        const response = await fetch('{{ route('requisiciones.rechazar') }}', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
-                            body: JSON.stringify({ id: id })
-                        });
-                        const data = await response.json();
-                        if (data.success) {
-                            Swal.fire({ icon: 'success', title: 'Rechazada', text: data.message, timer: 2000, showConfirmButton: false });
-                            setTimeout(() => location.reload(), 1500);
-                        }
-                    } catch (e) { showNotification('error', 'Error de conexión', true); }
-                }
-            });
-        }
-        
-        // CAMARA UNIVERSAL ROBUSTA
-        let camaraStream = null;
-        let camaraTarget = null;
-        const videoUniversal = document.getElementById('videoElementUniversal');
-        const canvasUniversal = document.getElementById('canvasHiddenUniversal');
-
-        function abrirCamara(tipo) {
-            if (camaraStream) return;
-            camaraTarget = tipo;
-            navigator.mediaDevices.getUserMedia({ 
-                video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } } 
-            })
-            .then(stream => {
-                camaraStream = stream;
-                videoUniversal.srcObject = stream;
-                const modalEl = document.getElementById('modalCamaraUniversal');
-                const modal = new bootstrap.Modal(modalEl);
-                modal.show();
-            })
-            .catch(err => Swal.fire('Error', 'No se pudo acceder a la cámara: ' + err.message, 'error'));
-        }
-
-        document.getElementById('modalCamaraUniversal').addEventListener('hidden.bs.modal', function () {
-            if (camaraStream) {
-                camaraStream.getTracks().forEach(track => track.stop());
-                camaraStream = null;
-                videoUniversal.srcObject = null;
+                document.body.style.cursor = 'default';
+                if (response.ok) return data;
+                throw new Error(data.message || 'Error desconocido');
+            } catch (error) {
+                alert('Hubo un error: ' + error.message);
+                document.body.style.cursor = 'default';
+                return { success: false };
             }
-            camaraTarget = null;
+        }
+
+        // --- PANTALLA DE CARGA GLOBAL ENTERPRISE ---
+        window.addEventListener('load', function() {
+            ejecutarAnimacionCarga('SINCRONIZANDO BASES DE DATOS RELACIONALES...', true);
         });
 
-        document.getElementById('btnCapturarUniversal').addEventListener('click', function() {
-            if (!camaraStream || !camaraTarget) return;
-            canvasUniversal.width = videoUniversal.videoWidth;
-            canvasUniversal.height = videoUniversal.videoHeight;
-            canvasUniversal.getContext('2d').drawImage(videoUniversal, 0, 0);
-            const base64 = canvasUniversal.toDataURL('image/jpeg', 0.85);
-            
-            if (camaraTarget === 'producto') {
-                document.getElementById('imagen_base64').value = base64;
-                const preview = document.getElementById('previewCamaraProducto');
-                preview.src = base64; preview.style.display = 'block';
-            } else if (camaraTarget === 'soporte') {
-                document.getElementById('soporte_base64').value = base64;
-                const preview = document.getElementById('previewCamaraSoporte');
-                preview.src = base64; preview.style.display = 'block';
-            }
-            bootstrap.Modal.getInstance(document.getElementById('modalCamaraUniversal')).hide();
-        });
+        function ejecutarAnimacionCarga(textoMensaje, ocultarAlTerminar, callback) {
+            const loader = document.getElementById('oswa-global-loader');
+            const bar = document.getElementById('oswa-progress-bar');
+            const perc = document.getElementById('oswa-loader-percentage');
+            const textNode = document.getElementById('oswa-loader-dynamic-text');
+
+            let progress = 0;
+            bar.style.width = '0%';
+            perc.innerText = '0%';
+            textNode.innerText = textoMensaje;
+
+            const interval = setInterval(() => {
+                progress += Math.floor(Math.random() * 15) + 10;
+                
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(interval);
+                    
+                    setTimeout(() => {
+                        if (ocultarAlTerminar) {
+                            loader.classList.add('oswa-hidden');
+                        }
+                        if (callback) callback();
+                    }, 500);
+                }
+                
+                bar.style.width = progress + '%';
+                perc.innerText = progress + '%';
+            }, 150);
+        }
     </script>
     
     <script>
@@ -1660,5 +1499,369 @@
             });
         }
     </script>
-</body>
+<!-- Pantalla de Selección de Perfiles Estilo Netflix (ACTUALIZADA) -->
+<div id="oswa-profile-selector" class="oswa-netflix-overlay oswa-hidden">
+    <div class="oswa-netflix-content">
+        <h1 class="oswa-netflix-title">¿Quién está gestionando ahora?</h1>
+        
+        <div class="oswa-netflix-profiles">
+            @foreach($users as $user)
+            <div class="oswa-profile-card">
+                <div class="oswa-edit-icon oswa-hidden" onclick="abrirModalEdicion({{ $user->id }}, '{{ $user->name }}')">
+                    <i class="bi bi-pencil-fill"></i>
+                </div>
+                <div class="oswa-avatar-container" onclick="seleccionarPerfilConCarga({{ $user->id }})">
+                    @if($user->profile_photo_path)
+                        <img src="{{ asset('storage/' . $user->profile_photo_path) }}" alt="{{ $user->name }}" class="oswa-avatar-img">
+                    @else
+                        <div class="oswa-avatar oswa-avatar-initials" style="background-color: {{ $loop->iteration == 1 ? '#E50914' : ($loop->iteration == 2 ? '#2b90d9' : '#4CAF50') }};">
+                            {{ strtoupper(substr($user->name, 0, 1)) }}
+                        </div>
+                    @endif
+                </div>
+                <span class="oswa-name">{{ $user->name }}</span>
+            </div>
+            @endforeach
+            
+            <div class="oswa-profile-card" onclick="abrirModalCreacion()">
+                <div class="oswa-avatar oswa-add-profile">
+                    <i class="bi bi-plus-circle" style="font-size: 3rem;"></i>
+                </div>
+                <span class="oswa-name">Agregar perfil</span>
+            </div>
+        </div>
+
+        <button class="oswa-btn-manage" onclick="toggleModoAdministracionPerfiles()">Administrar perfiles</button>
+        <button class="oswa-btn-cancel oswa-hidden" onclick="toggleModoAdministracionPerfiles()">Listo</button>
+    </div>
+</div>
+
+<!-- Modal: Editar Perfil -->
+<div id="oswa-modal-edit" class="oswa-modal oswa-hidden">
+    <div class="oswa-modal-content">
+        <span class="oswa-close" onclick="cerrarModalEdicion()">&times;</span>
+        <h2>Editar perfil</h2>
+        <div id="oswa-edit-avatar-preview" class="oswa-avatar oswa-avatar-initials" style="background-color: #E50914; margin: 0 auto 1.5rem;">C</div>
+        <form id="oswa-form-edit" enctype="multipart/form-data" onsubmit="enviarFormularioEdicion(event)">
+            <input type="hidden" id="edit-user-id" name="user_id">
+            <div class="oswa-input-group">
+                <input type="text" id="edit-user-name" name="name" required placeholder="Nuevo nombre de perfil">
+            </div>
+            <div class="oswa-input-group">
+                <label for="edit-profile-photo" class="oswa-btn-manage" style="cursor: pointer; display: inline-block;">Cambiar foto</label>
+                <input type="file" id="edit-profile-photo" name="profile_photo" accept="image/*" class="oswa-hidden" onchange="previewPhoto(event)">
+            </div>
+            <button type="submit" class="oswa-btn-action">Guardar</button>
+            <button type="button" class="oswa-btn-delete" onclick="eliminarPerfil()">Eliminar perfil</button>
+        </form>
+    </div>
+</div>
+
+<!-- Modal: Crear Perfil -->
+<div id="oswa-modal-create" class="oswa-modal oswa-hidden">
+    <div class="oswa-modal-content">
+        <span class="oswa-close" onclick="cerrarModalCreacion()">&times;</span>
+        <h2>Crear perfil</h2>
+        <form id="oswa-form-create" onsubmit="enviarFormularioCreacion(event)">
+            <div class="oswa-input-group">
+                <input type="text" name="name" required placeholder="Nombre del nuevo perfil">
+            </div>
+            <button type="submit" class="oswa-btn-action">Crear</button>
+        </form>
+    </div>
+</div>
+
+<!-- Pantalla de Carga -->
+<div id="oswa-global-loader" class="oswa-loader-overlay oswa-hidden">
+    <div class="oswa-loader-content">
+        <img src="{{ asset('img/logo-unellez.png') }}" alt="OSWA Inv Logo" class="oswa-loader-logo">
+        <div class="oswa-progress-container">
+            <div class="oswa-progress-bar" id="oswa-progress-bar"></div>
+        </div>
+        <p class="oswa-loader-text" id="oswa-loader-dynamic-text">INICIANDO MÓDULOS DEL SISTEMA...</p>
+        <span class="oswa-loader-percentage" id="oswa-loader-percentage">0%</span>
+    </div>
+</div>
+
+<!-- Estilos Pantalla de Perfiles -->
+<style>
+.oswa-netflix-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    background-color: #141414;
+    z-index: 99999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.4s ease, visibility 0.4s;
+}
+.oswa-netflix-overlay.oswa-hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+.oswa-netflix-content {
+    text-align: center;
+    animation: zoomIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@keyframes zoomIn {
+    from { transform: scale(0.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+.oswa-netflix-title {
+    color: #fff;
+    font-size: 3.5vw;
+    font-weight: 500;
+    margin-bottom: 2rem;
+}
+.oswa-netflix-profiles {
+    display: flex;
+    justify-content: center;
+    gap: 2vw;
+    margin-bottom: 3rem;
+}
+.oswa-profile-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+.oswa-profile-card:hover .oswa-avatar,
+.oswa-profile-card:hover .oswa-avatar-initials {
+    border: 4px solid white;
+}
+.oswa-profile-card:hover .oswa-name {
+    color: white;
+}
+.oswa-avatar-container {
+    cursor: pointer;
+}
+.oswa-avatar {
+    width: 10vw;
+    height: 10vw;
+    max-width: 150px;
+    max-height: 150px;
+    min-width: 84px;
+    min-height: 84px;
+    border-radius: 4px;
+    border: 4px solid transparent;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-size: 4rem;
+    font-weight: bold;
+    box-sizing: border-box;
+    transition: border 0.2s ease;
+    overflow: hidden;
+}
+.oswa-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover !important;
+    object-position: center;
+}
+.oswa-avatar-img {
+    width: 10vw;
+    height: 10vw;
+    max-width: 150px;
+    max-height: 150px;
+    min-width: 84px;
+    min-height: 84px;
+    border-radius: 4px;
+    border: 4px solid transparent;
+    object-fit: cover;
+    box-sizing: border-box;
+    transition: border 0.2s ease;
+}
+#oswa-edit-avatar-preview {
+    background-size: cover !important;
+    background-position: center !important;
+    background-repeat: no-repeat !important;
+}
+.oswa-add-profile {
+    background-color: transparent;
+    border: 2px solid grey !important;
+    color: grey;
+}
+.oswa-profile-card:hover .oswa-add-profile {
+    background-color: white;
+    color: #141414;
+}
+.oswa-name {
+    color: grey;
+    margin-top: 15px;
+    font-size: 1.2rem;
+    transition: color 0.2s;
+}
+.oswa-edit-icon {
+    position: absolute;
+    top: 5px; right: 5px;
+    background: rgba(128, 128, 128, 0.7);
+    color: white;
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    display: flex; justify-content: center; align-items: center;
+    cursor: pointer;
+    z-index: 10;
+    font-size: 0.9rem;
+}
+.oswa-edit-icon:hover { background: #E50914; }
+.oswa-btn-manage {
+    background: transparent;
+    border: 1px solid grey;
+    color: grey;
+    padding: 10px 30px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin: 10px;
+}
+.oswa-btn-manage:hover {
+    color: white;
+    border-color: white;
+}
+.oswa-btn-cancel {
+    background: transparent;
+    border: 1px solid grey;
+    color: grey;
+    padding: 10px 30px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin: 10px;
+}
+.oswa-btn-cancel:hover { background: #333; color: white; border-color: white; }
+.oswa-btn-action {
+    background: transparent;
+    border: 1px solid grey;
+    color: grey;
+    padding: 10px 30px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin: 10px;
+}
+.oswa-btn-action:hover {
+    color: white;
+    border-color: white;
+}
+.oswa-btn-delete {
+    background: transparent;
+    border: 1px solid grey;
+    color: grey;
+    padding: 10px 30px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin: 10px;
+}
+.oswa-btn-delete:hover { background: #E50914; color: white; border-color: #E50914; }
+.oswa-modal {
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    background-color: rgba(0, 0, 0, 0.85);
+    z-index: 100000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.3s ease, visibility 0.3s;
+}
+.oswa-modal.oswa-hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+.oswa-modal-content {
+    background: #1c1c1c;
+    padding: 2.5rem;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 450px;
+    position: relative;
+    animation: zoomIn 0.3s ease;
+}
+.oswa-modal-content h2 {
+    color: #fff;
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+}
+.oswa-close {
+    position: absolute;
+    top: 15px; right: 20px;
+    color: grey;
+    font-size: 2rem;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+.oswa-close:hover { color: white; }
+.oswa-input-group {
+    margin-bottom: 1rem;
+}
+.oswa-input-group input[type="text"] {
+    width: 100%;
+    padding: 12px 16px;
+    background: #333;
+    border: 1px solid #444;
+    border-radius: 6px;
+    color: #fff;
+    font-size: 1rem;
+    outline: none;
+    transition: border 0.2s;
+}
+.oswa-input-group input[type="text"]:focus {
+    border-color: #E50914;
+}
+.oswa-loader-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    background-color: #000000;
+    z-index: 999999;
+    display: flex; justify-content: center; align-items: center;
+    transition: opacity 0.6s ease;
+}
+.oswa-loader-overlay.oswa-hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+.oswa-loader-content {
+    text-align: center;
+    color: white;
+    font-family: 'Courier New', Courier, monospace;
+}
+.oswa-loader-logo {
+    width: 180px;
+    margin-bottom: 30px;
+}
+.oswa-progress-container {
+    width: 350px;
+    height: 3px;
+    background-color: #333;
+    margin: 0 auto 15px auto;
+}
+.oswa-progress-bar {
+    height: 100%;
+    width: 0%;
+    background-color: #E50914;
+    transition: width 0.2s ease;
+}
+.oswa-loader-text {
+    font-size: 0.85rem;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+}
+.oswa-loader-percentage {
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+@media (max-width: 768px) {
+    .oswa-netflix-profiles { flex-wrap: wrap; gap: 15px; }
+    .oswa-netflix-title { font-size: 1.8rem; }
+    .oswa-avatar, .oswa-avatar-img { width: 100px; height: 100px; font-size: 2.5rem; }
+}
+</style>
+
+    </body>
 </html>

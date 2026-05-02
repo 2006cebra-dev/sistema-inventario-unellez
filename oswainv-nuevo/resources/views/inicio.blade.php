@@ -240,6 +240,34 @@
                 text-align: center;
             }
         }
+
+        /* Chatbot OSWA-Bot */
+        .bot-fab { position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; border-radius: 50%; background: #E50914; color: white; border: none; font-size: 1.8rem; box-shadow: 0 8px 25px rgba(229,9,20,0.5); z-index: 9999; cursor: pointer; transition: transform 0.3s; display: flex; align-items: center; justify-content: center; }
+        .bot-fab:hover { transform: scale(1.1); }
+        .floating-bot-window { position: fixed; bottom: 90px; right: 20px; width: 340px; height: 450px; background: #1c1c1c; border: 1px solid #2b2b2b; border-radius: 16px; box-shadow: 0 15px 40px rgba(0,0,0,0.6); z-index: 9998; display: flex; flex-direction: column; opacity: 0; pointer-events: none; transform: translateY(20px); transition: all 0.3s ease; overflow: hidden; }
+        .floating-bot-window.show { opacity: 1; pointer-events: all; transform: translateY(0); }
+        .bot-header { background: #141414; padding: 15px; color: white; font-weight: 600; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #2b2b2b; }
+        .bot-header button { background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; }
+        .bot-chat-history { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; background: #121212; }
+        .bot-chat-history::-webkit-scrollbar { width: 6px; }
+        .bot-chat-history::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
+        .chat-bubble { max-width: 85%; padding: 10px 14px; border-radius: 12px; font-size: 0.85rem; line-height: 1.4; animation: fadeIn 0.3s ease; }
+        .user-bubble { align-self: flex-end; background: #E50914; color: white; border-bottom-right-radius: 4px; }
+        .bot-bubble { align-self: flex-start; background: #2b2b2b; color: white; border-bottom-left-radius: 4px; }
+        .oswa-quick-replies-container { display: flex; gap: 8px; padding: 10px 15px; overflow-x: auto; white-space: nowrap; background: transparent; width: 100%; box-sizing: border-box; }
+        .oswa-quick-replies-container::-webkit-scrollbar { height: 5px; }
+        .oswa-quick-replies-container::-webkit-scrollbar-track { background: #1c1c1c; border-radius: 10px; }
+        .oswa-quick-replies-container::-webkit-scrollbar-thumb { background: #E50914; border-radius: 10px; }
+        .bot-chip { flex-shrink: 0; background: transparent; border: 1px solid #E50914; color: #E50914; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; cursor: pointer; transition: all 0.2s ease-in-out; white-space: nowrap; }
+        .bot-chip:hover { background: #E50914; color: #ffffff; }
+        .bot-input-area { padding: 10px; background: #1c1c1c; display: flex; gap: 8px; }
+        .bot-input-area input { flex: 1; padding: 10px 15px; background: #2a2a2a; border: none; border-radius: 20px; color: #e5e5e5; outline: none; font-size: 0.85rem; }
+        .bot-input-area button { width: 40px; height: 40px; border-radius: 50%; background: #E50914; color: white; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        @media (max-width: 768px) {
+            .floating-bot-window { width: 90vw !important; right: 5vw !important; bottom: 100px !important; height: 65vh !important; }
+        }
     </style>
 </head>
 <body>
@@ -396,9 +424,15 @@
                                 <span style="font-size: 0.85rem;">V Semestre</span>
                             </div>
                         </div>
-                        <div class="mt-4">
-                            <a href="{{ route('login') }}" class="btn-netflix-red" style="padding: 12px 32px;">
-                                <i class="bi bi-rocket-takeoff me-2"></i>Probar Ahora
+                        <div class="mt-5 d-flex flex-column flex-md-row justify-content-center align-items-center gap-3">
+                            <a href="{{ route('login') }}" class="btn fw-bold px-4 py-2" style="background-color: #E50914; color: white; border-radius: 6px; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                                <i class="bi bi-rocket-takeoff me-2"></i> Probar Sistema
+                            </a>
+                            <a href="https://wa.me/584122266083" target="_blank" class="btn fw-bold px-4 py-2" style="background-color: #25D366; color: white; border-radius: 6px; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                                <i class="bi bi-whatsapp me-2"></i> Contactar a Carlos
+                            </a>
+                            <a href="https://wa.me/584145207044" target="_blank" class="btn fw-bold px-4 py-2" style="background-color: #25D366; color: white; border-radius: 6px; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                                <i class="bi bi-whatsapp me-2"></i> Contactar a Yorgelis
                             </a>
                         </div>
                     </div>
@@ -417,6 +451,25 @@
             <strong style="letter-spacing: 0.5px;">UNELLEZ</strong>
         </div>
     </footer>
+
+    <!-- OSWA-Bot Chatbot -->
+    <button class="bot-fab" onclick="toggleBotWindow()"><i class="bi bi-robot"></i></button>
+    <div class="floating-bot-window" id="botWindow">
+        <div class="bot-header"><span><i class="bi bi-robot me-2"></i> OSWA-Bot IA</span><button onclick="toggleBotWindow()"><i class="bi bi-x-lg"></i></button></div>
+        <div class="bot-chat-history" id="botChatHistory">
+            <div class="chat-bubble bot-bubble">¡Epa! Soy el asistente virtual de OSWA Inv. ¿Tienes alguna duda sobre el sistema?</div>
+        </div>
+        <div class="oswa-quick-replies-container">
+            <button type="button" class="bot-chip" onclick="enviarOpcionRapida('🤔 ¿Qué es OSWA Inv?')">🤔 ¿Qué es OSWA Inv?</button>
+            <button type="button" class="bot-chip" onclick="enviarOpcionRapida('✨ Características')">✨ Características</button>
+            <button type="button" class="bot-chip" onclick="enviarOpcionRapida('🔐 ¿Es seguro?')">🔐 ¿Es seguro?</button>
+            <button type="button" class="bot-chip" onclick="enviarOpcionRapida('📞 Contactar Creadores')">📞 Contactar Creadores</button>
+        </div>
+        <div class="bot-input-area">
+            <input type="text" id="botInput" placeholder="Pregúntame algo..." onkeypress="if(event.key==='Enter') enviarBot()">
+            <button onclick="enviarBot()"><i class="bi bi-send-fill"></i></button>
+        </div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
@@ -438,6 +491,73 @@
                 });
             });
         });
+
+        // Chatbot functions
+        function toggleBotWindow() {
+            document.getElementById('botWindow').classList.toggle('show');
+        }
+
+        function enviarOpcionRapida(texto) {
+            const inputBot = document.getElementById('botInput');
+            if (inputBot) {
+                inputBot.value = texto;
+                enviarBot();
+            }
+        }
+
+        function enviarBot() {
+            const input = document.getElementById('botInput');
+            const pregunta = input.value.trim();
+            if (!pregunta) return;
+            const chatHistory = document.getElementById('botChatHistory');
+            chatHistory.innerHTML += `<div class="chat-bubble user-bubble">${pregunta}</div>`;
+            input.value = '';
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+
+            // FAQ Interception
+            if (pregunta.includes('¿Qué es OSWA Inv?')) {
+                setTimeout(() => {
+                    const html = '<b>OSWA Inv</b> es un sistema de control de inventario nivel Enterprise, diseñado por estudiantes de ingeniería para ofrecer gestión en tiempo real, predicción de stock y máxima seguridad. 🚀';
+                    chatHistory.innerHTML += `<div class="chat-bubble bot-bubble">${html}</div>`;
+                    chatHistory.scrollTop = chatHistory.scrollHeight;
+                }, 500);
+                return;
+            } else if (pregunta.includes('Características')) {
+                setTimeout(() => {
+                    const html = 'Nuestras características principales incluyen:<br><br>📦 Gestión de catálogo en tiempo real.<br>🤝 Administración de proveedores.<br>📊 Reportes automatizados de stock.<br>⚡ Interfaz ultrarrápida y modo oscuro.';
+                    chatHistory.innerHTML += `<div class="chat-bubble bot-bubble">${html}</div>`;
+                    chatHistory.scrollTop = chatHistory.scrollHeight;
+                }, 500);
+                return;
+            } else if (pregunta.includes('¿Es seguro?')) {
+                setTimeout(() => {
+                    const html = '¡Totalmente! 🔐 Contamos con auditoría criptográfica, protección de rutas y autenticación robusta para garantizar que la data de tu inventario nunca sea vulnerada.';
+                    chatHistory.innerHTML += `<div class="chat-bubble bot-bubble">${html}</div>`;
+                    chatHistory.scrollTop = chatHistory.scrollHeight;
+                }, 500);
+                return;
+            } else if (pregunta.includes('Contactar Creadores')) {
+                setTimeout(() => {
+                    const numeroCarlos = "584122266083";
+                    const mensajeBase = "Hola Carlos, vengo de la página de inicio de OSWA Inv y me interesa el sistema.";
+                    const enlaceCarlos = `https://wa.me/${numeroCarlos}?text=${encodeURIComponent(mensajeBase)}`;
+                    const html = `¿Quieres implementar OSWA Inv en tu negocio o tienes dudas técnicas? Escríbele directamente a uno de sus desarrolladores:<br><br>
+                    <a href="${enlaceCarlos}" target="_blank" style="display:flex; align-items:center; justify-content:center; gap:8px; padding:10px 15px; background:#25D366; color:#fff; text-decoration:none; border-radius:4px; font-size:0.9rem; font-weight:bold; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
+                        <i class="bi bi-whatsapp"></i> Hablar con Carlos
+                    </a>`;
+                    chatHistory.innerHTML += `<div class="chat-bubble bot-bubble">${html}</div>`;
+                    chatHistory.scrollTop = chatHistory.scrollHeight;
+                }, 500);
+                return;
+            }
+
+            // Default response for unmatched queries
+            setTimeout(() => {
+                const html = 'Interesante pregunta. Para información más detallada, te sugiero explorar las secciones de la página o <a href="{{ route("login") }}" style="color:#E50914;">ingresar al sistema</a> para descubrir todas las funciones.';
+                chatHistory.innerHTML += `<div class="chat-bubble bot-bubble">${html}</div>`;
+                chatHistory.scrollTop = chatHistory.scrollHeight;
+            }, 500);
+        }
     </script>
 </body>
 </html>
