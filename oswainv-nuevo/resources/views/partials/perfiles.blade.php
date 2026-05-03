@@ -1,80 +1,3 @@
-<!doctype html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <!-- CSRF Token -->
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-
-    <title>{{ config('app.name', 'Laravel') }}</title>
-
-    <!-- Fonts -->
-    <link rel="dns-prefetch" href="//fonts.bunny.net">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-
-    @vite(['resources/sass/app.scss', 'resources/js/app.js'])
-</head>
-<body class="bg-dark">
-    <div id="app">
-        <nav class="navbar navbar-expand-md navbar-dark bg-dark shadow-sm">
-            <div class="container">
-                <a class="navbar-brand" href="{{ url('/') }}">
-                    {{ config('app.name', 'Laravel') }}
-                </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-
-                <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                    <!-- Left Side Of Navbar -->
-                    <ul class="navbar-nav me-auto">
-
-                    </ul>
-
-                    <!-- Right Side Of Navbar -->
-                    <ul class="navbar-nav ms-auto">
-                        @guest
-                            @if (Route::has('login'))
-                                <li class="nav-item"><a class="nav-link" href="{{ route('login') }}">Login</a></li>
-                            @endif
-                        @else
-                            <li class="nav-item dropdown">
-                                <a id="navbarDropdown" class="nav-link dropdown-toggle fw-bold text-white" href="#" role="button" data-bs-toggle="modal" data-bs-target="#profileModal">
-                                    <i class="bi bi-person-circle me-1"></i> {{ Auth::user()->name }}
-                                </a>
-
-                                <div class="dropdown-menu dropdown-menu-end bg-dark border-secondary shadow" aria-labelledby="navbarDropdown">
-                                    <!-- BOTÓN REAL: Cambiar Cuenta (Abre el Modal sin redirigir) -->
-                                    <button class="dropdown-item text-light py-2" onclick="abrirSelectorPerfiles(event)" style="background: none; border: none; cursor: pointer; width: 100%; text-align: left;">
-                                        <i class="bi bi-arrow-left-right text-danger"></i> Cambiar de Cuenta
-                                    </button>
-                                    
-                                    <div class="dropdown-divider border-secondary"></div>
-
-                                    <a class="dropdown-item text-danger py-2" href="{{ route('logout') }}"
-                                       onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                                        <i class="bi bi-box-arrow-right me-2"></i> Cerrar Sesión
-                                    </a>
-
-                                    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
-                                        @csrf
-                                    </form>
-                                </div>
-                            </li>
-                        @endguest
-                    </ul>
-                </div>
-            </div>
-        </nav>
-
-        <main class="py-4">
-            @yield('content')
-        </main>
-    </div>
-
 <!-- =======================================================
      MOTOR GLOBAL DE PERFILES ESTILO NETFLIX (OSWA INV)
      ======================================================= -->
@@ -111,8 +34,8 @@
             </div>
         </div>
 
-        <button class="oswa-btn-manage" id="btn-administrar">Administrar perfiles</button>
-        <button class="oswa-btn-cancel oswa-hidden" id="btn-listo" style="display: none;">Listo</button>
+        <button class="oswa-btn-manage" id="btn-administrar" onclick="activarModoEdicion()">Administrar perfiles</button>
+        <button class="oswa-btn-cancel oswa-hidden" id="btn-listo" style="display: none;" onclick="desactivarModoEdicion()">Listo</button>
     </div>
 </div>
 
@@ -146,7 +69,7 @@
             <div class="oswa-input-group">
                 <input type="text" name="name" required placeholder="Nombre del nuevo perfil">
             </div>
-            <input type="hidden" name="email" value="nuevo_{{ time() }}@oswa.com">
+            <input type="hidden" name="email" value="user_{{ time() }}@oswa.com">
             <input type="hidden" name="password" value="password123">
             <input type="hidden" name="rol" value="empleado">
             <button type="submit" class="oswa-btn-action">Crear</button>
@@ -157,17 +80,17 @@
 <!-- Estilos Globales de Perfiles -->
 <style>
 .oswa-netflix-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: #141414; z-index: 99999; display: flex; justify-content: center; align-items: center; transition: opacity 0.4s ease, visibility 0.4s; }
-.oswa-netflix-overlay.oswa-hidden { opacity: 0; visibility: hidden; }
+.oswa-netflix-overlay.oswa-hidden { opacity: 0; visibility: hidden; pointer-events: none;}
 .oswa-netflix-content { text-align: center; animation: zoomIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); }
 @keyframes zoomIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 .oswa-netflix-title { color: #fff; font-size: 3.5rem; font-weight: 500; margin-bottom: 2rem; }
-.oswa-netflix-profiles { display: flex; justify-content: center; flex-wrap: wrap; gap: 2rem; margin-bottom: 3rem; }
+.oswa-netflix-profiles { display: flex; justify-content: center; flex-wrap: wrap; gap: 2vw; margin-bottom: 3rem; }
 .oswa-profile-card { position: relative; display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: transform 0.2s; }
 .oswa-profile-card:hover .oswa-avatar, .oswa-profile-card:hover .oswa-avatar-initials, .oswa-profile-card:hover .oswa-avatar-img { border: 4px solid white; }
 .oswa-profile-card:hover .oswa-name { color: white; }
 .oswa-avatar-container { cursor: pointer; }
-.oswa-avatar { width: 150px; height: 150px; border-radius: 6px; border: 4px solid transparent; display: flex; justify-content: center; align-items: center; color: white; font-size: 4rem; font-weight: bold; box-sizing: border-box; transition: border 0.2s ease; overflow: hidden; }
-.oswa-avatar img, .oswa-avatar-img { width: 150px; height: 150px; border-radius: 6px; border: 4px solid transparent; object-fit: cover; transition: border 0.2s ease; }
+.oswa-avatar { width: 150px; height: 150px; border-radius: 4px; border: 4px solid transparent; display: flex; justify-content: center; align-items: center; color: white; font-size: 4rem; font-weight: bold; box-sizing: border-box; transition: border 0.2s ease; overflow: hidden; }
+.oswa-avatar img, .oswa-avatar-img { width: 150px; height: 150px; border-radius: 4px; border: 4px solid transparent; object-fit: cover; transition: border 0.2s ease; }
 #oswa-edit-avatar-preview { background-size: cover !important; background-position: center !important; background-repeat: no-repeat !important; }
 .oswa-add-profile { background-color: transparent; border: 2px solid grey !important; color: grey; }
 .oswa-profile-card:hover .oswa-add-profile { background-color: white; color: #141414; }
@@ -183,9 +106,9 @@ body.manage-mode .oswa-avatar-img, body.manage-mode .oswa-avatar { opacity: 0.5;
 .oswa-btn-delete:hover { background: #E50914; color: white; border-color: #E50914; }
 .oswa-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(0, 0, 0, 0.85); z-index: 100000; display: flex; justify-content: center; align-items: center; transition: opacity 0.3s ease, visibility 0.3s; }
 .oswa-modal.oswa-hidden { opacity: 0; visibility: hidden; pointer-events: none; }
-.oswa-modal-content { background: #141414; padding: 2.5rem; border-radius: 8px; width: 90%; max-width: 450px; position: relative; border: 1px solid #333;}
+.oswa-modal-content { background: #1c1c1c; padding: 2.5rem; border-radius: 8px; width: 90%; max-width: 450px; position: relative; border: 1px solid #333;}
 .oswa-modal-content h2 { color: #fff; font-size: 1.8rem; margin-bottom: 1.5rem; text-align: center;}
-.oswa-close { position: absolute; top: 15px; right: 20px; color: grey; font-size: 2.5rem; cursor: pointer; transition: color 0.2s; line-height: 1;}
+.oswa-close { position: absolute; top: 15px; right: 20px; color: grey; font-size: 2.5rem; cursor: pointer; transition: color 0.2s; line-height: 1; z-index: 100001;}
 .oswa-close:hover { color: white; }
 .oswa-input-group { margin-bottom: 1.5rem; text-align: center;}
 .oswa-input-group input[type="text"] { width: 100%; padding: 12px 16px; background: #333; border: 1px solid #444; border-radius: 4px; color: #fff; font-size: 1rem; outline: none; }
@@ -208,11 +131,18 @@ body.manage-mode .oswa-avatar-img, body.manage-mode .oswa-avatar { opacity: 0.5;
         document.getElementById('oswa-profile-selector').classList.add('oswa-hidden');
     };
 
-    // Cambiar de Cuenta
+    // Cambiar de Cuenta (CORREGIDO EL REDIRECT 404)
     window.seleccionarPerfilConCarga = async function(userId) {
-        if(document.body.classList.contains('manage-mode')) return;
+        if(document.body.classList.contains('manage-mode')) return; // Evita cambiar si está editando
         
-        document.body.style.cursor = 'wait';
+        // Mostrar Loader si existe
+        const loader = document.getElementById('oswa-loader');
+        if (loader) {
+            loader.style.opacity = '1';
+            loader.style.visibility = 'visible';
+            loader.style.display = 'flex';
+        }
+
         try {
             const response = await fetch('/cambiar-perfil-netflix', {
                 method: 'POST',
@@ -220,44 +150,62 @@ body.manage-mode .oswa-avatar-img, body.manage-mode .oswa-avatar { opacity: 0.5;
                 body: JSON.stringify({ user_id: userId })
             });
             const data = await response.json();
+            
+            // LA MAGIA ESTÁ AQUÍ: Si el backend no devuelve 'redirect', recargamos la página actual.
             if (data.success) {
-                window.location.reload();
+                if(data.redirect && data.redirect !== 'undefined') {
+                    window.location.href = data.redirect;
+                } else {
+                    window.location.reload(); // Recarga la vista actual (Dashboard, Catálogo, etc.)
+                }
             } else {
                 alert('Error al cambiar de cuenta.');
-                document.body.style.cursor = 'default';
+                if (loader) loader.style.display = 'none';
             }
         } catch (error) {
             console.error("Error:", error);
-            document.body.style.cursor = 'default';
+            // Si hay un error de conexión, recargamos la página por seguridad
+            window.location.reload();
         }
     }
 
-    // Toggle Botón Administrar Perfiles
+    // Toggle Botón Administrar Perfiles (Versión Global Segura)
+    window.activarModoEdicion = function() {
+        document.body.classList.add('manage-mode');
+        document.getElementById('btn-administrar').style.display = 'none';
+        document.getElementById('btn-listo').style.display = 'inline-block';
+        const titulo = document.getElementById('titulo-perfiles');
+        if (titulo) titulo.innerText = 'Administrar perfiles';
+    };
+
+    window.desactivarModoEdicion = function() {
+        document.body.classList.remove('manage-mode');
+        document.getElementById('btn-listo').style.display = 'none';
+        document.getElementById('btn-administrar').style.display = 'inline-block';
+        const titulo = document.getElementById('titulo-perfiles');
+        if (titulo) titulo.innerText = '¿Quién está gestionando ahora?';
+    };
+
+    // Agregar EventListeners si los botones existen
     document.addEventListener("DOMContentLoaded", function() {
         const btnAdministrar = document.getElementById('btn-administrar');
         const btnListo = document.getElementById('btn-listo');
-        const titulo = document.getElementById('titulo-perfiles');
         
         if (btnAdministrar && btnListo) {
-            btnAdministrar.addEventListener('click', function(e) {
-                document.body.classList.add('manage-mode');
-                btnAdministrar.style.display = 'none';
-                btnListo.style.display = 'inline-block';
-                if (titulo) titulo.innerText = 'Administrar perfiles';
-            });
-
-            btnListo.addEventListener('click', function(e) {
-                document.body.classList.remove('manage-mode');
-                btnListo.style.display = 'none';
-                btnAdministrar.style.display = 'inline-block';
-                if (titulo) titulo.innerText = '¿Quién está gestionando ahora?';
-            });
+            btnAdministrar.addEventListener('click', window.activarModoEdicion);
+            btnListo.addEventListener('click', window.desactivarModoEdicion);
         }
     });
 
-    // Modales de Edición y Creación
-    window.abrirModalCreacion = function() { document.getElementById('oswa-modal-create').classList.remove('oswa-hidden'); }
-    window.cerrarModalCreacion = function() { document.getElementById('oswa-modal-create').classList.add('oswa-hidden'); }
+    // Modales de Edición y Creación (CORREGIDO EL CIERRE DEL MODAL)
+    window.abrirModalCreacion = function() { 
+        document.getElementById('oswa-modal-create').classList.remove('oswa-hidden'); 
+    }
+    
+    window.cerrarModalCreacion = function() { 
+        document.getElementById('oswa-modal-create').classList.add('oswa-hidden'); 
+        document.getElementById('oswa-form-create').reset(); // Limpia el formulario
+    }
     
     window.abrirModalEdicion = function(userId, userName) {
         document.getElementById('edit-user-id').value = userId;
@@ -267,7 +215,10 @@ body.manage-mode .oswa-avatar-img, body.manage-mode .oswa-avatar { opacity: 0.5;
         previewAvatar.style.backgroundImage = 'none';
         document.getElementById('oswa-modal-edit').classList.remove('oswa-hidden');
     }
-    window.cerrarModalEdicion = function() { document.getElementById('oswa-modal-edit').classList.add('oswa-hidden'); }
+    
+    window.cerrarModalEdicion = function() { 
+        document.getElementById('oswa-modal-edit').classList.add('oswa-hidden'); 
+    }
 
     window.previewPhoto = function(event) {
         const reader = new FileReader();
@@ -282,17 +233,30 @@ body.manage-mode .oswa-avatar-img, body.manage-mode .oswa-avatar { opacity: 0.5;
     // Peticiones Fetch
     window.enviarFormularioCreacion = async function(e) {
         e.preventDefault();
+        const btn = e.target.querySelector('button[type="submit"]');
+        const btnText = btn.innerText;
+        btn.innerText = "Creando...";
+        btn.disabled = true;
+        
         const formData = new FormData(e.target);
         await fetchPostRequest('{{ route("perfil.crear") }}', formData);
+        
+        btn.innerText = btnText;
+        btn.disabled = false;
     }
 
     window.enviarFormularioEdicion = async function(e) {
         e.preventDefault();
         const userId = document.getElementById('edit-user-id').value;
-        const formData = new FormData(e.target);
         const btn = e.target.querySelector('button[type="submit"]');
+        const btnText = btn.innerText;
         btn.innerText = "Guardando...";
-        await fetchPostRequest(`/perfiles/actualizar/${userId}`, formData);
+        btn.disabled = true;
+        
+        await fetchPostRequest(`/perfiles/actualizar/${userId}`, new FormData(e.target));
+        
+        btn.innerText = btnText;
+        btn.disabled = false;
     }
 
     window.eliminarPerfil = async function() {
@@ -323,8 +287,3 @@ body.manage-mode .oswa-avatar-img, body.manage-mode .oswa-avatar { opacity: 0.5;
         }
     }
 </script>
-    
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    @stack('scripts')
-</body>
-</html>

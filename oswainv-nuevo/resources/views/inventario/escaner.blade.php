@@ -32,7 +32,7 @@
             font-weight: 500;
             transition: color 0.2s ease;
         }
-        .back-btn:hover { color: #ffffff; }
+        .back-btn:hover { color: #E50914; }
         
         .scanner-wrapper {
             max-width: 640px;
@@ -55,9 +55,9 @@
         }
         
         .scanner-card {
-            background: #141414;
+            background: #1c1c1c;
             border: 1px solid #2b2b2b;
-            border-radius: 8px;
+            border-radius: 12px;
             overflow: hidden;
             box-shadow: 0 8px 40px rgba(0,0,0,0.6);
         }
@@ -69,10 +69,10 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            border-bottom: 3px solid var(--accent-primary, #E50914);
+            border-bottom: 3px solid #E50914;
         }
         
-        #reader { width: 100%; }
+        #reader { width: 100%; border: none !important;}
         #reader video { border-radius: 0; }
         
         .scanner-viewer::before {
@@ -84,7 +84,7 @@
             width: 250px;
             height: 150px;
             border: 2px solid rgba(229,9,20,0.6);
-            border-radius: 4px;
+            border-radius: 12px;
             pointer-events: none;
             z-index: 10;
         }
@@ -113,33 +113,34 @@
         
         .manual-input-box { margin-top: 1rem; }
         .form-control {
-            background: #333333;
-            border: none;
+            background: #2a2a2a;
+            border: 1px solid #333;
             color: #ffffff;
             padding: 14px 16px;
             text-align: center;
             font-size: 1.1rem;
-            border-radius: 4px;
-            transition: background 0.2s ease;
+            border-radius: 8px;
+            transition: all 0.3s ease;
         }
         .form-control:focus {
-            background: #444;
+            background: #333;
             color: #ffffff;
-            box-shadow: none;
-            outline: 1px solid #666;
+            box-shadow: 0 0 15px rgba(229,9,20,0.3);
+            border-color: #E50914;
+            outline: none;
         }
         .form-control::placeholder { color: #777; }
         
         .hint-text { color: #777; font-size: 0.85rem; margin-top: 1rem; text-align: center; }
         
-        #status-indicator { display: flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 20px; background: #222; border: 1px solid #2b2b2b; font-size: 0.75rem; font-weight: 500; }
+        #status-indicator { display: flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 20px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); font-size: 0.75rem; font-weight: 500; }
         #status-indicator .status-dot { width: 8px; height: 8px; border-radius: 50%; transition: background 0.3s ease; }
-        #status-indicator .status-text { color: var(--text-secondary); transition: color 0.3s ease; }
+        #status-indicator .status-text { color: #ccc; transition: color 0.3s ease; }
         #status-indicator.online .status-dot { background: #00b894; box-shadow: 0 0 6px rgba(0,184,148,0.6); }
         #status-indicator.offline .status-dot { background: #e74c3c; box-shadow: 0 0 6px rgba(231,76,60,0.6); }
         #status-indicator.offline .status-text { color: #e74c3c; }
         
-        .offline-banner { display: none; background: rgba(231,76,60,0.15); border: 1px solid rgba(231,76,60,0.3); border-radius: 4px; padding: 12px 16px; margin-bottom: 1.5rem; text-align: center; }
+        .offline-banner { display: none; background: rgba(231,76,60,0.15); border: 1px solid rgba(231,76,60,0.3); border-radius: 8px; padding: 12px 16px; margin-bottom: 1.5rem; text-align: center; }
         .offline-banner.show { display: block; }
         .offline-banner i { color: #e74c3c; margin-right: 8px; }
         .offline-banner span { color: #e74c3c; font-size: 0.85rem; font-weight: 500; }
@@ -148,8 +149,8 @@
 <body>
 
     <div class="topbar">
-        <a href="{{ route('inventario') }}" class="back-btn">
-            <i class="bi bi-arrow-left"></i> Volver al Dashboard
+        <a href="{{ route('catalogo') }}" class="back-btn">
+            <i class="bi bi-arrow-left"></i> Volver al Catálogo
         </a>
         <div id="status-indicator" class="online" style="margin-left: auto;">
             <span class="status-dot"></span>
@@ -192,7 +193,7 @@
             const config = { fps: 10, qrbox: { width: 250, height: 150 } };
             
             html5QrCode.start({ facingMode: "environment" }, config, (codigo) => {
-                if (html5QrCode.getState() === 2) { html5QrCode.pause(true); } // Pausar para no leer 2 veces
+                if (html5QrCode.getState() === 2) { html5QrCode.pause(true); } 
                 document.getElementById('barcodeInput').value = codigo;
                 procesarBarcode();
             }).catch(err => {
@@ -200,7 +201,7 @@
                 document.getElementById('reader').innerHTML = `
                     <div style="padding: 40px 20px; text-align: center; color: #E50914;">
                         <i class="bi bi-camera-video-off" style="font-size: 3rem;"></i>
-                        <p class="mt-3">La cámara está bloqueada por el navegador o no tienes permisos.</p>
+                        <p class="mt-3 text-white">La cámara está bloqueada o en uso por otra app.</p>
                     </div>`;
             });
             
@@ -227,10 +228,9 @@
             const codigo = document.getElementById('barcodeInput').value.trim();
             if (!codigo) return;
 
-            // Pausar si viene de manual
             if (html5QrCode && html5QrCode.getState() === 2) { html5QrCode.pause(true); }
 
-            Swal.fire({ title: 'Buscando...', text: 'Verificando producto', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
+            Swal.fire({ title: 'Buscando...', text: 'Verificando base de datos...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() }, background: '#1c1c1c', color: '#fff' });
 
             try {
                 // 1. Buscar en tu base de datos (Laravel)
@@ -247,7 +247,8 @@
                         title: '+1 ' + data.producto.nombre,
                         text: 'Stock actualizado a: ' + data.nuevo_stock,
                         timer: 2000,
-                        showConfirmButton: false
+                        showConfirmButton: false,
+                        background: '#1c1c1c', color: '#fff'
                     }).then(() => {
                         document.getElementById('barcodeInput').value = '';
                         if (html5QrCode && html5QrCode.getState() === 3) html5QrCode.resume();
@@ -255,67 +256,67 @@
                 } else {
                     if (!navigator.onLine) {
                         Swal.fire({
-                            icon: 'warning',
-                            title: 'Sin conexión',
+                            icon: 'warning', title: 'Sin conexión',
                             text: 'No se puede buscar en internet. Conéctate para registrar nuevos productos.',
-                            confirmButtonText: 'Entendido',
-                            confirmButtonColor: '#E50914'
+                            confirmButtonText: 'Entendido', confirmButtonColor: '#E50914', background: '#1c1c1c', color: '#fff'
                         }).then(() => {
                             document.getElementById('barcodeInput').value = '';
                             if (html5QrCode && html5QrCode.getState() === 3) html5QrCode.resume();
                         });
                         return;
                     }
-                    // 2. Si no existe localmente, buscar en API Mundial (OpenFoodFacts)
-                    Swal.fire({ title: 'No registrado', text: 'Buscando en internet...', icon: 'info', timer: 1500, showConfirmButton: false });
+                    
+                    // 2. Buscar en API Mundial (OpenFoodFacts)
+                    Swal.fire({ title: 'Código no registrado', text: 'Buscando información global en internet...', icon: 'info', showConfirmButton: false, background: '#1c1c1c', color: '#fff' });
                     
                     const apiMundial = await fetch(`https://world.openfoodfacts.org/api/v0/product/${codigo}.json`);
                     const dataMundial = await apiMundial.json();
 
                     if (dataMundial.status === 1 && dataMundial.product) {
-                        let nombreInternet = dataMundial.product.product_name || dataMundial.product.generic_name || "Producto sin nombre";
+                        let nombreInternet = dataMundial.product.product_name || dataMundial.product.generic_name || "Producto Nuevo";
                         let imagenInternet = dataMundial.product.image_front_url || dataMundial.product.image_url || "";
 
-                        // DISEÑO BONITO RECUPERADO (FOTO + CHECK)
                         Swal.fire({
                             html: `
                                 <div style="text-align:center; padding:10px;">
-                                    <div style="width: 80px; height: 80px; border-radius: 50%; background: rgba(229,9,20,0.15); display: flex; align-items: center; justify-content: center; margin: 0 auto 15px;">
-                                        <i class="bi bi-check-lg" style="font-size: 50px; color: #E50914;"></i>
+                                    <div style="width: 80px; height: 80px; border-radius: 50%; background: rgba(0,184,148,0.15); display: flex; align-items: center; justify-content: center; margin: 0 auto 15px;">
+                                        <i class="bi bi-cloud-check-fill" style="font-size: 40px; color: #00b894;"></i>
                                     </div>
-                                    <h2 style="color:#ffffff; margin:15px 0 5px; font-weight:700;">Producto encontrado online</h2>
-                                    <p style="color:#b3b3b3; margin:0 0 15px; font-size:1.1rem;">${nombreInternet}</p>
-                                    ${imagenInternet ? `<img src="${imagenInternet}" style="width:150px; height:150px; object-fit:cover; border-radius:4px; box-shadow:0 4px 15px rgba(0,0,0,0.5); margin:10px auto; display:block;">` : `<i class="bi bi-box-seam" style="font-size:80px; color:#b3b3b3;"></i>`}
-                                    <p style="color:#777; margin-top: 15px; font-size: 0.9rem;">Se autocompletarán los datos en el formulario</p>
+                                    <h3 style="color:#ffffff; margin:10px 0 5px; font-weight:700;">¡Encontrado en Internet!</h3>
+                                    <p style="color:#b3b3b3; margin:0 0 15px; font-size:1.1rem; font-weight: 500;">${nombreInternet}</p>
+                                    ${imagenInternet ? `<img src="${imagenInternet}" style="width:150px; height:150px; object-fit:cover; border-radius:8px; box-shadow:0 4px 15px rgba(0,0,0,0.5); margin:10px auto; display:block;">` : `<i class="bi bi-box-seam" style="font-size:80px; color:#444;"></i>`}
+                                    <p style="color:#777; margin-top: 15px; font-size: 0.85rem;">Enviaremos estos datos al catálogo para que agregues el precio.</p>
                                 </div>
                             `,
-                            background: '#181818',
+                            background: '#1c1c1c',
                             showConfirmButton: true,
-                            confirmButtonText: 'Continuar',
+                            confirmButtonText: '<i class="bi bi-arrow-right-circle me-1"></i> Ir al Catálogo',
                             confirmButtonColor: '#E50914',
                             allowOutsideClick: false
                         }).then(() => {
-                            // AQUÍ ESTABA EL ERROR: AHORA SÍ MANDA LA IMAGEN (nueva_imagen)
                             if (html5QrCode) { html5QrCode.stop().catch(()=>{}); }
-                            window.location.href = `{{ route('inventario') }}?nuevo_codigo=${codigo}&nuevo_nombre=${encodeURIComponent(nombreInternet)}&nueva_imagen=${encodeURIComponent(imagenInternet)}`;
+                            // AQUI LA MAGIA: REDIRIGIMOS AL CATALOGO CON LOS DATOS
+                            window.location.href = `{{ route('catalogo') }}?nuevo_codigo=${codigo}&nuevo_nombre=${encodeURIComponent(nombreInternet)}&nueva_imagen=${encodeURIComponent(imagenInternet)}`;
                         });
                     } else {
-                        // Diseño para cuando el producto no existe ni en la API mundial
+                        // El producto no existe ni en internet
                         Swal.fire({
-                            icon: 'info',
-                            title: 'Código nuevo',
-                            text: 'El producto no está en internet. Vamos a crearlo manualmente.',
-                            confirmButtonText: 'Registrar',
-                            confirmButtonColor: '#E50914'
+                            icon: 'question',
+                            title: 'Producto no reconocido',
+                            text: 'El código de barras no existe en nuestra base de datos ni en internet. Vamos a registrarlo manualmente.',
+                            confirmButtonText: 'Registrar a mano',
+                            confirmButtonColor: '#E50914',
+                            background: '#1c1c1c', color: '#fff'
                         }).then(() => {
                             if (html5QrCode) { html5QrCode.stop().catch(()=>{}); }
-                            window.location.href = `{{ route('inventario') }}?nuevo_codigo=${codigo}`;
+                            // REDIRIGIMOS AL CATALOGO SOLO CON EL CÓDIGO
+                            window.location.href = `{{ route('catalogo') }}?nuevo_codigo=${codigo}`;
                         });
                     }
                 }
             } catch (error) {
                 console.error(error);
-                Swal.fire('Error', 'Problema de conexión con el servidor', 'error').then(() => {
+                Swal.fire({title: 'Error', text: 'Problema de conexión', icon: 'error', background: '#1c1c1c', color: '#fff'}).then(() => {
                     if (html5QrCode && html5QrCode.getState() === 3) html5QrCode.resume();
                 });
             }

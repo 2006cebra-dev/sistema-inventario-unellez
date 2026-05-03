@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\InventarioController;
 use App\Http\Controllers\BackupController;
 use App\Http\Controllers\ProfileController;
+use App\Models\Movimiento; // Agregado para la reparación de firmas
 
 // Ruta pública de la Landing Page
 Route::get('/', function () {
@@ -32,10 +33,14 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/buscar-codigo', [InventarioController::class, 'buscarPorCodigo'])->name('buscar.codigo');
     Route::post('/productos/escanear', [InventarioController::class, 'escanearProducto'])->name('escanear.producto');
     Route::post('/productos/guardar', [InventarioController::class, 'guardarProducto'])->name('guardar.producto');
-    Route::put('/productos/{id}/actualizar', [InventarioController::class, 'actualizarProducto'])->name('productos.update');
+    Route::put('/productos/{id}/actualizar', [InventarioController::class, 'actualizarProducto'])->name('productos.actualizar');
     Route::post('/oswa-bot', [InventarioController::class, 'oswaBot'])->name('oswa.bot');
     Route::get('/exportar-pdf', [InventarioController::class, 'exportarPdf'])->name('exportar.pdf');
     Route::delete('/eliminar-producto', [InventarioController::class, 'eliminarProducto'])->name('eliminar.producto');
+    Route::get('/productos/{id}/editar', [InventarioController::class, 'edit'])->name('productos.edit');
+    Route::put('/productos/{id}', [InventarioController::class, 'update'])->name('productos.update');
+    Route::patch('/productos/{id}/stock', [InventarioController::class, 'updateStock'])->name('productos.stock');
+    Route::delete('/productos/{id}', [InventarioController::class, 'destroy'])->name('productos.destroy');
     Route::post('/transferir-producto', [InventarioController::class, 'transferirProducto'])->name('transferir.producto');
     Route::get('/orden-compra/{id}', [InventarioController::class, 'generarOrdenCompra'])->name('orden.compra');
     
@@ -59,10 +64,13 @@ Route::middleware(['auth'])->group(function () {
     // --- CAMBIO DE PERFIL NETFLIX ---
     Route::post('/cambiar-perfil-netflix', function (Request $request) {
         $request->validate(['user_id' => 'required|integer']);
+        
         $loginExitoso = Auth::loginUsingId($request->user_id);
+        
         if ($loginExitoso) {
-            return response()->json(['success' => true, 'redirect' => url('/dashboard')]);
+            return response()->json(['success' => true]);
         }
+        
         return response()->json(['success' => false, 'message' => 'Usuario no encontrado'], 404);
     })->name('perfil.cambiar');
     
@@ -70,4 +78,27 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/perfiles/crear', [ProfileController::class, 'store'])->name('perfil.crear');
     Route::post('/perfiles/actualizar/{id}', [ProfileController::class, 'update'])->name('perfil.actualizar');
     Route::delete('/perfiles/eliminar/{id}', [ProfileController::class, 'destroy'])->name('perfil.eliminar');
+    
+    // --- RUTA TEMPORAL: REPARAR FIRMAS ANTIGUAS ---
+    Route::get('/reparar-firmas', function () {
+        $registros = Movimiento::whereNull('firma_hash')
+                               ->orWhere('firma_hash', '')
+                               ->orWhere('firma_hash', 'SIN FIRMA')
+                               ->get();
+
+        $contador = 0;
+
+        foreach ($registros as $reg) {
+            // Reconstruimos la cadena según la lógica de auditoría vigente
+            $cadenaBase = $reg->id . $reg->codigo_producto . $reg->tipo . $reg->cantidad . $reg->motivo . $reg->usuario_accion;
+            
+            $hash = hash('sha256', $cadenaBase);
+
+            $reg->firma_hash = $hash;
+            $reg->save();
+            $contador++;
+        }
+
+        return "¡Éxito Carlos! Se han recalculado y recuperado las firmas de {$contador} registros antiguos.";
+    });
 });

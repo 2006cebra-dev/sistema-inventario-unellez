@@ -3,561 +3,504 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OSWA Inv — Sistema de Gestión de Inventario</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>Inicio - OSWA Inv</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <style>
         :root {
-            --bg-main: #121212;
-            --bg-card: #1c1c1c;
-            --n-red: #E50914;
-            --n-border: #2b2b2b;
-            --bg-dark: #121212;
-            --bg-input: #2a2a2a;
-            --border-color: #2b2b2b;
-            --text-primary: #e5e5e5;
-            --text-secondary: #a3a3a3;
-            --accent-primary: #E50914;
-            --accent-success: #00b894;
-            --accent-danger: #e74c3c;
-            --topbar-height: 68px;
-        }
-        * { font-family: 'Inter', sans-serif; margin: 0; padding: 0; box-sizing: border-box; }
-        body { background-color: var(--bg-main) !important; color: #e5e5e5; }
-
-        /* Navbar Glassmorphism */
-        .topbar {
-            position: fixed; top: 0; left: 0; right: 0; height: var(--topbar-height);
-            background: linear-gradient(to bottom, rgba(18,18,18,0.90) 0%, rgba(18,18,18,0) 100%) !important;
-            backdrop-filter: blur(10px);
-            border: none !important;
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 0 4%; z-index: 999;
-        }
-        .topbar-left { display: flex; align-items: center; gap: 1rem; }
-        .topbar-logo { white-space: nowrap; font-size: 1.5rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
-        .topbar-logo .logo-text {
-            background: linear-gradient(90deg, #E50914, #ff6b6b, #B20710, #E50914);
-            background-size: 300% 100%; -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            animation: rgbText 4s ease infinite;
-        }
-        @keyframes rgbText { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-        .logo-nav-unellez {
-            height: 35px; filter: brightness(0) invert(1);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; margin-right: 10px;
-        }
-        .logo-nav-unellez:hover {
-            transform: scale(1.2);
-            filter: brightness(0) invert(1) drop-shadow(0 0 8px rgba(255, 255, 255, 0.8));
-        }
-        .topbar-nav { display: flex; align-items: center; gap: 1.5rem; }
-        .topbar-nav a { color: #b3b3b3; text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: color 0.2s ease; }
-        .topbar-nav a:hover { color: #ffffff; }
-        .topbar-right { display: flex; align-items: center; gap: 1rem; }
-
-        .btn-netflix-red {
-            background: var(--n-red) !important; color: #fff !important; border: none !important;
-            font-weight: 600; padding: 10px 24px; border-radius: 4px;
-            box-shadow: 0 4px 15px rgba(229,9,20,0.4); transition: all 0.3s ease;
-            text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
-        }
-        .btn-netflix-red:hover {
-            background: #b8070f !important; transform: scale(1.05);
-            box-shadow: 0 8px 25px rgba(229,9,20,0.6); color: #fff !important;
+            --accent: #E50914;
+            --bg-main: #050505;
+            --bg-card: #121212;
+            --text-main: #ffffff;
+            --text-bright-muted: #d4d4d4;
         }
 
-        @keyframes textGlowRed {
-            0% { text-shadow: 0 0 5px rgba(229, 9, 20, 0.2); }
-            50% { text-shadow: 0 0 15px rgba(229, 9, 20, 0.7); }
-            100% { text-shadow: 0 0 5px rgba(229, 9, 20, 0.2); }
-        }
-        .text-animated-red {
-            color: #E50914 !important;
-            animation: textGlowRed 2.5s infinite ease-in-out;
-            font-weight: 900;
+        body { background-color: var(--bg-main); color: var(--text-main); font-family: 'Inter', sans-serif; overflow-x: hidden; scroll-behavior: smooth; }
+
+        .text-oswa-muted { color: var(--text-bright-muted) !important; line-height: 1.6; }
+
+        /* NAVBAR INICIAL (Transparente) */
+        .navbar-oswa {
+            background: transparent;
+            border-bottom: 1px solid transparent;
+            transition: all 0.4s ease-in-out;
+            padding: 20px 0;
         }
 
-        .subtitle-premium {
-            font-family: 'Inter', 'Roboto', sans-serif !important;
-            font-size: 0.95rem;
-            font-weight: 800;
-            letter-spacing: 5px;
-            color: #E50914 !important;
-            text-transform: uppercase;
+        /* ESTADO AL BAJAR EL SCROLL (Cristal) */
+        .navbar-oswa.scrolled {
+            background: rgba(5, 5, 5, 0.7);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 12px 0;
         }
+        .btn-outline-oswa { color: #fff; border: 1px solid var(--accent); transition: 0.3s; }
+        .btn-outline-oswa:hover { background: var(--accent); color: #fff; box-shadow: 0 0 15px rgba(229, 9, 20, 0.5); }
+        .btn-oswa { background: var(--accent); color: #fff; border: none; transition: 0.3s; }
+        .btn-oswa:hover { background: #b20710; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(229, 9, 20, 0.4); color: #fff; }
 
-        .btn-dark-glass {
-            background-color: rgba(25, 25, 25, 0.6) !important;
-            color: #e5e5e5 !important;
-            border: 1px solid #333 !important;
-            padding: 12px 28px;
-            border-radius: 4px;
-            backdrop-filter: blur(8px);
-            transition: all 0.3s ease;
-            font-weight: 500;
-            text-decoration: none;
-            display: inline-flex;
+        /* HERO SECTION CON FONDO ANIMADO */
+        .hero-section {
+            height: 100vh;
+            display: flex;
             align-items: center;
-            gap: 8px;
-        }
-        .btn-dark-glass:hover {
-            background-color: rgba(40, 40, 40, 0.9) !important;
-            color: #fff !important;
-            border-color: #E50914 !important;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-        }
-
-        @media (max-width: 768px) {
-            .topbar-nav { display: none !important; }
-            .topbar-logo .logo-text { display: none !important; }
-        }
-
-        /* Hero Banner */
-        .hero-banner {
-            position: relative; min-height: 100vh;
-            display: flex; align-items: center; justify-content: center; text-align: center;
-            background: linear-gradient(177deg, rgba(18,18,18,0.97) 0%, rgba(18,18,18,0.85) 40%, transparent 80%),
-                        url('{{ asset('img/refrigeracion_centros_datos.jpg') }}') center/cover no-repeat;
+            position: relative;
             overflow: hidden;
+            background-color: #000;
         }
-        .hero-banner::after {
-            content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 300px;
-            background: linear-gradient(to top, var(--bg-main) 0%, transparent 100%);
+
+        .hero-bg-container {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             z-index: 1;
         }
-        .hero-banner .container { position: relative; z-index: 2; }
 
-        /* Scroll Reveal */
-        .reveal { opacity: 0; transform: translateY(60px); transition: all 0.8s ease-out; }
+        .hero-bg-image {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-size: cover;
+            background-position: center;
+            animation: kenBurns 20s infinite alternate ease-in-out;
+            will-change: transform;
+        }
+
+        .hero-bg-overlay {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: linear-gradient(
+                to bottom,
+                rgba(5, 5, 5, 0.7) 0%,
+                rgba(5, 5, 5, 0.4) 50%,
+                rgba(5, 5, 5, 0.9) 100%
+            );
+            z-index: 2;
+        }
+
+        /* REFINAMIENTO DE TEXTO HERO */
+        .hero-title {
+            font-size: clamp(2.5rem, 8vw, 4.2rem);
+            font-weight: 800;
+            line-height: 1.1;
+            letter-spacing: -2px;
+            color: #fff;
+            text-shadow: 0 10px 30px rgba(0,0,0,0.8);
+        }
+
+        .hero-accent {
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            font-size: 0.9em;
+            display: block;
+            margin-top: 10px;
+        }
+
+        .hero-subtitle {
+            font-size: 1.15rem;
+            font-weight: 400;
+            color: var(--text-bright-muted);
+            max-width: 600px;
+            letter-spacing: 0.5px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.9);
+        }
+
+        @keyframes kenBurns {
+            0% {
+                transform: scale(1) translate(0, 0);
+            }
+            100% {
+                transform: scale(1.15) translate(-1%, -1%);
+            }
+        }
+
+        /* ANIMACIONES */
+        .reveal { opacity: 0; transform: translateY(60px); transition: all 0.8s cubic-bezier(0.2, 0.8, 0.2, 1); }
         .reveal.active { opacity: 1; transform: translateY(0); }
+        .reveal-left { transform: translateX(-60px); }
+        .reveal-right { transform: translateX(60px); }
+        .reveal-left.active, .reveal-right.active { transform: translateX(0); }
 
-        /* Stat Cards */
-        .stat-card {
-            background: var(--bg-card) !important;
-            border: 1px solid var(--n-border) !important;
-            border-radius: 15px !important;
-            padding: 2rem;
-            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-            position: relative; overflow: hidden;
-        }
-        .stat-card:hover {
-            transform: translateY(-8px) scale(1.05);
-            border-color: #E50914 !important;
-            box-shadow: 0 15px 30px rgba(0,0,0,0.6);
-        }
+        /* CARDS */
+        .feature-card { background: var(--bg-card); border: 1px solid rgba(255,255,255,0.05); border-radius: 15px; padding: 2rem; transition: 0.3s; height: 100%; }
+        .feature-card:hover { transform: translateY(-5px); border-color: rgba(229, 9, 20, 0.5); box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
+        .feature-icon { font-size: 2rem; color: var(--accent); }
 
-        /* Sección Características */
-        .section-title {
-            font-size: 2rem; font-weight: 700; text-align: center; margin-bottom: 0.5rem;
-        }
-        .section-subtitle {
-            text-align: center; color: var(--text-secondary); font-family: 'Consolas', monospace;
-            font-size: 0.9rem; margin-bottom: 1rem;
-        }
+        /* ACCORDION FAQ OSCURO */
+        .accordion-item { background-color: var(--bg-card); border: 1px solid rgba(255,255,255,0.05); border-radius: 10px !important; margin-bottom: 1rem; overflow: hidden; }
+        .accordion-button { background-color: var(--bg-card); color: white; font-weight: bold; box-shadow: none !important; }
+        .accordion-button:not(.collapsed) { background-color: rgba(229, 9, 20, 0.1); color: var(--accent); }
+        .accordion-button::after { filter: invert(1); }
+        .accordion-body { color: var(--text-bright-muted); }
 
-        /* Sección Estadísticas */
-        .stats-strip {
-            background: var(--bg-card); border: 1px solid var(--n-border);
-            border-radius: 15px; padding: 2rem;
-        }
-        .stat-number {
-            font-family: 'Consolas', monospace; font-size: 2.5rem; font-weight: 800;
-            color: var(--n-red);
-        }
-        .stat-label { color: var(--text-secondary); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; }
-
-        /* Sección Contacto */
-        .contact-card {
-            background: var(--bg-card); border: 1px solid var(--n-border);
-            border-radius: 15px; padding: 2.5rem;
-        }
-
-        /* Footer */
-        .landing-footer {
-            text-align: center; padding: 2rem 4%; border-top: 1px solid var(--n-border);
-            color: var(--text-secondary); font-size: 0.85rem;
-        }
-        .landing-footer span.highlight { color: var(--text-primary); font-weight: 600; }
-        .landing-footer .heart-icon { color: var(--accent-danger); animation: heartbeat 1.5s infinite; display: inline-block; }
-        @keyframes heartbeat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
-
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #0a0a0a; }
-        ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #B20710, #E50914); border-radius: 10px; }
-
-        /* =========================================
-           ADAPTACIÓN PARA MÓVILES (Pantallas < 768px)
-           ========================================= */
-        @media (max-width: 768px) {
-            
-            /* 1. Reparación del Chatbot */
-            .oswa-bot-window {
-                width: 90vw !important;
-                right: 5vw !important;
-                bottom: 100px !important;
-                height: 65vh !important;
-            }
-
-            /* 2. Reparación del Hero Banner (Letras gigantes) */
-            .hero-banner h1.display-3 {
-                font-size: 2.2rem !important;
-            }
-            
-            .subtitle-hero-clear {
-                font-size: 1rem !important;
-                line-height: 1.4 !important;
-                padding: 0 15px !important;
-            }
-
-            /* Achicar el logo de la UNELLEZ en móvil */
-            .hero-banner img.logo-white-glow {
-                height: 35px !important; 
-            }
-
-            /* 3. Reparación de Botones del Navbar y Hero (Que no se salgan de la pantalla) */
-            .hero-banner .d-flex.gap-3 {
-                flex-direction: column !important;
-                gap: 15px !important;
-                width: 100%;
-                padding: 0 20px;
-            }
-            
-            .hero-banner .d-flex.gap-3 .btn {
-                width: 100% !important;
-            }
-
-            /* Si los botones de "Iniciar Sesión" y "Registrar" del Navbar se desbordan: */
-            .navbar .d-flex.gap-3 {
-                flex-direction: column !important;
-                width: 100% !important;
-                margin-top: 15px;
-            }
-            .navbar .d-flex.gap-3 .btn {
-                width: 100% !important;
-                text-align: center;
-            }
-        }
-
-        /* Chatbot OSWA-Bot */
-        .bot-fab { position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; border-radius: 50%; background: #E50914; color: white; border: none; font-size: 1.8rem; box-shadow: 0 8px 25px rgba(229,9,20,0.5); z-index: 9999; cursor: pointer; transition: transform 0.3s; display: flex; align-items: center; justify-content: center; }
-        .bot-fab:hover { transform: scale(1.1); }
-        .floating-bot-window { position: fixed; bottom: 90px; right: 20px; width: 340px; height: 450px; background: #1c1c1c; border: 1px solid #2b2b2b; border-radius: 16px; box-shadow: 0 15px 40px rgba(0,0,0,0.6); z-index: 9998; display: flex; flex-direction: column; opacity: 0; pointer-events: none; transform: translateY(20px); transition: all 0.3s ease; overflow: hidden; }
-        .floating-bot-window.show { opacity: 1; pointer-events: all; transform: translateY(0); }
-        .bot-header { background: #141414; padding: 15px; color: white; font-weight: 600; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #2b2b2b; }
-        .bot-header button { background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; }
-        .bot-chat-history { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; background: #121212; }
-        .bot-chat-history::-webkit-scrollbar { width: 6px; }
-        .bot-chat-history::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
-        .chat-bubble { max-width: 85%; padding: 10px 14px; border-radius: 12px; font-size: 0.85rem; line-height: 1.4; animation: fadeIn 0.3s ease; }
-        .user-bubble { align-self: flex-end; background: #E50914; color: white; border-bottom-right-radius: 4px; }
-        .bot-bubble { align-self: flex-start; background: #2b2b2b; color: white; border-bottom-left-radius: 4px; }
-        .oswa-quick-replies-container { display: flex; gap: 8px; padding: 10px 15px; overflow-x: auto; white-space: nowrap; background: transparent; width: 100%; box-sizing: border-box; }
-        .oswa-quick-replies-container::-webkit-scrollbar { height: 5px; }
-        .oswa-quick-replies-container::-webkit-scrollbar-track { background: #1c1c1c; border-radius: 10px; }
-        .oswa-quick-replies-container::-webkit-scrollbar-thumb { background: #E50914; border-radius: 10px; }
-        .bot-chip { flex-shrink: 0; background: transparent; border: 1px solid #E50914; color: #E50914; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; cursor: pointer; transition: all 0.2s ease-in-out; white-space: nowrap; }
-        .bot-chip:hover { background: #E50914; color: #ffffff; }
-        .bot-input-area { padding: 10px; background: #1c1c1c; display: flex; gap: 8px; }
-        .bot-input-area input { flex: 1; padding: 10px 15px; background: #2a2a2a; border: none; border-radius: 20px; color: #e5e5e5; outline: none; font-size: 0.85rem; }
-        .bot-input-area button { width: 40px; height: 40px; border-radius: 50%; background: #E50914; color: white; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        @media (max-width: 768px) {
-            .floating-bot-window { width: 90vw !important; right: 5vw !important; bottom: 100px !important; height: 65vh !important; }
-        }
+        /* CHATBOT */
+        .btn-chatbot { position: fixed; bottom: 30px; right: 30px; background: var(--accent); color: white; border: none; border-radius: 50%; width: 60px; height: 60px; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; box-shadow: 0 5px 20px rgba(229, 9, 20, 0.5); cursor: pointer; z-index: 1000; transition: 0.3s; }
+        .btn-chatbot:hover { transform: scale(1.1); background: #b20710; }
+        .modal-content { background-color: var(--bg-card); border: 1px solid #333; color: white; }
+        .modal-header { border-bottom: 1px solid #333; }
+        .modal-footer { border-top: 1px solid #333; }
+        .btn-close-white { filter: invert(1) grayscale(100%) brightness(200%); }
+        #chat-body { max-height: 350px; overflow-y: auto; scrollbar-width: thin; }
     </style>
 </head>
 <body>
 
-    <nav class="topbar">
-        <div class="topbar-left">
-            <img src="{{ asset('img/logo-unellez.png') }}" class="logo-nav-unellez" alt="Logo">
-            <span class="fw-bold" style="color: #E50914 !important; font-size: 1.25rem;">OSWA Inv</span>
-        </div>
-        <div class="topbar-nav">
-            <a href="#inicio">Inicio</a>
-            <a href="#caracteristicas">Características</a>
-            <a href="#estadisticas">Estadísticas</a>
-            <a href="#contacto">Contacto</a>
-        </div>
-        <div class="topbar-right">
-            <div class="d-flex gap-3 align-items-center">
-                <a href="{{ route('register') }}" class="btn btn-outline-light fw-bold px-4 py-2" style="border-radius: 4px; transition: all 0.3s ease;">
-                    Registrarse
-                </a>
-                <a href="{{ route('login') }}" class="btn fw-bold px-4 py-2" style="background-color: #E50914; color: white; border-radius: 4px; border: none; transition: transform 0.2s ease;">
-                    Iniciar Sesión
-                </a>
+    <!-- NAVBAR COMPLETO -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-oswa fixed-top py-3">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="#">
+                <img src="{{ asset('img/logo-unellez.png') }}" alt="Logo" height="40" class="me-2" style="filter: brightness(0) invert(1);">
+                <span class="fw-bold" style="letter-spacing: 2px;">OSWA <span class="text-danger">INV</span></span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mx-auto">
+                    <li class="nav-item"><a class="nav-link text-white fw-semibold" href="#descubre">Características</a></li>
+                    <li class="nav-item"><a class="nav-link text-white fw-semibold" href="#seguridad">Seguridad</a></li>
+                    <li class="nav-item"><a class="nav-link text-white fw-semibold" href="#faq">FAQ</a></li>
+                    <li class="nav-item"><a class="nav-link text-white fw-semibold" href="#contacto">Soporte</a></li>
+                </ul>
+                <div class="d-flex gap-3 mt-3 mt-lg-0">
+                    <a href="{{ route('login') }}" class="btn btn-outline-oswa px-4 rounded-pill">Entrar</a>
+                    <a href="{{ route('register') }}" class="btn btn-oswa px-4 rounded-pill">Registrarse</a>
+                </div>
             </div>
         </div>
     </nav>
 
-    <!-- Hero Banner -->
-    <section id="inicio" class="hero-banner">
+    <!-- HERO SECTION CON FONDO ANIMADO -->
+    <section class="hero-section text-center">
+        <!-- Contenedor del fondo con animación -->
+        <div class="hero-bg-container">
+            <div class="hero-bg-image" style="background-image: url('{{ asset('img/hero-bg.jpg') }}');"></div>
+            <div class="hero-bg-overlay"></div>
+        </div>
+
+        <div class="container position-relative reveal active" style="z-index: 3;">
+            <!-- Título más refinado -->
+            <h1 class="hero-title mb-4">
+                El Control Total de tu <br> 
+                <span class="hero-accent">Inventario</span>
+            </h1>
+            
+            <!-- Subtítulo con mejor espaciado -->
+            <p class="hero-subtitle mb-5 mx-auto">
+                Un sistema de gestión exclusivo, seguro y diseñado para maximizar la eficiencia de tus operaciones. Tecnología de punta al alcance de tu empresa.
+            </p>
+            <div class="d-flex justify-content-center gap-4">
+                <a href="{{ route('login') }}" class="btn btn-oswa btn-lg px-5 py-3 rounded-pill fw-bold">Comenzar Ahora</a>
+                <a href="#descubre" class="btn btn-outline-light btn-lg px-5 py-3 rounded-pill fw-bold">Saber Más</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4 CARACTERÍSTICAS -->
+    <section id="descubre" class="py-5" style="margin-top: 2rem;">
+        <div class="container">
+            <div class="text-center mb-5 reveal">
+                <img src="{{ asset('img/logo-unellez.png') }}" alt="Logo" height="50" class="mb-3" style="filter: brightness(0) invert(1);">
+                <h2 class="display-5 fw-bold text-white">Ingeniería Aplicada al Inventario</h2>
+                <p class="text-oswa-muted fs-5">Diseñado para optimizar, asegurar y registrar cada movimiento en el almacén.</p>
+            </div>
+
+            <div class="row g-4 mb-5">
+                <div class="col-md-6 reveal reveal-left">
+                    <div class="feature-card d-flex align-items-start">
+                        <i class="bi bi-box-seam feature-icon me-4"></i>
+                        <div>
+                            <h4 class="fw-bold mb-2 text-white">Catálogo Inteligente</h4>
+                            <p class="text-oswa-muted mb-0">Control exacto de stock con un sistema de semáforo visual que alerta sobre vencimientos en tiempo real.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 reveal reveal-right">
+                    <div class="feature-card d-flex align-items-start">
+                        <i class="bi bi-buildings feature-icon me-4" style="color: #FFD700;"></i>
+                        <div>
+                            <h4 class="fw-bold mb-2 text-white">Red de Proveedores</h4>
+                            <p class="text-oswa-muted mb-0">Directorio corporativo vinculado al inventario, permitiendo emitir órdenes de abastecimiento directo.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 reveal reveal-left">
+                    <div class="feature-card d-flex align-items-start">
+                        <i class="bi bi-shield-lock feature-icon me-4" style="color: #00BFFF;"></i>
+                        <div>
+                            <h4 class="fw-bold mb-2 text-white">Auditoría Criptográfica</h4>
+                            <p class="text-oswa-muted mb-0">Registro inmutable de movimientos protegidos con firma digital (SHA-256) contra alteraciones.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 reveal reveal-right">
+                    <div class="feature-card d-flex align-items-start">
+                        <i class="bi bi-file-earmark-pdf feature-icon me-4" style="color: #32CD32;"></i>
+                        <div>
+                            <h4 class="fw-bold mb-2 text-white">Reportes Automatizados</h4>
+                            <p class="text-oswa-muted mb-0">Generación instantánea de reportes en PDF listos para imprimir, firmar y entregar a la gerencia.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- INTEGRIDAD Y CONFIANZA -->
+    <section id="seguridad" class="py-5">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6 reveal reveal-left mb-5 mb-lg-0">
+                    <h2 class="display-4 fw-bold text-white mb-4">Integridad y Confianza Absoluta</h2>
+                    <p class="text-oswa-muted fs-5 mb-4">
+                        A diferencia de otros sistemas, OSWA Inv cuenta con un registro inmutable. Cada operación es firmada criptográficamente para asegurar que nadie manipule la base de datos por detrás.
+                    </p>
+                    <ul class="list-unstyled text-oswa-muted fs-5">
+                        <li class="mb-3"><i class="bi bi-check-circle-fill text-danger me-2"></i> Auditoría completa de movimientos.</li>
+                        <li class="mb-3"><i class="bi bi-check-circle-fill text-danger me-2"></i> Control multi-usuario y perfiles.</li>
+                        <li><i class="bi bi-check-circle-fill text-danger me-2"></i> Reportes exportables.</li>
+                    </ul>
+                </div>
+                <div class="col-lg-6 reveal reveal-right">
+                    <div class="p-1 rounded-4" style="background: linear-gradient(45deg, #E50914, #333);">
+                        <img src="{{ asset('img/fondo-login.jpg') }}" alt="Sistema" class="img-fluid rounded-4" style="box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PREGUNTAS FRECUENTES -->
+    <section id="faq" class="py-5" style="background-color: #080808;">
         <div class="container reveal">
-            <div class="d-flex align-items-center justify-content-center mb-3">
-                <img src="{{ asset('img/logo-unellez.png') }}" alt="UNELLEZ" class="me-3" style="height: 45px; filter: drop-shadow(0px 0px 8px rgba(229, 9, 20, 0.3));">
-                <span class="subtitle-premium">Sistema de Inventario</span>
+            <div class="text-center mb-5">
+                <h2 class="display-6 fw-bold text-white">Preguntas Frecuentes</h2>
+                <p class="text-oswa-muted">Resolvemos tus dudas sobre OSWA Inv</p>
             </div>
-            <h1 class="display-3 fw-bold text-white mb-4">Control de Inventario <span style="color: #E50914;">Nivel Enterprise</span></h1>
-            <p class="lead text-secondary mb-5" style="font-family: 'Consolas', monospace; font-size: 1rem; max-width: 600px; margin: 0 auto;">Auditoría criptográfica, gestión en tiempo real y predicción inteligente de stock. Diseñado para ingeniería.</p>
-            <div class="d-flex gap-3 justify-content-center flex-wrap">
-                <a href="{{ route('login') }}" class="btn-netflix-red" style="padding: 14px 36px; font-size: 1.05rem;"><i class="bi bi-box-arrow-in-right me-2"></i>Ingresar al Sistema</a>
-                <a href="#caracteristicas" class="btn-dark-glass"><i class="bi bi-chevron-down me-1"></i>Descubrir Más</a>
-            </div>
-        </div>
-    </section>
 
-    <!-- Características -->
-    <section id="caracteristicas" class="py-5">
-        <div class="container">
-            <div class="reveal">
-                <h2 class="section-title text-white">Módulos del Sistema</h2>
-                <p class="section-subtitle">Cada componente diseñado para control total y precisión.</p>
-            </div>
-            <div class="row mt-5 g-4">
-                <div class="col-md-4 reveal">
-                    <div class="card stat-card text-center h-100">
-                        <i class="bi bi-box-seam text-danger display-4 mb-3"></i>
-                        <h4 class="text-white fw-bold mb-2">Catálogo Dinámico</h4>
-                        <p class="text-secondary" style="font-family: 'Consolas', monospace; font-size: 0.85rem;">Control absoluto de entradas, salidas y stock en tiempo real con semáforo de alertas.</p>
+            <div class="accordion" id="accordionFAQ" style="max-width: 800px; margin: 0 auto;">
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                            ¿Cómo funciona la seguridad SHA-256?
+                        </button>
+                    </h2>
+                    <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#accordionFAQ">
+                        <div class="accordion-body">
+                            Cada vez que se registra una entrada o salida, el sistema genera una firma matemática única. Si alguien altera los datos directamente en la base de datos, el sistema lo detecta instantáneamente y marca el registro como "ALTERADO".
+                        </div>
                     </div>
                 </div>
-                <div class="col-md-4 reveal">
-                    <div class="card stat-card text-center h-100">
-                        <i class="bi bi-shield-lock-fill text-info display-4 mb-3"></i>
-                        <h4 class="text-white fw-bold mb-2">Auditoría Criptográfica</h4>
-                        <p class="text-secondary" style="font-family: 'Consolas', monospace; font-size: 0.85rem;">Registro inmutable de acciones con sellado SHA-256 para transparencia y trazabilidad.</p>
-                    </div>
-                </div>
-                <div class="col-md-4 reveal">
-                    <div class="card stat-card text-center h-100">
-                        <i class="bi bi-buildings-fill text-warning display-4 mb-3"></i>
-                        <h4 class="text-white fw-bold mb-2">Gestión de Proveedores</h4>
-                        <p class="text-secondary" style="font-family: 'Consolas', monospace; font-size: 0.85rem;">Directorio ERP con vinculación directa a productos y botón de abastecimiento rápido.</p>
-                    </div>
-                </div>
-                <div class="col-md-4 reveal">
-                    <div class="card stat-card text-center h-100">
-                        <i class="bi bi-graph-up-arrow text-success display-4 mb-3"></i>
-                        <h4 class="text-white fw-bold mb-2">Predicción de Stock</h4>
-                        <p class="text-secondary" style="font-family: 'Consolas', monospace; font-size: 0.85rem;">Cálculo inteligente de días estimados restantes basado en el histórico de consumo mensual.</p>
-                    </div>
-                </div>
-                <div class="col-md-4 reveal">
-                    <div class="card stat-card text-center h-100">
-                        <i class="bi bi-file-earmark-pdf-fill text-danger display-4 mb-3"></i>
-                        <h4 class="text-white fw-bold mb-2">Reportes y Respaldo</h4>
-                        <p class="text-secondary" style="font-family: 'Consolas', monospace; font-size: 0.85rem;">Exportación a PDF y respaldo completo de base de datos con un solo clic.</p>
-                    </div>
-                </div>
-                <div class="col-md-4 reveal">
-                    <div class="card stat-card text-center h-100">
-                        <i class="bi bi-people-fill text-primary display-4 mb-3"></i>
-                        <h4 class="text-white fw-bold mb-2">Gestión de Usuarios</h4>
-                        <p class="text-secondary" style="font-family: 'Consolas', monospace; font-size: 0.85rem;">Roles de administrador y empleado con control de acceso y registro de auditoría.</p>
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                            ¿Puedo tener múltiples usuarios gestionando?
+                        </button>
+                    </h2>
+                    <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#accordionFAQ">
+                        <div class="accordion-body">
+                            Sí. OSWA Inv cuenta con un sistema de perfiles estilo Netflix, donde puedes crear diferentes usuarios, cada uno con sus propios permisos y registros de auditoría.
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Estadísticas -->
-    <section id="estadisticas" class="py-5">
-        <div class="container">
-            <div class="reveal">
-                <h2 class="section-title text-white">En Números</h2>
-                <p class="section-subtitle">Datos que respaldan la eficiencia del sistema.</p>
-            </div>
-            <div class="row mt-5 g-4">
-                <div class="col-md-3 col-6 reveal">
-                    <div class="stats-strip text-center">
-                        <div class="stat-number">5+</div>
-                        <div class="stat-label">Módulos Activos</div>
-                    </div>
-                </div>
-                <div class="col-md-3 col-6 reveal">
-                    <div class="stats-strip text-center">
-                        <div class="stat-number">SHA-256</div>
-                        <div class="stat-label">Encriptación</div>
-                    </div>
-                </div>
-                <div class="col-md-3 col-6 reveal">
-                    <div class="stats-strip text-center">
-                        <div class="stat-number">24/7</div>
-                        <div class="stat-label">Disponibilidad</div>
-                    </div>
-                </div>
-                <div class="col-md-3 col-6 reveal">
-                    <div class="stats-strip text-center">
-                        <div class="stat-number">100%</div>
-                        <div class="stat-label">Código Propio</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Contacto -->
+<!-- SECCIÓN CONTACTO ACTUALIZADA -->
     <section id="contacto" class="py-5">
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-lg-8 reveal">
-                    <div class="contact-card text-center">
-                        <i class="bi bi-envelope-paper-heart display-4 text-danger mb-3"></i>
-                        <h2 class="text-white fw-bold mb-3">¿Interesado en el Proyecto?</h2>
-                        <p class="text-secondary mb-4" style="font-family: 'Consolas', monospace; font-size: 0.9rem;">OSWA Inv fue desarrollado por estudiantes de Ingeniería en Informática de la UNELLEZ para optimizar la gestión de inventario con tecnología moderna.</p>
-                        <div class="d-flex justify-content-center gap-4 flex-wrap">
-                            <div class="d-flex align-items-center gap-2 text-secondary">
-                                <i class="bi bi-mortarboard-fill text-danger"></i>
-                                <span style="font-size: 0.85rem;">UNELLEZ</span>
-                            </div>
-                            <div class="d-flex align-items-center gap-2 text-secondary">
-                                <i class="bi bi-laptop-fill text-danger"></i>
-                                <span style="font-size: 0.85rem;">Ing. Informática</span>
-                            </div>
-                            <div class="d-flex align-items-center gap-2 text-secondary">
-                                <i class="bi bi-bookmark-star-fill text-danger"></i>
-                                <span style="font-size: 0.85rem;">V Semestre</span>
-                            </div>
+        <div class="container reveal">
+            <div class="text-center mb-5">
+                <h2 class="display-5 fw-bold text-white">Soporte Técnico Especializado</h2>
+                <p class="text-oswa-muted fs-5">Hable directamente con los desarrolladores del proyecto.</p>
+            </div>
+            
+            <div class="row justify-content-center g-4">
+                <!-- CARLOS BRACA -->
+                <div class="col-md-5 reveal reveal-left">
+                    <div class="feature-card text-center p-4">
+                        <div class="mb-3">
+                            <i class="bi bi-person-circle text-danger" style="font-size: 3rem;"></i>
                         </div>
-                        <div class="mt-5 d-flex flex-column flex-md-row justify-content-center align-items-center gap-3">
-                            <a href="{{ route('login') }}" class="btn fw-bold px-4 py-2" style="background-color: #E50914; color: white; border-radius: 6px; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-                                <i class="bi bi-rocket-takeoff me-2"></i> Probar Sistema
-                            </a>
-                            <a href="https://wa.me/584122266083" target="_blank" class="btn fw-bold px-4 py-2" style="background-color: #25D366; color: white; border-radius: 6px; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-                                <i class="bi bi-whatsapp me-2"></i> Contactar a Carlos
-                            </a>
-                            <a href="https://wa.me/584145207044" target="_blank" class="btn fw-bold px-4 py-2" style="background-color: #25D366; color: white; border-radius: 6px; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-                                <i class="bi bi-whatsapp me-2"></i> Contactar a Yorgelis
-                            </a>
+                        <h3 class="fw-bold text-white mb-1">Carlos Braca</h3>
+                        <p class="text-oswa-muted mb-4">
+                            Estudiante de Ingeniería Informática<br>
+                            <span class="text-danger fw-bold">5to Semestre - UNELLEZ</span><br>
+                            <small>Backend & Seguridad SHA-256</small>
+                        </p>
+                        <a href="https://wa.me/584122266083" target="_blank" class="btn btn-success rounded-pill px-4 py-2 fw-bold" style="background-color: #25D366; border: none;">
+                            <i class="bi bi-whatsapp me-2"></i> Escríbeme
+                        </a>
+                    </div>
+                </div>
+
+                <!-- YORGELIS BLANCO -->
+                <div class="col-md-5 reveal reveal-right">
+                    <div class="feature-card text-center p-4">
+                        <div class="mb-3">
+                            <i class="bi bi-person-circle text-danger" style="font-size: 3rem;"></i>
                         </div>
+                        <h3 class="fw-bold text-white mb-1">Yorgelis Blanco</h3>
+                        <p class="text-oswa-muted mb-4">
+                            Estudiante de Ingeniería Informática<br>
+                            <span class="text-danger fw-bold">5to Semestre - UNELLEZ</span><br>
+                            <small>Frontend & Diseño UI/UX</small>
+                        </p>
+                        <a href="https://wa.me/584145207044" target="_blank" class="btn btn-success rounded-pill px-4 py-2 fw-bold" style="background-color: #25D366; border: none;">
+                            <i class="bi bi-whatsapp me-2"></i> Escríbeme
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Footer -->
-    <footer class="landing-footer">
-        <div class="mb-1">&copy; <script>document.write(new Date().getFullYear())</script> <strong>OSWA Inv</strong>. Todos los derechos reservados.</div>
-        <div>Desarrollado con <i class="bi bi-code-slash" style="color:#0d6efd;"></i> y <i class="bi bi-heart-fill heart-icon"></i> por <span class="highlight">Carlos Braca & Yorgelis Blanco</span></div>
-        <div class="mt-2 d-flex align-items-center justify-content-center" style="font-size: 0.75rem; opacity: 0.8;">
-            <span>Ingeniería en Informática — V Semestre |</span>
-            <img src="{{ asset('img/logo-unellez.png') }}" alt="UNELLEZ" style="height: 18px; margin-left: 8px; margin-right: 4px; filter: brightness(0) invert(1);">
-            <strong style="letter-spacing: 0.5px;">UNELLEZ</strong>
+    <!-- FOOTER PROFESIONAL -->
+    <footer class="py-4" style="background-color: #000; border-top: 1px solid #222;">
+        <div class="container text-center reveal">
+            <img src="{{ asset('img/logo-unellez.png') }}" alt="Logo" height="40" class="mb-3" style="filter: brightness(0) invert(1); opacity: 0.7;">
+            <p class="text-oswa-muted mb-1 fs-6">
+                &copy; {{ date('Y') }} <strong>OSWA Inv</strong>. Todos los derechos reservados.
+            </p>
+            <p class="text-oswa-muted mb-0" style="font-size: 0.85rem;">
+                Diseñado y desarrollado con excelencia por <strong class="text-white">Carlos Braca</strong> y <strong class="text-white">Yorgelis Blanco</strong>.
+            </p>
         </div>
     </footer>
 
-    <!-- OSWA-Bot Chatbot -->
-    <button class="bot-fab" onclick="toggleBotWindow()"><i class="bi bi-robot"></i></button>
-    <div class="floating-bot-window" id="botWindow">
-        <div class="bot-header"><span><i class="bi bi-robot me-2"></i> OSWA-Bot IA</span><button onclick="toggleBotWindow()"><i class="bi bi-x-lg"></i></button></div>
-        <div class="bot-chat-history" id="botChatHistory">
-            <div class="chat-bubble bot-bubble">¡Epa! Soy el asistente virtual de OSWA Inv. ¿Tienes alguna duda sobre el sistema?</div>
-        </div>
-        <div class="oswa-quick-replies-container">
-            <button type="button" class="bot-chip" onclick="enviarOpcionRapida('🤔 ¿Qué es OSWA Inv?')">🤔 ¿Qué es OSWA Inv?</button>
-            <button type="button" class="bot-chip" onclick="enviarOpcionRapida('✨ Características')">✨ Características</button>
-            <button type="button" class="bot-chip" onclick="enviarOpcionRapida('🔐 ¿Es seguro?')">🔐 ¿Es seguro?</button>
-            <button type="button" class="bot-chip" onclick="enviarOpcionRapida('📞 Contactar Creadores')">📞 Contactar Creadores</button>
-        </div>
-        <div class="bot-input-area">
-            <input type="text" id="botInput" placeholder="Pregúntame algo..." onkeypress="if(event.key==='Enter') enviarBot()">
-            <button onclick="enviarBot()"><i class="bi bi-send-fill"></i></button>
+    <!-- BOTÓN FLOTANTE CHATBOT -->
+    <button class="btn-chatbot" data-bs-toggle="modal" data-bs-target="#botModal" title="Asistente Virtual">
+        <i class="bi bi-robot"></i>
+    </button>
+
+    <!-- MODAL DEL CHATBOT INTERACTIVO -->
+    <div class="modal fade" id="botModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold d-flex align-items-center">
+                        <i class="bi bi-robot text-danger me-2 fs-4"></i> Asistente OSWA
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <!-- Cuerpo del Chat -->
+                <div class="modal-body p-3" id="chat-body">
+                    <div class="mb-3 p-2 rounded bg-dark border border-secondary text-white me-4">
+                        <i class="bi bi-robot text-danger me-2"></i> ¡Hola! Soy el asistente virtual. ¿Qué duda tienes sobre el sistema?
+                    </div>
+                </div>
+
+                <!-- Botones de preguntas comunes del usuario -->
+                <div class="px-3 pb-2" id="quick-replies">
+                    <button class="btn btn-sm btn-outline-secondary text-white mb-1 chat-quick-btn" data-ask="celular">¿Funciona en mi celular?</button>
+                    <button class="btn btn-sm btn-outline-secondary text-white mb-1 chat-quick-btn" data-ask="clave">¿Qué hago si olvido mi clave?</button>
+                    <button class="btn btn-sm btn-outline-secondary text-white mb-1 chat-quick-btn" data-ask="soporte">¿Dan soporte técnico?</button>
+                </div>
+
+                <!-- Input del Chat -->
+                <div class="modal-footer p-2">
+                    <div class="input-group">
+                        <input type="text" id="chat-input" class="form-control bg-dark border-secondary text-white" placeholder="Escribe aquí..." autocomplete="off">
+                        <button type="button" id="btn-send" class="btn btn-danger"><i class="bi bi-send"></i></button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- SCRIPTS -->
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) { entry.target.classList.add('active'); }
-                });
-            }, { threshold: 0.1 });
-            document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+        document.addEventListener("DOMContentLoaded", function() {
+            // Lógica del Navbar Transparente/Cristal
+            const navbar = document.querySelector('.navbar-oswa');
+            const handleScroll = () => {
+                if (window.scrollY > 50) {
+                    navbar.classList.add('scrolled');
+                } else {
+                    navbar.classList.remove('scrolled');
+                }
+            };
+            window.addEventListener('scroll', handleScroll);
+            handleScroll();
 
-            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-                anchor.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const target = document.querySelector(this.getAttribute('href'));
-                    if (target) {
-                        target.scrollIntoView({ behavior: 'smooth' });
+            // Animaciones de Scroll
+            const reveals = document.querySelectorAll(".reveal");
+            const revealOnScroll = () => {
+                const windowHeight = window.innerHeight;
+                const elementVisible = 100;
+                reveals.forEach((reveal) => {
+                    if (reveal.getBoundingClientRect().top < windowHeight - elementVisible) {
+                        reveal.classList.add("active");
                     }
+                });
+            };
+            window.addEventListener("scroll", revealOnScroll);
+            revealOnScroll();
+
+            // --- CEREBRO DEL CHATBOT ---
+            const chatBody = document.getElementById('chat-body');
+            const chatInput = document.getElementById('chat-input');
+            const btnSend = document.getElementById('btn-send');
+            const quickBtns = document.querySelectorAll('.chat-quick-btn');
+
+            function appendMessage(sender, text) {
+                const msgDiv = document.createElement('div');
+                msgDiv.classList.add('mb-3', 'p-2', 'rounded');
+                if(sender === 'user') {
+                    msgDiv.classList.add('bg-secondary', 'text-white', 'ms-4');
+                    msgDiv.style.textAlign = 'right';
+                    msgDiv.innerHTML = text;
+                } else {
+                    msgDiv.classList.add('bg-dark', 'text-white', 'border', 'border-secondary', 'me-4');
+                    msgDiv.innerHTML = `<i class="bi bi-robot text-danger me-2"></i> ${text}`;
+                }
+                chatBody.appendChild(msgDiv);
+                chatBody.scrollTop = chatBody.scrollHeight;
+            }
+
+            function botReply(question) {
+                const q = question.toLowerCase();
+                let reply = "No tengo la respuesta a eso. Te recomiendo ir a la sección de 'Soporte' y escribirnos directo por WhatsApp.";
+
+                if(q.includes('celular') || q.includes('telefono') || q.includes('móvil')) {
+                    reply = "¡Sí! OSWA Inv es 100% responsivo. Puedes abrirlo desde tu teléfono, tablet o computadora y se adaptará perfectamente a tu pantalla.";
+                } else if(q.includes('clave') || q.includes('contraseña') || q.includes('olvide')) {
+                    reply = "Si olvidaste tu clave, ve a 'Entrar' y haz clic en '¿Olvidaste tu contraseña?'. El sistema te enviará un correo para recuperarla de forma segura.";
+                } else if(q.includes('soporte') || q.includes('ayuda') || q.includes('contacto')) {
+                    reply = "¡Claro! En la sección de abajo encontrarás los botones de WhatsApp para hablar directamente con Carlos Braca o Yorgelis Blanco, los creadores del sistema.";
+                } else if(q.includes('hola') || q.includes('buenas')) {
+                    reply = "¡Hola! Estoy aquí para ayudarte a entender cómo funciona OSWA Inv.";
+                }
+
+                setTimeout(() => appendMessage('bot', reply), 500);
+            }
+
+            btnSend.addEventListener('click', function() {
+                const text = chatInput.value.trim();
+                if(text !== "") {
+                    appendMessage('user', text);
+                    chatInput.value = '';
+                    botReply(text);
+                }
+            });
+
+            chatInput.addEventListener('keypress', function(e) {
+                if(e.key === 'Enter') btnSend.click();
+            });
+
+            quickBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    appendMessage('user', this.innerText);
+                    botReply(this.getAttribute('data-ask'));
                 });
             });
         });
-
-        // Chatbot functions
-        function toggleBotWindow() {
-            document.getElementById('botWindow').classList.toggle('show');
-        }
-
-        function enviarOpcionRapida(texto) {
-            const inputBot = document.getElementById('botInput');
-            if (inputBot) {
-                inputBot.value = texto;
-                enviarBot();
-            }
-        }
-
-        function enviarBot() {
-            const input = document.getElementById('botInput');
-            const pregunta = input.value.trim();
-            if (!pregunta) return;
-            const chatHistory = document.getElementById('botChatHistory');
-            chatHistory.innerHTML += `<div class="chat-bubble user-bubble">${pregunta}</div>`;
-            input.value = '';
-            chatHistory.scrollTop = chatHistory.scrollHeight;
-
-            // FAQ Interception
-            if (pregunta.includes('¿Qué es OSWA Inv?')) {
-                setTimeout(() => {
-                    const html = '<b>OSWA Inv</b> es un sistema de control de inventario nivel Enterprise, diseñado por estudiantes de ingeniería para ofrecer gestión en tiempo real, predicción de stock y máxima seguridad. 🚀';
-                    chatHistory.innerHTML += `<div class="chat-bubble bot-bubble">${html}</div>`;
-                    chatHistory.scrollTop = chatHistory.scrollHeight;
-                }, 500);
-                return;
-            } else if (pregunta.includes('Características')) {
-                setTimeout(() => {
-                    const html = 'Nuestras características principales incluyen:<br><br>📦 Gestión de catálogo en tiempo real.<br>🤝 Administración de proveedores.<br>📊 Reportes automatizados de stock.<br>⚡ Interfaz ultrarrápida y modo oscuro.';
-                    chatHistory.innerHTML += `<div class="chat-bubble bot-bubble">${html}</div>`;
-                    chatHistory.scrollTop = chatHistory.scrollHeight;
-                }, 500);
-                return;
-            } else if (pregunta.includes('¿Es seguro?')) {
-                setTimeout(() => {
-                    const html = '¡Totalmente! 🔐 Contamos con auditoría criptográfica, protección de rutas y autenticación robusta para garantizar que la data de tu inventario nunca sea vulnerada.';
-                    chatHistory.innerHTML += `<div class="chat-bubble bot-bubble">${html}</div>`;
-                    chatHistory.scrollTop = chatHistory.scrollHeight;
-                }, 500);
-                return;
-            } else if (pregunta.includes('Contactar Creadores')) {
-                setTimeout(() => {
-                    const numeroCarlos = "584122266083";
-                    const mensajeBase = "Hola Carlos, vengo de la página de inicio de OSWA Inv y me interesa el sistema.";
-                    const enlaceCarlos = `https://wa.me/${numeroCarlos}?text=${encodeURIComponent(mensajeBase)}`;
-                    const html = `¿Quieres implementar OSWA Inv en tu negocio o tienes dudas técnicas? Escríbele directamente a uno de sus desarrolladores:<br><br>
-                    <a href="${enlaceCarlos}" target="_blank" style="display:flex; align-items:center; justify-content:center; gap:8px; padding:10px 15px; background:#25D366; color:#fff; text-decoration:none; border-radius:4px; font-size:0.9rem; font-weight:bold; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
-                        <i class="bi bi-whatsapp"></i> Hablar con Carlos
-                    </a>`;
-                    chatHistory.innerHTML += `<div class="chat-bubble bot-bubble">${html}</div>`;
-                    chatHistory.scrollTop = chatHistory.scrollHeight;
-                }, 500);
-                return;
-            }
-
-            // Default response for unmatched queries
-            setTimeout(() => {
-                const html = 'Interesante pregunta. Para información más detallada, te sugiero explorar las secciones de la página o <a href="{{ route("login") }}" style="color:#E50914;">ingresar al sistema</a> para descubrir todas las funciones.';
-                chatHistory.innerHTML += `<div class="chat-bubble bot-bubble">${html}</div>`;
-                chatHistory.scrollTop = chatHistory.scrollHeight;
-            }, 500);
-        }
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

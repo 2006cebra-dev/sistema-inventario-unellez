@@ -37,8 +37,8 @@ class Movimiento extends Model
 
     public function generarFirma()
     {
-        $data = $this->codigo_producto . $this->tipo . $this->cantidad . $this->user_id;
-        return hash('sha256', $data . env('APP_KEY'));
+        $data = $this->id . $this->codigo_producto . $this->tipo . $this->cantidad . $this->motivo . $this->usuario_accion;
+        return hash('sha256', $data);
     }
 
     public function esValida()

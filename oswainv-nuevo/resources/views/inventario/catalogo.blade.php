@@ -8,26 +8,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <style>
         :root {
-            --bg-main: #121212;
-            --bg-card: #1c1c1c;
-            --n-red: #E50914;
-            --n-border: #2b2b2b;
-            --bg-dark: #121212;
-            --bg-input: #2a2a2a;
-            --border-color: #2b2b2b;
-            --text-primary: #e5e5e5;
-            --text-secondary: #a3a3a3;
-            --accent-primary: #E50914;
-            --accent-success: #00b894;
-            --accent-danger: #e74c3c;
-            --accent-warning: #fdcb6e;
-            --accent-info: #0984e3;
+            --bg-main: #121212; --bg-card: #1c1c1c; --n-red: #E50914; --n-border: #2b2b2b;
+            --bg-dark: #121212; --bg-input: #2a2a2a; --border-color: #2b2b2b;
+            --text-primary: #e5e5e5; --text-secondary: #a3a3a3; --accent-primary: #E50914;
+            --accent-success: #00b894; --accent-danger: #e74c3c; --accent-warning: #fdcb6e;
             --topbar-height: 68px;
         }
         [data-theme="light"] {
@@ -40,14 +27,11 @@
         .topbar { 
             position: fixed; top: 0; left: 0; right: 0; height: var(--topbar-height); 
             background: linear-gradient(to bottom, rgba(18,18,18,0.85) 0%, rgba(18,18,18,0) 100%);
-            backdrop-filter: blur(10px);
-            border: none !important;
+            backdrop-filter: blur(10px); border: none !important;
             display: flex; align-items: center; justify-content: space-between;
-            padding: 0 4%; z-index: 999;
-            overflow: visible !important;
+            padding: 0 4%; z-index: 999; overflow: visible !important;
         }
         .topbar::-webkit-scrollbar { display: none; }
-        
         .topbar-left { display: flex; align-items: center; gap: 2rem; }
         .topbar-logo { white-space: nowrap; font-size: 1.5rem; font-weight: 700; display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
         .topbar-logo .logo-text { display: inline-block !important;
@@ -57,17 +41,8 @@
         }
         @keyframes rgbText { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
         
-        .logo-nav-unellez {
-            height: 35px;
-            filter: brightness(0) invert(1);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            cursor: pointer;
-            margin-right: 10px;
-        }
-        .logo-nav-unellez:hover {
-            transform: scale(1.2);
-            filter: brightness(0) invert(1) drop-shadow(0 0 8px rgba(255, 255, 255, 0.8));
-        }
+        .logo-nav-unellez { height: 35px; filter: brightness(0) invert(1); transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; margin-right: 10px; }
+        .logo-nav-unellez:hover { transform: scale(1.2); filter: brightness(0) invert(1) drop-shadow(0 0 8px rgba(255, 255, 255, 0.8)); }
         
         .topbar-nav { display: flex; align-items: center; gap: 1.5rem; }
         .topbar-nav a { color: #b3b3b3; text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: color 0.2s ease; position: relative; padding: 4px 0; }
@@ -80,8 +55,6 @@
         .nav-dropdown.show .dropdown-menu-custom { display: block; }
         .dropdown-item-custom { display: flex; align-items: center; gap: 8px; padding: 10px 16px; color: #ccc; font-size: 0.85rem; text-decoration: none; transition: all 0.2s; }
         .dropdown-item-custom:hover { background: rgba(229,9,20,0.1); color: #fff; }
-        .dropdown-item-custom.text-muted { color: #666; cursor: default; }
-        .dropdown-item-custom.text-muted:hover { background: transparent; color: #666; }
         
         .topbar-right { display: flex; align-items: center; gap: 1rem; }
         .topbar-search { position: relative; }
@@ -94,8 +67,6 @@
         .status-indicator .status-dot { width: 7px; height: 7px; border-radius: 50%; transition: background 0.3s ease; }
         .status-indicator.online .status-dot { background: #00b894; box-shadow: 0 0 8px rgba(0,184,148,0.7); }
         .status-indicator.online .status-text { color: #ccc; }
-        .status-indicator.offline .status-dot { background: #e74c3c; box-shadow: 0 0 8px rgba(231,76,60,0.7); }
-        .status-indicator.offline .status-text { color: #e74c3c; }
         
         .main-content { padding-top: calc(var(--topbar-height) + 2rem); padding-left: 4%; padding-right: 4%; padding-bottom: 2rem; min-height: 100vh; }
         
@@ -103,13 +74,10 @@
         .btn-nuevo:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(229,9,20,0.4); }
 
         .btn-requisicion-empleado { background-color: #E50914; color: #fff; border: none; border-radius: 8px; padding: 10px 20px; font-weight: 600; font-size: 0.85rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: all 0.3s; }
-        .btn-requisicion-empleado:hover { background-color: #ff0f1b; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(229,9,20,0.4); color: #fff; }
-
         .btn-requisicion-admin { background-color: transparent; color: #e5e5e5; border: 1px solid #444; border-radius: 8px; padding: 10px 20px; font-weight: 600; font-size: 0.85rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: all 0.3s; }
         .btn-requisicion-admin:hover { background-color: rgba(255,255,255,0.08); border-color: #E50914; color: #E50914; transform: translateY(-2px); }
         
         .theme-toggle { background: none; border: none; color: #b3b3b3; font-size: 1.1rem; cursor: pointer; padding: 6px; border-radius: 50%; transition: all 0.2s; }
-        .theme-toggle:hover { background: rgba(255,255,255,0.1); color: #fff; }
         
         .user-dropdown { position: relative; cursor: pointer; }
         .user-avatar { width: 36px; height: 36px; border-radius: 4px; background: var(--accent-primary); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 1rem; }
@@ -118,146 +86,92 @@
         .dropdown-header { padding: 12px 16px; border-bottom: 1px solid #333; }
         .dropdown-header .dd-name { color: #fff; font-weight: 600; font-size: 0.95rem; }
         .dropdown-header .dd-email { color: #b3b3b3; font-size: 0.8rem; margin-top: 2px; }
-        .dropdown-header .dd-role { color: var(--accent-primary); font-size: 0.75rem; font-weight: 600; margin-top: 2px; text-transform: uppercase; letter-spacing: 1px; }
+        .dropdown-header .dd-role { color: var(--accent-primary); font-size: 0.75rem; font-weight: 600; margin-top: 2px; text-transform: uppercase; }
         .dd-item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 16px; border: none; background: none; color: #ccc; font-size: 0.9rem; text-align: left; cursor: pointer; transition: background 0.2s; }
         .dd-item:hover { background: rgba(255,255,255,0.08); color: #fff; }
         .dd-divider { height: 1px; background: #333; margin: 6px 0; }
         .dd-logout { color: var(--accent-danger) !important; }
-        .dd-logout:hover { background: rgba(229,9,20,0.1) !important; }
-        
-        @media (max-width: 767px) {
-            .topbar-nav { display: none; flex-direction: column; position: absolute; top: var(--topbar-height); left: 0; right: 0; background: rgba(18,18,18,0.98); padding: 1rem 4%; border-bottom: 1px solid var(--n-border); }
-            .topbar-nav.show { display: flex; }
-            .topbar-search { display: none; }
-        }
         
         .menu-toggle { display: none; background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; }
-        @media (max-width: 767px) { .menu-toggle { display: block; } }
+        @media (max-width: 767px) { .menu-toggle { display: block; } .topbar-nav { display: none; } }
         
         .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
-        
-        .product-card {
-            background: var(--bg-card) !important;
-            border: 1px solid var(--n-border) !important;
-            border-radius: 12px !important;
-            overflow: hidden;
-            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
-            position: relative;
-        }
-        .product-card:hover {
-            transform: translateY(-5px) scale(1.02);
-            border-color: var(--n-red) !important;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
-            z-index: 5;
-        }
+        .product-card { background: var(--bg-card) !important; border: 1px solid var(--n-border) !important; border-radius: 12px !important; overflow: hidden; transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease; position: relative; }
+        .product-card:hover { transform: translateY(-5px) scale(1.02); border-color: var(--n-red) !important; box-shadow: 0 10px 20px rgba(0,0,0,0.5); z-index: 5; }
         .product-card.stock-critical { border-left: 4px solid var(--accent-danger); }
         .product-card.stock-low { border-left: 4px solid var(--accent-warning); }
         .product-card.stock-normal { border-left: 4px solid var(--accent-success); }
         
         .product-card-img { width: 100%; height: 180px; object-fit: cover; }
         .product-card-img-placeholder { height: 180px; background: #222; display: flex; align-items: center; justify-content: center; color: #555; font-size: 3rem; }
-        
         .product-card-info { padding: 1rem 1rem 0.5rem; }
         .product-card-title { font-weight: 600; font-size: 1.05rem; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .product-card-meta { color: var(--text-secondary); font-size: 0.8rem; }
         .product-card-code { color: #777; font-size: 0.75rem; font-family: monospace; margin-top: 4px; }
         
-        .product-card-controls { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 1rem 1rem; }
-        
         .stock-pill { display: flex; align-items: center; background: #2a2a2a; border-radius: 6px; overflow: hidden; }
-        .stock-pill-btn { background: none; border: none; color: #e5e5e5; padding: 6px 10px; cursor: pointer; font-size: 0.8rem; transition: background 0.2s; }
-        .stock-pill-btn:hover { background: rgba(229,9,20,0.2); color: var(--accent-primary); }
-        .stock-pill-value { width: 40px; text-align: center; background: transparent; border: none; color: #e5e5e5; font-weight: 600; font-size: 0.9rem; }
-        .stock-pill-value:focus { outline: none; }
-        
-        .product-card-actions { display: flex; gap: 6px; }
-        .card-action-btn { width: 34px; height: 34px; border-radius: 6px; border: none; background: #2a2a2a; color: #b3b3b3; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; transition: all 0.2s; }
-        .card-action-btn:hover { background: rgba(229,9,20,0.25); color: var(--accent-primary); }
-        .card-action-btn-edit:hover { background: rgba(13,110,253,0.25); color: #0d6efd; }
-        .card-action-btn-transfer:hover { background: rgba(253,126,20,0.25); color: #fd7e14; }
-        .card-action-btn-delete:hover { background: rgba(229,9,20,0.25); color: #E50914; }
-        .card-action-btn-order:hover { background: rgba(13,202,240,0.25); color: #0dcaf0; }
+        .stock-pill-btn { background: none; border: none; color: #e5e5e5; padding: 6px 10px; cursor: pointer; font-size: 0.8rem; }
+        .stock-pill-value { width: 40px; text-align: center; background: transparent; border: none; color: #e5e5e5; font-weight: 600; font-size: 0.9rem; outline: none;}
         
         .professional-footer { text-align: center; padding: 1.5rem 4%; margin-top: 2rem; border-top: 1px solid var(--border-color); color: var(--text-secondary); font-size: 0.85rem; }
         .professional-footer span.highlight { color: var(--text-primary); font-weight: 600; }
         .professional-footer .heart-icon { color: var(--accent-danger); animation: heartbeat 1.5s infinite; display: inline-block; }
         @keyframes heartbeat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
 
-        .scanner-fab { position: fixed; bottom: 30px; right: 30px; width: 56px; height: 56px; border-radius: 16px; background: linear-gradient(135deg, var(--accent-primary), #B20710); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; border: none; cursor: pointer; box-shadow: 0 4px 20px rgba(229,9,20,0.4); transition: all 0.3s; z-index: 900; }
-        .scanner-fab:hover { transform: scale(1.1); box-shadow: 0 6px 25px rgba(229,9,20,0.6); }
-
-        @keyframes scan { 0% { top: 10%; } 50% { top: 90%; } 100% { top: 10%; } }
-        .scanner-view-container { position: relative; width: 100%; height: 300px; background: #000; overflow: hidden; }
-        .scanner-view-container video { width: 100%; height: 100%; object-fit: cover; }
-        .scanner-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; box-shadow: inset 0 0 0 50px rgba(0,0,0,0.5); pointer-events: none; }
-        .laser-line { width: 80%; height: 2px; background: #E50914; position: absolute; left: 10%; top: 50%; box-shadow: 0 0 10px #E50914; animation: scan 2s infinite linear; }
-        .oswa-input-scanner::placeholder { color: #999 !important; }
-        .oswa-input-scanner:focus { background-color: #2a2a2a !important; border-color: #E50914 !important; color: white !important; box-shadow: none; }
-
         .modal-content { background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--n-border); border-radius: 12px; }
         .modal-header { border-bottom: 1px solid var(--n-border); }
         .modal-footer { border-top: 1px solid var(--n-border); }
         .form-control { background: var(--bg-input); border: 1px solid var(--n-border); color: var(--text-primary); border-radius: 8px; }
-        .form-control:focus { background: #333; border-color: var(--accent-primary); color: #e5e5e5; box-shadow: 0 0 0 0.25rem rgba(229,9,20,0.25); }
+        .form-control:focus { background: #333; border-color: var(--accent-primary); color: #e5e5e5; box-shadow: none; }
         .form-label { color: var(--text-secondary); }
-        .form-select { background-color: var(--bg-input); border: 1px solid var(--n-border); color: var(--text-primary); border-radius: 8px; }
-        .form-select:focus { background-color: #333; border-color: var(--accent-primary); color: #e5e5e5; }
-        
-        .bot-fab { position: fixed; bottom: 100px; right: 30px; width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, #0984e3, #00b894); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; border: none; cursor: pointer; box-shadow: 0 4px 20px rgba(9,132,227,0.4); transition: all 0.3s; z-index: 900; }
-        .bot-fab:hover { transform: scale(1.1); }
-        .oswa-chat-window { position: fixed; bottom: 170px; right: 30px; width: 350px; height: 450px; background: #141414; border: 1px solid #2a2a2a; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.6); z-index: 901; display: none; flex-direction: column; overflow: hidden; }
-        .oswa-chat-window.show { display: flex; }
-        .oswa-chat-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: #0f0f0f; border-bottom: 1px solid #2a2a2a; }
-        .bot-avatar { background-color: #E50914; color: white; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
-        .oswa-chat-body { flex: 1; padding: 12px; overflow-y: auto; background: #141414; }
-        .chat-bubble { padding: 8px 12px; border-radius: 12px; margin-bottom: 8px; font-size: 0.9rem; max-width: 80%; }
-        .bot-bubble { background: #222; color: #ddd; }
-        .user-bubble { background: var(--accent-primary); color: white; margin-left: auto; }
-        .oswa-chat-footer { display: flex; padding: 8px; border-top: 1px solid #2a2a2a; background: #0f0f0f; }
-        .oswa-chat-footer input { flex: 1; background: #222; border: 1px solid #333; padding: 8px 12px; border-radius: 4px; color: white; }
-        .oswa-chat-footer input:focus { background: #2a2a2a; border-color: #E50914; box-shadow: none; }
-
-        @media (max-width: 767px) { .bot-fab, .oswa-chat-window { display: none !important; } }
 
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: #0a0a0a; border-left: 1px solid #1a1a1a; }
         ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #B20710, #E50914); border-radius: 10px; box-shadow: inset 0 0 5px rgba(0,0,0,0.5); }
         ::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, #E50914, #ff6b6b); }
 
-        /* Estilos para las pestañas del Catálogo */
         .nav-pills .nav-link { color: #a0a0a0; background-color: transparent; border: 1px solid #333; transition: all 0.3s ease; }
         .nav-pills .nav-link:hover { color: #fff; background-color: rgba(255, 255, 255, 0.05); }
         .nav-pills .nav-link.active { color: #fff; background-color: #E50914 !important; border-color: #E50914; box-shadow: 0 0 15px rgba(229, 9, 20, 0.4); }
 
-        /* Animación flotante para botones de Stock */
-        .floating-number {
-            position: absolute;
-            font-weight: bold;
-            font-size: 1.2rem;
-            pointer-events: none;
-            animation: floatUp 0.8s ease-out forwards;
-            z-index: 1000;
-        }
-        .float-plus { color: #00b894; }
-        .float-minus { color: #d63031; }
-        @keyframes floatUp {
-            0% { opacity: 1; transform: translateY(0) scale(1); }
-            100% { opacity: 0; transform: translateY(-30px) scale(1.5); }
-        }
-        @keyframes pulseRed { 0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); } 100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); } }
-
-        /* Page Transition: Fade In + Slide Up */
-        @keyframes fadeSlideUp {
-            from { opacity: 0; transform: translateY(40px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-page-enter {
-            animation: fadeSlideUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-            opacity: 0;
-        }
+        @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-page-enter { animation: fadeSlideUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; opacity: 0; }
         .delay-1 { animation-delay: 0.1s; }
-        .delay-2 { animation-delay: 0.25s; }
-        .delay-3 { animation-delay: 0.4s; }
+        .delay-2 { animation-delay: 0.2s; }
+
+        @keyframes stockSube { 0% { color: #25D366; transform: scale(1.5); } 100% { color: white; transform: scale(1); } }
+        @keyframes stockBaja { 0% { color: #E50914; transform: scale(1.5); } 100% { color: white; transform: scale(1); } }
+        .anim-stock-sube { animation: stockSube 0.4s ease-out; }
+        .anim-stock-baja { animation: stockBaja 0.4s ease-out; }
+        .oswa-stock-input::-webkit-outer-spin-button, .oswa-stock-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        .oswa-stock-input { -moz-appearance: textfield; }
+
+        /* Botón Flotante del Escáner */
+        .scanner-fab { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; border-radius: 16px; background: linear-gradient(135deg, var(--accent-primary), #B20710); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; border: none; cursor: pointer; box-shadow: 0 4px 20px rgba(229,9,20,0.4); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 999; }
+        .scanner-fab:hover { transform: scale(1.15) translateY(-5px); box-shadow: 0 8px 25px rgba(229,9,20,0.6); border: 1px solid #ff6b6b; }
+
+        /* --- ESTILOS DEL ESCÁNER VIP (CORREGIDO) --- */
+        .scanner-laser-zone { position: relative; width: 100%; max-height: 320px; overflow: hidden; background: #000; border-bottom: 2px solid #E50914; display: flex; align-items: center; justify-content: center; flex-direction: column; }
+        
+        #reader { width: 100%; border: none !important; background: transparent; }
+        #reader video { max-height: 250px !important; width: 100% !important; object-fit: cover; }
+        
+        #reader__dashboard_section_csr span { color: #fff !important; font-size: 0.85rem; }
+        #reader__dashboard_section_swaplink { color: #E50914 !important; text-decoration: none; font-weight: bold; }
+        #reader button { background: #E50914 !important; color: white !important; border: none !important; padding: 6px 14px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; margin-top: 8px; margin-bottom: 8px; font-size: 0.9rem; }
+        #reader button:hover { background: #ff0f1b !important; }
+        #reader select { background: #2a2a2a !important; color: white !important; border: 1px solid #444 !important; border-radius: 6px; padding: 6px; outline: none; margin-bottom: 10px; max-width: 80%; }
+        #reader a { color: #E50914 !important; }
+        
+        .scanner-laser-zone::after {
+            content: ''; position: absolute; top: 15%; left: 10%; width: 80%; height: 2px;
+            background: #E50914; box-shadow: 0 0 15px 2px #E50914;
+            animation: scanLaser 2s ease-in-out infinite; pointer-events: none; z-index: 10;
+        }
+        @keyframes scanLaser {
+            0%, 100% { top: 20%; opacity: 0.5; }
+            50% { top: 80%; opacity: 1; }
+        }
     </style>
 </head>
 <body data-theme="dark">
@@ -269,7 +183,7 @@
                 <span class="logo-text">OSWA Inv</span>
             </div>
             <div class="status-indicator online d-none d-md-flex ms-2 me-4">
-                <span class="status-dot" style="width: 8px; height: 8px; border-radius: 50%; background: #00b894; box-shadow: 0 0 6px rgba(0,184,148,0.6);"></span>
+                <span class="status-dot"></span>
                 <span class="status-text text-white" style="font-size: 0.75rem;">En línea</span>
             </div>
         </div>
@@ -286,27 +200,6 @@
                         <i class="bi bi-file-earmark-pdf-fill text-danger"></i> Inventario (PDF)
                     </a>
                 </div>
-            </div>
-
-            <div class="mobile-user-section d-md-none mt-auto pt-4 border-top border-secondary">
-                <div class="status-indicator online mb-3" style="width: fit-content;">
-                    <span class="status-dot" style="width: 8px; height: 8px; border-radius: 50%; background: #00b894; box-shadow: 0 0 6px rgba(0,184,148,0.6);"></span>
-                    <span class="status-text text-white" style="font-size: 0.8rem;">En línea</span>
-                </div>
-                <div class="user-info mb-3 d-flex align-items-center gap-2">
-                    @if(auth()->user()?->profile_photo_path)
-                        <img src="{{ asset('storage/' . auth()->user()->profile_photo_path) }}" alt="{{ auth()->user()->name }}" style="width: 36px; height: 36px; object-fit: cover; border-radius: 4px; border: 1px solid #333;">
-                    @else
-                        <div class="user-avatar">{{ strtoupper(substr(auth()->user()?->name ?? 'U', 0, 1)) }}</div>
-                    @endif
-                    <div>
-                        <div class="text-white fw-bold" style="font-size: 0.9rem;">{{ auth()->user()?->name ?? 'Usuario' }}</div>
-                        <div class="text-secondary" style="font-size: 0.75rem;">{{ auth()->user()?->email ?? 'Sin correo' }}</div>
-                    </div>
-                </div>
-                <a href="{{ route('logout') }}" class="btn btn-outline-danger btn-sm w-100" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                    <i class="bi bi-box-arrow-right"></i> Salir del Sistema
-                </a>
             </div>
         </div>
 
@@ -336,7 +229,10 @@
                     @if(auth()->user()?->rol === 'admin')
                     <a href="{{ route('usuarios.index') }}" class="dd-item"><i class="bi bi-people"></i> Administrar Usuarios</a>
                     @endif
-                    <button class="dd-item" onclick="cambiarCuenta(event)"><i class="bi bi-arrow-left-right"></i> Cambiar de Cuenta</button>
+                    <div class="dd-divider"></div>
+                    <button type="button" class="dd-item text-white" onclick="abrirSelectorPerfiles(event)" style="background: none; border: none; cursor: pointer; width: 100%; text-align: left;">
+                        <i class="bi bi-arrow-left-right text-danger"></i> Cambiar de Cuenta
+                    </button>
                     <div class="dd-divider"></div>
                     <form method="POST" action="{{ route('logout') }}" class="m-0 p-0 w-100">
                         @csrf
@@ -347,10 +243,7 @@
                 </div>
             </div>
         </div>
-
-        <button class="menu-toggle d-md-none" onclick="toggleSidebar()" style="background: transparent; border: none; color: white; font-size: 2rem; padding: 0;">
-            <i class="bi bi-list"></i>
-        </button>
+        <button class="menu-toggle d-md-none" onclick="toggleSidebar()" style="background: transparent; border: none; color: white; font-size: 2rem; padding: 0;"><i class="bi bi-list"></i></button>
     </nav>
     
     <main class="main-content">
@@ -369,25 +262,24 @@
                 </a>
                 @endif
 
-                @if($esAdmin)
-                <a href="#" class="btn-requisicion-admin" onclick="mostrarRequisicionesPendientes(); return false;">
+                @if(isset($esAdmin) && $esAdmin || (Auth::check() && Auth::user()->rol === 'admin'))
+                <button type="button" class="btn-requisicion-admin" data-bs-toggle="modal" data-bs-target="#modalRequisiciones">
                     <i class="bi bi-inbox"></i> Ver Solicitudes Pendientes
-                </a>
-                <button class="btn-nuevo" data-bs-toggle="modal" data-bs-target="#modalProducto" onclick="document.getElementById('prodId').value='';document.getElementById('prodNombre').value='';document.getElementById('prodPrecio').value='';document.getElementById('prodStock').value='';document.getElementById('prodCategoria').value='';document.getElementById('prod-vencimiento').value='';document.getElementById('prod-proveedor').value='';document.getElementById('modalProductoTitle').innerHTML='<i class=\'bi bi-box-seam text-danger me-2\'></i> Nuevo Producto'">
+                </button>
+                <button class="btn-nuevo" onclick="abrirModalNuevo()">
                     <i class="bi bi-plus-lg me-2"></i>Nuevo Producto
                 </button>
                 @endif
             </div>
         </div>
 
-        <!-- SISTEMA DE PESTAÑAS (TABS) -->
         <ul class="nav nav-pills mb-4 animate-page-enter delay-1" id="catalogoTabs" role="tablist" style="gap: 10px;">
             <li class="nav-item" role="presentation">
                 <button class="nav-link active fw-bold px-4 py-2" id="productos-tab" data-bs-toggle="pill" data-bs-target="#tab-productos" type="button" role="tab" style="border-radius: 8px;">
                     <i class="bi bi-grid-fill me-2"></i> Productos
                 </button>
             </li>
-            @if(auth()->user()->rol == 'admin')
+            @if(Auth::check() && Auth::user()->rol === 'admin')
             <li class="nav-item" role="presentation">
                 <button class="nav-link fw-bold px-4 py-2" id="auditoria-tab" data-bs-toggle="pill" data-bs-target="#tab-auditoria" type="button" role="tab" style="border-radius: 8px;">
                     <i class="bi bi-clock-history me-2"></i> Historial de Movimientos
@@ -396,18 +288,16 @@
             @endif
         </ul>
 
-        <!-- CONTENIDO DE LAS PESTAÑAS -->
         <div class="tab-content animate-page-enter delay-2" id="catalogoTabsContent">
             
-            <!-- PESTAÑA 1: CATÁLOGO DE PRODUCTOS -->
             <div class="tab-pane fade show active" id="tab-productos" role="tabpanel" tabindex="0">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <span style="color:var(--text-secondary);font-weight:500;">{{ $productos->count() }} productos</span>
+                    <span style="color:var(--text-secondary);font-weight:500;">{{ $productos->count() ?? 0 }} productos</span>
                 </div>
 
                 <div class="products-grid" id="productsGrid">
                     @forelse($productos as $producto)
-                    <div class="product-card {{ $producto->stock <= 2 ? 'stock-critical' : ($producto->stock <= 5 ? 'stock-low' : 'stock-normal') }}" data-producto-id="{{ $producto->id }}" data-stock="{{ $producto->stock }}" data-nombre="{{ $producto->nombre }}" data-codigo="{{ $producto->codigo }}">
+                    <div class="product-card {{ $producto->stock <= 2 ? 'stock-critical' : ($producto->stock <= 5 ? 'stock-low' : 'stock-normal') }}">
                         @if($producto->imagen)
                             @if(filter_var($producto->imagen, FILTER_VALIDATE_URL))
                                 <img src="{{ $producto->imagen }}" alt="{{ $producto->nombre }}" class="product-card-img">
@@ -438,26 +328,16 @@
                                         $fechaVenc = \Carbon\Carbon::parse($producto->fecha_vencimiento);
                                         $hoy = \Carbon\Carbon::now();
                                         $dias = $hoy->diffInDays($fechaVenc, false);
-                                        
-                                        $color = '';
-                                        $texto = '';
-                                        $icono = '';
+                                        $color = ''; $texto = ''; $icono = '';
 
                                         if ($dias < 0) {
-                                            $color = '#ff4757'; 
-                                            $texto = '¡Vencido!';
-                                            $icono = 'bi-exclamation-octagon-fill';
+                                            $color = '#ff4757'; $texto = '¡Vencido!'; $icono = 'bi-exclamation-octagon-fill';
                                         } elseif ($dias <= 30) {
-                                            $color = '#ffa502'; 
-                                            $texto = 'Vence en ' . floor($dias) . ' d';
-                                            $icono = 'bi-clock-history';
+                                            $color = '#ffa502'; $texto = 'Vence en ' . floor($dias) . ' d'; $icono = 'bi-clock-history';
                                         } else {
-                                            $color = '#7bed9f'; 
-                                            $texto = $fechaVenc->format('d/m/y');
-                                            $icono = 'bi-calendar2-check';
+                                            $color = '#7bed9f'; $texto = $fechaVenc->format('d/m/y'); $icono = 'bi-calendar2-check';
                                         }
                                     @endphp
-                                    
                                     <div class="fw-semibold px-2 py-1 rounded" style="color: {{ $color }}; background: rgba(0,0,0,0.2); font-size: 0.75rem; letter-spacing: 0.5px; border: 1px solid {{ $color }}40;">
                                         <i class="bi {{ $icono }} me-1"></i> {{ $texto }}
                                     </div>
@@ -465,23 +345,34 @@
                             </div>
                         </div>
                         
-                        <div class="product-card-controls">
-                            <div class="stock-pill">
-                                <button class="stock-pill-btn stock-pill-minus" onclick="actualizarStock({{ $producto->id }}, 'restar', this)"><i class="bi bi-dash"></i></button>
-                                <span id="stock-{{ $producto->id }}" class="mx-2 fw-bold text-white">{{ $producto->stock }}</span>
-                                <button class="stock-pill-btn stock-pill-plus" onclick="actualizarStock({{ $producto->id }}, 'sumar', this)"><i class="bi bi-plus"></i></button>
+                        <div class="mt-3 pt-3 px-3 pb-3" style="border-top: 1px solid #2a2a2a;">
+                            @if(Auth::user()->rol === 'admin')
+                            <div class="d-flex justify-content-between align-items-center mb-3 px-3 py-1" style="background-color: #111; border-radius: 8px; border: 1px solid #333;">
+                                <button type="button" class="btn btn-sm text-white fs-5 px-2 border-0" onclick="actualizarStockRapido({{ $producto->id }}, -1)">-</button>
+                                <input type="number" id="stock-input-{{ $producto->id }}" value="{{ $producto->stock }}" class="fw-bold fs-5 text-white text-center border-0 bg-transparent oswa-stock-input" style="width: 60px; outline: none;" onchange="guardarStockManual({{ $producto->id }})">
+                                <button type="button" class="btn btn-sm text-white fs-5 px-2 border-0" onclick="actualizarStockRapido({{ $producto->id }}, 1)">+</button>
                             </div>
-                            @if($esAdmin)
-                            <div class="product-card-actions">
-                                <button class="card-action-btn card-action-btn-transfer" title="Transferir" onclick="abrirTransferencia({{ $producto->id }}, '{{ $producto->nombre }}', {{ $producto->stock }})"><i class="bi bi-truck"></i></button>
-                                <button class="card-action-btn card-action-btn-order" title="Orden de Compra" onclick="generarOrden({{ $producto->id }}, '{{ $producto->nombre }}')"><i class="bi bi-cart"></i></button>
-                                <button class="card-action-btn card-action-btn-edit" title="Editar" onclick="editarProducto({{ json_encode($producto) }})"><i class="bi bi-pencil"></i></button>
-                                <button class="card-action-btn card-action-btn-delete" title="Eliminar" onclick="eliminarProducto({{ $producto->id }})"><i class="bi bi-trash"></i></button>
+
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-sm w-50 text-dark fw-bold" style="background-color: #ffc107; border: none; border-radius: 6px;" data-producto="{{ $producto->toJson() }}" onclick="editarProducto(JSON.parse(this.getAttribute('data-producto')))">
+                                    <i class="bi bi-pencil-square"></i> Editar
+                                </button>
+                                <button type="button" class="btn btn-sm w-50 text-white fw-bold" style="background-color: #E50914; border: none; border-radius: 6px;" onclick="confirmarEliminacion({{ $producto->id }}, '{{ addslashes($producto->nombre) }}')">
+                                    <i class="bi bi-trash"></i> Eliminar
+                                </button>
+                                <form id="form-eliminar-{{ $producto->id }}" action="{{ route('productos.destroy', $producto->id) }}" method="POST" class="d-none">
+                                    @csrf @method('DELETE')
+                                </form>
                             </div>
                             @else
-                            <div class="product-card-actions">
-                                <button class="card-action-btn" style="background: rgba(0,184,148,0.15); color: #00b894;" title="Pedir Material" onclick="abrirRequisicion({{ $producto->id }}, '{{ $producto->nombre }}')"><i class="bi bi-hand-index"></i></button>
-                            </div>
+                                <div class="d-flex gap-2">
+                                    <button type="button" class="btn btn-sm w-50 btn-outline-info" style="border-radius: 6px;" data-bs-toggle="modal" data-bs-target="#modalDetalles{{ $producto->id }}">
+                                        <i class="bi bi-eye"></i> Detalles
+                                    </button>
+                                    <a href="{{ route('requisiciones.crear') }}?producto_id={{ $producto->id }}" class="btn btn-sm w-50 btn-outline-success" style="border-radius: 6px;">
+                                        <i class="bi bi-cart-plus"></i> Pedir
+                                    </a>
+                                </div>
                             @endif
                         </div>
                     </div>
@@ -494,8 +385,7 @@
                 </div>
             </div>
 
-            @if(auth()->user()->rol == 'admin')
-            <!-- PESTAÑA 2: AUDITORÍA -->
+            @if(Auth::check() && Auth::user()->rol === 'admin')
             <div class="tab-pane fade" id="tab-auditoria" role="tabpanel" tabindex="0">
                 <div class="p-4" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
                     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -520,59 +410,54 @@
                                 </tr>
                             </thead>
                             <tbody style="border-top: none; font-size: 0.95rem;">
-                                @foreach($auditorias as $audit)
-                                <tr style="border-bottom: 1px solid #222;">
-                                    <td class="text-light">
-                                        {{ \Carbon\Carbon::parse($audit->created_at)->format('d/m/Y') }}<br>
-                                        <span class="text-secondary" style="font-size: 0.85rem;">{{ \Carbon\Carbon::parse($audit->created_at)->format('H:i') }}</span>
-                                    </td>
-                                    <td>
-                                        <span class="text-light">{{ $audit->producto->codigo_barras ?? 'N/A' }}</span><br>
-                                        <span class="text-secondary" style="font-size: 0.85rem;">{{ $audit->producto->nombre ?? 'Producto Eliminado' }}</span>
-                                    </td>
-                                    <td>
-                                        @if($audit->tipo == 'Entrada')
-                                            <span class="badge border border-success text-success px-2 py-1" style="background: rgba(25, 135, 84, 0.1);">↙ Entrada</span>
-                                        @else
-                                            <span class="badge border border-danger text-danger px-2 py-1" style="background: rgba(220, 53, 69, 0.1);">↗ Salida</span>
-                                        @endif
-                                    </td>
-                                    <td class="fw-bold text-white">{{ $audit->cantidad }}</td>
-                                    <td class="text-light">{{ $audit->motivo ?? 'Ajuste de inventario' }}</td>
-                                    <td>
-                                        <span class="badge bg-secondary bg-opacity-25 text-light border border-secondary border-opacity-50 px-3 py-2" style="font-weight: 500;">
-                                            {{ $audit->usuario->name ?? 'Sistema' }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <span class="text-secondary" style="font-family: monospace; font-size: 0.85rem; letter-spacing: 0.5px;" title="{{ $audit->firma_hash }}">
-                                            {{ $audit->firma_hash ? substr($audit->firma_hash, 0, 15) . '...' : 'SIN FIRMA' }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        @if(!$audit->firma_hash)
-                                            <span class="badge border border-secondary text-secondary px-3 py-2 d-inline-flex align-items-center gap-1" style="background: rgba(255, 255, 255, 0.05); border-radius: 6px;">
-                                                <i class="bi bi-clock-history"></i> Antiguo
+                                @if(isset($auditorias))
+                                    @foreach($auditorias as $audit)
+                                    <tr style="border-bottom: 1px solid #222;">
+                                        <td class="text-light">
+                                            {{ \Carbon\Carbon::parse($audit->created_at)->format('d/m/Y') }}<br>
+                                            <span class="text-secondary" style="font-size: 0.85rem;">{{ \Carbon\Carbon::parse($audit->created_at)->format('H:i') }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="text-light">{{ $audit->producto->codigo_barras ?? 'N/A' }}</span><br>
+                                            <span class="text-secondary" style="font-size: 0.85rem;">{{ $audit->producto->nombre ?? 'Producto Eliminado' }}</span>
+                                        </td>
+                                        <td>
+                                            @if($audit->tipo == 'Entrada')
+                                                <span class="badge border border-success text-success px-2 py-1" style="background: rgba(25, 135, 84, 0.1);">↙ Entrada</span>
+                                            @else
+                                                <span class="badge border border-danger text-danger px-2 py-1" style="background: rgba(220, 53, 69, 0.1);">↗ Salida</span>
+                                            @endif
+                                        </td>
+                                        <td class="fw-bold text-white">{{ $audit->cantidad }}</td>
+                                        <td class="text-light">{{ $audit->motivo ?? 'Ajuste de inventario' }}</td>
+                                        <td>
+                                            <span class="badge bg-secondary bg-opacity-25 text-light border border-secondary border-opacity-50 px-3 py-2" style="font-weight: 500;">
+                                                {{ $audit->usuario->name ?? 'Sistema' }}
                                             </span>
-                                        @elseif($audit->esValida())
-                                            <span class="badge border border-success text-success px-3 py-2 d-inline-flex align-items-center gap-1" style="background: rgba(25, 135, 84, 0.05); border-radius: 6px; box-shadow: 0 0 10px rgba(25,135,84,0.2);">
-                                                <i class="bi bi-shield-check"></i> Válida
+                                        </td>
+                                        <td>
+                                            <span class="text-secondary" style="font-family: monospace; font-size: 0.85rem; letter-spacing: 0.5px;" title="{{ $audit->firma_hash }}">
+                                                {{ $audit->firma_hash ? substr($audit->firma_hash, 0, 15) . '...' : 'SIN FIRMA' }}
                                             </span>
-                                        @else
-                                            <span class="badge border border-danger text-danger px-3 py-2 d-inline-flex align-items-center gap-1" style="background: rgba(220, 53, 69, 0.1); border-radius: 6px; box-shadow: 0 0 10px rgba(220,53,69,0.4); animation: pulseRed 2s infinite;">
-                                                <i class="bi bi-shield-x"></i> ALTERADA
-                                            </span>
-                                        @endif
-                                    </td>
-                                </tr>
-                                @endforeach
+                                        </td>
+                                        <td>
+                                            @if(!$audit->firma_hash)
+                                                <span class="badge border border-secondary text-secondary px-3 py-2 d-inline-flex align-items-center gap-1" style="background: rgba(255, 255, 255, 0.05); border-radius: 6px;"><i class="bi bi-clock-history"></i> Antiguo</span>
+                                            @elseif($audit->esValida())
+                                                <span class="badge border border-success text-success px-3 py-2 d-inline-flex align-items-center gap-1" style="background: rgba(25, 135, 84, 0.05); border-radius: 6px; box-shadow: 0 0 10px rgba(25,135,84,0.2);"><i class="bi bi-shield-check"></i> Válida</span>
+                                            @else
+                                                <span class="badge border border-danger text-danger px-3 py-2 d-inline-flex align-items-center gap-1" style="background: rgba(220, 53, 69, 0.1); border-radius: 6px; box-shadow: 0 0 10px rgba(220,53,69,0.4); animation: pulseRed 2s infinite;"><i class="bi bi-shield-x"></i> ALTERADA</span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                @endif
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
             @endif
-            
         </div>
     </main>
 
@@ -581,430 +466,293 @@
         <div>Desarrollado con <i class="bi bi-code-slash text-primary"></i> y <i class="bi bi-heart-fill heart-icon"></i> por <span class="highlight">Carlos Braca & Yorgelis Blanco</span></div>
         <div class="mt-2 d-flex align-items-center justify-content-center" style="font-size: 0.75rem; opacity: 0.8;">
             <span>Ingeniería en Informática — V Semestre |</span>
-            <img src="{{ asset('img/logo-unellez.png') }}" alt="UNELLEZ" style="height: 18px; margin-left: 8px; margin-right: 4px; filter: brightness(0) invert(1);">
-            <strong style="letter-spacing: 0.5px;">UNELLEZ</strong>
+            <strong style="letter-spacing: 0.5px; margin-left: 8px;">UNELLEZ</strong>
         </div>
     </footer>
 
-    <button class="scanner-fab" data-bs-toggle="modal" data-bs-target="#scannerModal" title="Escáner (Alt+E)"><i class="bi bi-upc-scan"></i></button>
-
     <!-- MODAL: NUEVO / EDITAR PRODUCTO -->
     <div class="modal fade" id="modalProducto" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content" style="background: var(--bg-card); border: 1px solid var(--border-color); box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
                 <div class="modal-header border-bottom border-secondary border-opacity-25">
                     <h5 class="modal-title text-white fw-bold" id="modalProductoTitle"><i class="bi bi-box-seam text-danger me-2"></i> Gestión de Producto</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    <form id="formProducto">
-                        <input type="hidden" id="prodId">
-                        <div class="mb-3">
-                            <label class="form-label text-secondary">Nombre del Producto</label>
-                            <input type="text" id="prodNombre" name="nombre" class="form-control bg-dark text-white border-secondary" placeholder="Ej. Margarina Mavesa 500g" required>
+                <div class="modal-body p-4">
+                    <form id="formProducto" enctype="multipart/form-data">
+                        <input type="hidden" id="prodId" name="id">
+                        <div class="row">
+                            <div class="col-md-4 mb-4 mb-md-0 d-flex flex-column align-items-center justify-content-start">
+                                <label class="form-label text-secondary w-100 text-center fw-bold"><i class="bi bi-camera me-1"></i> Fotografía</label>
+                                <div class="position-relative mt-2" style="width: 180px; height: 180px; border: 2px dashed #444; border-radius: 16px; overflow: hidden; background: #1a1a1a; cursor: pointer;" onclick="document.getElementById('prodImagen').click()">
+                                    <img id="imgPreview" src="" alt="Preview" style="width: 100%; height: 100%; object-fit: cover; display: none;">
+                                    <div id="imgPlaceholder" class="w-100 h-100 d-flex flex-column align-items-center justify-content-center text-muted">
+                                        <i class="bi bi-cloud-arrow-up fs-1 mb-2 text-secondary"></i>
+                                        <span style="font-size: 0.8rem; text-align: center; padding: 0 10px;">Clic para subir<br>imagen (JPG/PNG)</span>
+                                    </div>
+                                </div>
+                                <input type="file" id="prodImagen" name="imagen" class="d-none" accept="image/*" onchange="previewImage(event)">
+                            </div>
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label class="form-label text-secondary">Nombre del Producto</label>
+                                    <input type="text" id="prodNombre" name="nombre" class="form-control bg-dark text-white border-secondary" required>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-sm-6">
+                                        <label class="form-label text-secondary">Código</label>
+                                        <input type="text" id="prodCodigo" name="codigo" class="form-control bg-dark text-white border-secondary">
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <label class="form-label text-secondary">Marca</label>
+                                        <input type="text" id="prodMarca" name="marca" class="form-control bg-dark text-white border-secondary">
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-sm-6">
+                                        <label class="form-label text-secondary">Precio ($)</label>
+                                        <input type="number" step="0.01" id="prodPrecio" name="precio" class="form-control bg-dark text-white border-secondary" required>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <label class="form-label text-secondary">Stock Inicial</label>
+                                        <input type="number" id="prodStock" name="stock" class="form-control bg-dark text-white border-secondary" required>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
+                        <div class="row mb-3 mt-2">
+                            <div class="col-md-6">
+                                <label class="form-label text-secondary">Categoría</label>
+                                <input type="text" id="prodCategoria" name="categoria" class="form-control bg-dark text-white border-secondary">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-secondary">Vencimiento (Opcional)</label>
+                                <input type="date" id="prod-vencimiento" name="fecha_vencimiento" class="form-control bg-dark text-white border-secondary">
+                            </div>
+                        </div>
+                        
+                        <!-- NUEVO: SELECTOR DE PROVEEDOR -->
                         <div class="row mb-3">
-                            <div class="col-6">
-                                <label class="form-label text-secondary">Precio ($)</label>
-                                <input type="number" step="0.01" id="prodPrecio" name="precio" class="form-control bg-dark text-white border-secondary" placeholder="0.00" required>
+                            <div class="col-12">
+                                <label class="form-label text-secondary"><i class="bi bi-buildings me-1"></i> Proveedor Asignado (Opcional)</label>
+                                <select id="prod-proveedor" name="proveedor_id" class="form-select bg-dark text-white border-secondary">
+                                    <option value="">-- Sin proveedor asignado --</option>
+                                    @foreach(\App\Models\Proveedor::all() as $prov)
+                                        <option value="{{ $prov->id }}">{{ $prov->nombre }}</option>
+                                    @endforeach
+                                </select>
                             </div>
-                            <div class="col-6">
-                                <label class="form-label text-secondary">Stock</label>
-                                <input type="number" id="prodStock" name="stock" class="form-control bg-dark text-white border-secondary" placeholder="0" required>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label text-secondary">Categoría</label>
-                            <input type="text" id="prodCategoria" name="categoria" class="form-control bg-dark text-white border-secondary" placeholder="General">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label text-secondary">Fecha de Vencimiento (Opcional)</label>
-                            <input type="date" id="prod-vencimiento" name="fecha_vencimiento" class="form-control bg-dark text-white border-secondary">
-                        </div>
-                        <div class="mb-3 border-top border-secondary border-opacity-25 pt-3 mt-3">
-                            <label class="form-label text-secondary"><i class="bi bi-truck text-warning me-1"></i> Proveedor Asociado</label>
-                            <select class="form-select bg-dark text-white border-secondary shadow-none" id="prod-proveedor" name="proveedor_id">
-                                <option value="">Ninguno (Producto Independiente)</option>
-                                @foreach($proveedores as $prov)
-                                    <option value="{{ $prov->id }}">{{ $prov->nombre }} ({{ $prov->rif }})</option>
-                                @endforeach
-                            </select>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer border-top border-secondary border-opacity-25">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" id="btnGuardarProducto" class="btn btn-danger">Guardar Cambios</button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" id="btnGuardarProducto" class="btn btn-danger fw-bold"><i class="bi bi-save me-1"></i> Guardar Cambios</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- MODAL: TRANSFERENCIA Y RUTAS -->
-    <div class="modal fade" id="modalTransferir" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content" style="background: var(--bg-card); border: 1px solid var(--border-color);">
-                <div class="modal-header border-bottom border-secondary border-opacity-25">
-                    <h5 class="modal-title text-white fw-bold"><i class="bi bi-truck text-warning me-2"></i> Logística de Transferencia</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <p class="text-secondary mb-2"><i class="bi bi-geo-alt-fill text-danger"></i> Ruta de transferencia (Origen: <strong>Barinas</strong>)</p>
-                    <div id="mapaTransferencia" style="height: 250px; width: 100%; background: #1a1a1a; border-radius: 8px; border: 1px solid #333;" class="mb-3 d-flex justify-content-center align-items-center text-muted">
-                        Cargando coordenadas del sistema...
-                    </div>
-                    <input type="hidden" id="transProductoId">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <label class="form-label text-secondary">Cantidad a transferir</label>
-                            <input type="number" id="transCantidad" class="form-control bg-dark text-white border-secondary" placeholder="Ej. 50">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label text-secondary">Destino</label>
-                            <select id="transDestino" class="form-select bg-dark text-white border-secondary">
-                                <option value="">Seleccionar...</option>
-                                <option value="Caracas">Caracas</option>
-                                <option value="Maracaibo">Maracaibo</option>
-                                <option value="Valencia">Valencia</option>
-                                <option value="Barquisimeto">Barquisimeto</option>
-                                <option value="San Cristóbal">San Cristóbal</option>
-                                <option value="Mérida">Mérida</option>
-                                <option value="Guanare">Guanare</option>
-                                <option value="Trujillo">Trujillo</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer border-top border-secondary border-opacity-25">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" id="btnProcesarTransferencia" class="btn btn-warning text-dark fw-bold"><i class="bi bi-send-check"></i> Procesar Transferencia</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL: ESCÁNER PREMIUM -->
-    <div class="modal fade" id="scannerModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
+    <!-- Modal de Solicitudes Pendientes -->
+    <div class="modal fade" id="modalRequisiciones" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content" style="background-color: #141414; border: 1px solid #333; border-radius: 12px;">
                 <div class="modal-header" style="border-bottom: 1px solid #2a2a2a;">
-                    <h5 class="modal-title text-white"><i class="bi bi-upc-scan text-danger me-2"></i> Escáner de Inventario</h5>
+                    <h5 class="modal-title text-white"><i class="bi bi-inbox-fill text-warning me-2"></i> Solicitudes Pendientes</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body p-0">
-                    <div class="scanner-view-container">
-                        <div id="reader" style="width:100%;height:100%;"></div>
-                        <div class="scanner-overlay">
-                            <div class="laser-line"></div>
-                        </div>
-                    </div>
-                    <div class="p-3" style="background:#0f0f0f;">
-                        <div class="row align-items-center mb-3">
-                            <div class="col-10">
-                                <select id="camera-selector" class="form-select form-select-sm text-white" style="background-color: #222; border-color: #444;">
-                                    <option>Seleccionar cámara...</option>
-                                </select>
-                            </div>
-                            <div class="col-2 text-end">
-                                <button id="btn-flash" class="btn btn-sm btn-outline-warning w-100" title="Linterna"><i class="bi bi-lightning-fill"></i></button>
-                            </div>
-                        </div>
-                        <hr style="border-color: #333;">
-                        <label class="mb-1 fw-bold" style="color: #e0e0e0; font-size: 0.85rem;">¿No lee el código?</label>
-                        <div class="input-group input-group-sm">
-                            <input type="text" class="form-control text-white border-secondary oswa-input-scanner" id="codigo-manual" placeholder="Escribir código manualmente..." style="background-color: #222;">
-                            <button class="btn btn-danger" id="btn-buscar-manual"><i class="bi bi-search"></i></button>
-                        </div>
-                    </div>
+                <div class="modal-body text-white" id="modalRequisicionesBody">
+                    <p class="text-muted text-center py-4">Cargando solicitudes...</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">@csrf</form>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
+    <!-- SCRIPTS VITALES DEL CATÁLOGO -->
     <script>
-        function toggleSidebar() { document.getElementById('topbarNav').classList.toggle('show'); }
-        function toggleUserDropdown() { document.getElementById('userDropdownMenu').classList.toggle('show'); }
-        function toggleTheme() {
-            const nuevo = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-            document.body.setAttribute('data-theme', nuevo);
-            localStorage.setItem('theme', nuevo);
-            const icon = document.querySelector('.theme-toggle i');
-            if (icon) icon.className = nuevo === 'dark' ? 'bi bi-moon-fill' : 'bi bi-sun-fill';
+        document.addEventListener('DOMContentLoaded', () => {
+            window.Toast = (typeof Swal !== 'undefined') ? Swal.mixin({
+                toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, 
+                timerProgressBar: true, background: '#141414', color: '#fff',
+                customClass: { popup: 'border border-secondary' }
+            }) : null;
+
+            let mensajeExito = {!! json_encode(session('success')) !!};
+            if (mensajeExito && window.Toast) window.Toast.fire({ icon: 'success', title: mensajeExito, iconColor: '#25D366' });
+
+            const btnGuardar = document.getElementById('btnGuardarProducto');
+            if(btnGuardar) {
+                btnGuardar.addEventListener('click', function() {
+                    const form = document.getElementById('formProducto');
+                    const formData = new FormData(form);
+                    const id = document.getElementById('prodId').value;
+                    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+                    let url = '{{ route("guardar.producto") }}';
+                    if (id) {
+                        url = `/productos/${id}/actualizar`;
+                        formData.append('_method', 'PUT');
+                    }
+
+                    fetch(url, {
+                        method: 'POST',
+                        headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
+                        body: formData
+                    })
+                    .then(async response => {
+                        if (!response.ok) throw await response.json();
+                        return response.json();
+                    })
+                    .then(data => {
+                        if(data.success) {
+                            Swal.fire('¡Éxito!', 'Producto guardado correctamente', 'success').then(() => window.location.reload());
+                        }
+                    })
+                    .catch(error => {
+                        console.error(error);
+                        let msg = error.message || 'Revisa los campos e intenta de nuevo.';
+                        Swal.fire('Error', msg, 'error');
+                    });
+                });
+            }
+
+            const modalReq = document.getElementById('modalRequisiciones');
+            if(modalReq) modalReq.addEventListener('show.bs.modal', mostrarRequisicionesPendientes);
+        });
+
+        function actualizarStockRapido(id, cambio) {
+            const input = document.getElementById('stock-input-' + id);
+            if (!input) return;
+            let nuevoValor = parseInt(input.value) + cambio;
+            if (nuevoValor < 0) return; 
+            input.value = nuevoValor;
+            animarStock(input, cambio);
+            mandarStockAlBackend(id, nuevoValor);
         }
 
-        const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+        function guardarStockManual(id) {
+            const input = document.getElementById('stock-input-' + id);
+            if (!input) return;
+            let nuevoValor = parseInt(input.value);
+            if (isNaN(nuevoValor) || nuevoValor < 0) { input.value = 0; nuevoValor = 0; }
+            mandarStockAlBackend(id, nuevoValor);
+        }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const saved = localStorage.getItem('theme') || 'dark';
-            document.body.setAttribute('data-theme', saved);
-            const icon = document.querySelector('.theme-toggle i');
-            if (icon) icon.className = saved === 'dark' ? 'bi bi-moon-fill' : 'bi bi-sun-fill';
+        function animarStock(elemento, cambio) {
+            elemento.classList.remove('anim-stock-sube', 'anim-stock-baja');
+            void elemento.offsetWidth; 
+            elemento.classList.add(cambio > 0 ? 'anim-stock-sube' : 'anim-stock-baja');
+        }
 
-            document.getElementById('topbarSearchInput')?.addEventListener('input', function() {
-                const texto = this.value.toLowerCase();
-                document.querySelectorAll('.product-card').forEach(card => {
-                    const nombre = (card.dataset.nombre || '').toLowerCase();
-                    const codigo = (card.dataset.codigo || '').toLowerCase();
-                    card.style.display = (nombre.includes(texto) || codigo.includes(texto)) ? '' : 'none';
-                });
+        function mandarStockAlBackend(id, cantidad) {
+            let token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            fetch('/productos/' + id + '/stock', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': token, 'Accept': 'application/json' },
+                body: JSON.stringify({ cantidad: cantidad })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success && window.Toast) window.Toast.fire({ icon: 'success', title: 'Inventario actualizado', iconColor: '#25D366' });
             });
+        }
 
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('openScanner') === 'true') {
-                window.history.replaceState({}, document.title, window.location.pathname);
-                const scannerModalEl = document.getElementById('scannerModal');
-                if (scannerModalEl) {
-                    const scannerModal = new bootstrap.Modal(scannerModalEl);
-                    scannerModal.show();
-                }
-            }
-
-            // MAPA DE TRANSFERENCIA
-            const modalTransferir = document.getElementById('modalTransferir');
-            let mapaInicializado = false;
-            let leafletMap = null;
+        function abrirModalNuevo() {
+            document.getElementById('formProducto').reset();
+            document.getElementById('prodId').value = '';
+            document.getElementById('modalProductoTitle').innerHTML = '<i class="bi bi-box-seam text-danger me-2"></i> Nuevo Producto';
             
-            if(modalTransferir) {
-                modalTransferir.addEventListener('shown.bs.modal', function () {
-                    const mapContainer = document.getElementById('mapaTransferencia');
-                    if (!mapaInicializado) {
-                        mapContainer.classList.remove('d-flex', 'justify-content-center', 'align-items-center', 'text-muted');
-                        mapContainer.innerHTML = '';
-                        leafletMap = L.map(mapContainer).setView([8.6224, -70.2075], 7);
-                        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-                            attribution: '&copy; OpenStreetMap &copy; CARTO', subdomains: 'abcd', maxZoom: 19
-                        }).addTo(leafletMap);
-                        
-                        const origenIcon = L.divIcon({ html: '<i class="bi bi-geo-alt-fill text-danger" style="font-size:2rem;"></i>', className: '', iconSize: [30, 30] });
-                        L.marker([8.6224, -70.2075], { icon: origenIcon }).addTo(leafletMap).bindPopup('Origen: Barinas');
-                        mapaInicializado = true;
-                    } else {
-                        setTimeout(() => leafletMap.invalidateSize(), 100);
-                    }
-                });
+            const imgPreview = document.getElementById('imgPreview');
+            const imgPlaceholder = document.getElementById('imgPlaceholder');
+            if(imgPreview && imgPlaceholder) {
+                imgPreview.src = ''; imgPreview.style.display = 'none'; imgPlaceholder.style.display = 'flex';
             }
-
-            // 3. GUARDAR PRODUCTO (Crear/Editar)
-            document.getElementById('btnGuardarProducto').addEventListener('click', function() {
-                const form = document.getElementById('formProducto');
-                const formData = new FormData(form);
-                const id = document.getElementById('prodId').value;
-                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-
-                let url = '{{ route('guardar.producto') }}';
-                if (id) {
-                    url = `/productos/${id}/actualizar`;
-                    formData.append('_method', 'PUT');
-                }
-
-                fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': csrfToken,
-                        'Accept': 'application/json'
-                    },
-                    body: formData
-                })
-                .then(async response => {
-                    if (!response.ok) {
-                        const errorData = await response.json();
-                        throw errorData;
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if(data.success) {
-                        Swal.fire('¡Éxito!', 'Producto guardado correctamente', 'success')
-                            .then(() => window.location.reload());
-                    }
-                })
-                .catch(error => {
-                    console.error("Error capturado:", error);
-                    let errorMsg = 'Error interno del servidor.';
-                    if (error.errors) {
-                        errorMsg = Object.values(error.errors)[0][0];
-                    } else if (error.message) {
-                        errorMsg = error.message;
-                    }
-                    Swal.fire('Error', errorMsg, 'error');
-                });
-            });
-
-            // 4. PROCESAR TRANSFERENCIA
-            document.getElementById('btnProcesarTransferencia').addEventListener('click', async function() {
-                const id = document.getElementById('transProductoId').value;
-                const cantidad = document.getElementById('transCantidad').value;
-                const destino = document.getElementById('transDestino').value;
-                if(!cantidad || !destino) { Swal.fire('Campos incompletos', 'Ingresa cantidad y destino', 'warning'); return; }
-
-                try {
-                    const response = await fetch('{{ route('transferir.producto') }}', {
-                        method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
-                        body: JSON.stringify({ producto_id: id, cantidad, sucursal: destino })
-                    });
-                    const data = await response.json();
-                    if (data.success) {
-                        Swal.fire({ title: 'Transferencia procesada', icon: 'success', html: `<a href="${data.pdf_url}" target="_blank" class="btn btn-danger mt-3">Descargar PDF</a>` });
-                        bootstrap.Modal.getInstance(document.getElementById('modalTransferir')).hide();
-                        setTimeout(() => location.reload(), 2000);
-                    } else { Swal.fire('Error', data.message, 'error'); }
-                } catch (e) { Swal.fire('Error', 'Error de conexión', 'error'); }
-            });
-        });
+            new bootstrap.Modal(document.getElementById('modalProducto')).show();
+        }
 
         function editarProducto(producto) {
             document.getElementById('prodId').value = producto.id;
             document.getElementById('prodNombre').value = producto.nombre;
             document.getElementById('prodPrecio').value = producto.precio;
-            document.getElementById('prodStock').value = producto.stock;
-            document.getElementById('prodCategoria').value = producto.categoria || 'General';
-            document.getElementById('prod-vencimiento').value = producto.fecha_vencimiento || '';
-            document.getElementById('prod-proveedor').value = producto.proveedor_id || '';
-            document.getElementById('modalProductoTitle').innerHTML = '<i class="bi bi-pencil-square text-primary me-2"></i> Editar Producto';
+            document.getElementById('prodStock').value = producto.stock || producto.cantidad;
+            document.getElementById('prodCategoria').value = producto.categoria || '';
+            document.getElementById('prod-vencimiento').value = producto.fecha_vencimiento ? producto.fecha_vencimiento.split(' ')[0] : '';
+            document.getElementById('prodCodigo').value = producto.codigo || producto.codigo_barras || '';
+            document.getElementById('prodMarca').value = producto.marca || '';
+            
+            const prodProveedor = document.getElementById('prod-proveedor');
+            if (prodProveedor) prodProveedor.value = producto.proveedor_id || '';
+
+            const imgPreview = document.getElementById('imgPreview');
+            const imgPlaceholder = document.getElementById('imgPlaceholder');
+            if (imgPreview && imgPlaceholder) {
+                if (producto.imagen) {
+                    imgPreview.src = producto.imagen.startsWith('http') ? producto.imagen : '/storage/' + producto.imagen;
+                    imgPreview.style.display = 'block'; imgPlaceholder.style.display = 'none';
+                } else {
+                    imgPreview.src = ''; imgPreview.style.display = 'none'; imgPlaceholder.style.display = 'flex';
+                }
+            }
+            document.getElementById('modalProductoTitle').innerHTML = '<i class="bi bi-pencil-square text-warning me-2"></i> Editar Producto';
             new bootstrap.Modal(document.getElementById('modalProducto')).show();
         }
 
-        function abrirTransferencia(id, nombre, stockActual) {
-            document.getElementById('transProductoId').value = id;
-            document.getElementById('transCantidad').max = stockActual;
-            document.getElementById('transCantidad').value = 1;
-            document.getElementById('transDestino').value = '';
-            new bootstrap.Modal(document.getElementById('modalTransferir')).show();
+        function previewImage(event) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('imgPreview').src = e.target.result;
+                document.getElementById('imgPreview').style.display = 'block';
+                document.getElementById('imgPlaceholder').style.display = 'none';
+            };
+            reader.readAsDataURL(event.target.files[0]);
         }
 
-        function generarOrden(id) { window.open('{{ url('orden-compra') }}/' + id, '_blank'); }
-
-        function abrirRequisicion(id, nombre) {
-            Swal.fire({ title: 'Solicitar Material', text: 'Producto: ' + nombre, input: 'number', inputLabel: 'Cantidad', inputAttributes: { min: 1 }, showCancelButton: true, confirmButtonText: 'Enviar Solicitud', confirmButtonColor: '#fdcb6e' }).then((result) => {
-                if (result.value) {
-                    fetch('{{ route('requisiciones.solicitar') }}', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken }, body: JSON.stringify({ producto_id: id, cantidad: result.value }) })
-                    .then(res => res.json()).then(data => {
-                        if (data.success) { Swal.fire('Solicitud Enviada', 'El administrador revisará tu pedido.', 'success'); }
-                        else { Swal.fire('Error', data.message, 'error'); }
-                    });
-                }
-            });
-        }
-
-// FUNCIÓN ROBUSTA PARA ACTUALIZAR STOCK CON ANIMACIONES
-function actualizarStock(idProducto, operacion, btnElement) {
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-
-    fetch('{{ route('ajustar.stock') }}', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': csrfToken,
-            'Accept': 'application/json'
-        },
-        body: JSON.stringify({ id: idProducto, accion: operacion })
-    })
-    .then(response => {
-        if (!response.ok) throw new Error('Error de conexión con el servidor');
-        return response.json();
-    })
-    .then(data => {
-        if(data.success) {
-            const stockElement = document.getElementById(`stock-${idProducto}`);
-            if(stockElement) {
-                stockElement.innerText = data.nuevo_stock;
-            }
-
-            const rect = btnElement.getBoundingClientRect();
-            const floatEl = document.createElement('div');
-            const isPlus = operacion === 'sumar';
-            floatEl.className = `floating-number ${isPlus ? 'float-plus' : 'float-minus'}`;
-            floatEl.textContent = isPlus ? '+1' : '-1';
-            
-            floatEl.style.left = `${rect.left + window.scrollX + (rect.width/2) - 10}px`;
-            floatEl.style.top = `${rect.top + window.scrollY - 10}px`;
-            document.body.appendChild(floatEl);
-            setTimeout(() => floatEl.remove(), 800);
-
+        function confirmarEliminacion(id, nombre) {
             Swal.fire({
-                toast: true,
-                position: 'bottom-end',
-                icon: isPlus ? 'success' : 'info',
-                title: isPlus ? 'Stock incrementado' : 'Stock reducido',
-                showConfirmButton: false,
-                timer: 1500,
-                background: 'var(--bg-card)',
-                color: '#ffffff'
-            });
-        } else {
-            Swal.fire('Error', data.message || 'No se pudo actualizar', 'error');
-        }
-    })
-    .catch(error => {
-        console.error("Error capturado:", error);
-        Swal.fire('Error de Conexión', 'No se pudo actualizar el stock en la base de datos.', 'error');
-    });
-}
-
-        function eliminarProducto(id) {
-            Swal.fire({ title: '¿Eliminar producto?', text: 'Esta acción no se puede deshacer.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#E50914', cancelButtonText: 'Cancelar', confirmButtonText: 'Sí, eliminar' }).then((result) => {
-                if (result.isConfirmed) {
-                    fetch('{{ route('eliminar.producto') }}', { method: 'DELETE', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken }, body: JSON.stringify({ id }) })
-                    .then(res => res.json()).then(data => {
-                        if (data.success) { Swal.fire('Eliminado', data.message, 'success'); setTimeout(() => location.reload(), 1000); }
-                        else { Swal.fire('Error', data.message, 'error'); }
-                    });
-                }
+                title: '¿Eliminar Producto?', html: 'Vas a borrar <b>' + nombre + '</b>.<br>¡No hay vuelta atrás!',
+                icon: 'warning', showCancelButton: true, confirmButtonColor: '#E50914', cancelButtonColor: '#444',
+                confirmButtonText: 'Sí, eliminar', background: '#141414', color: '#fff'
+            }).then((result) => {
+                if (result.isConfirmed) document.getElementById('form-eliminar-' + id).submit();
             });
         }
-
-        function mostrarMiCuenta() { Swal.fire('Mi Cuenta', 'Función en desarrollo.', 'info'); }
-        function mostrarAtajos() { Swal.fire('Atajos', '<ul style="text-align:left;"><li><b>Alt+E</b>: Escáner</li><li><b>Alt+T</b>: Cambiar Tema</li></ul>', 'info'); }
-        function cambiarCuenta(e) { e.preventDefault(); document.getElementById('logout-form').submit(); }
 
         function mostrarRequisicionesPendientes() {
             const reqs = @json($requisicionesPendientes ?? []);
-            if (reqs.length === 0) {
-                Swal.fire('Sin Solicitudes', 'No hay requisiciones pendientes en este momento.', 'info');
+            const body = document.getElementById('modalRequisicionesBody');
+            if (!reqs || reqs.length === 0) {
+                body.innerHTML = '<div class="text-center py-4"><i class="bi bi-inbox" style="font-size:3rem;color:#555;"></i><p class="mt-3 text-muted">No hay solicitudes pendientes en este momento.</p></div>';
                 return;
             }
-            let html = '<div style="text-align:left; max-height:400px; overflow-y:auto;">';
+            let html = '<div style="max-height:450px; overflow-y:auto;">';
             reqs.forEach(r => {
-                html += '<div style="padding:12px; border-bottom:1px solid #333; display:flex; justify-content:space-between; align-items:center;">';
-                html += '<div><strong>' + r.user.name + '</strong> solicita ';
-                html += '<b>' + r.producto.nombre + '</b> × ' + r.cantidad;
-                html += '<br><small style="color:#888;">' + r.created_at + '</small></div>';
-                html += '<div style="display:flex; gap:6px; flex-shrink:0;">';
-                html += '<button onclick="procesarRequisicion(' + r.id + ', \'aprobar\')" style="background:#00b894; color:#fff; border:none; border-radius:6px; padding:6px 12px; cursor:pointer; font-size:0.8rem;"><i class="bi bi-check-lg"></i> Aprobar</button>';
-                html += '<button onclick="procesarRequisicion(' + r.id + ', \'rechazar\')" style="background:#e74c3c; color:#fff; border:none; border-radius:6px; padding:6px 12px; cursor:pointer; font-size:0.8rem;"><i class="bi bi-x-lg"></i> Rechazar</button>';
-                html += '</div></div>';
+                html += `<div style="padding:14px; border-bottom:1px solid #2a2a2a; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                    <div><strong class="text-white">${r.user ? r.user.name : 'Usuario'}</strong> solicita 
+                    <b class="text-warning">${r.producto ? r.producto.nombre : 'Producto'}</b> × <span class="fw-bold">${r.cantidad}</span>
+                    <br><small style="color:#888;">${r.created_at}</small></div>
+                    <div style="display:flex; gap:8px; flex-shrink:0;">
+                    <button onclick="procesarRequisicion(${r.id}, 'aprobar')" class="btn btn-sm btn-success fw-bold"><i class="bi bi-check-lg"></i> Aprobar</button>
+                    <button onclick="procesarRequisicion(${r.id}, 'rechazar')" class="btn btn-sm btn-danger fw-bold"><i class="bi bi-x-lg"></i> Rechazar</button>
+                    </div></div>`;
             });
             html += '</div>';
-            Swal.fire({ title: 'Solicitudes Pendientes', html: html, showConfirmButton: false, width: '650px' });
+            body.innerHTML = html;
         }
 
         async function procesarRequisicion(id, accion) {
             try {
                 const response = await fetch('/requisiciones/' + id + '/' + accion, {
                     method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                        'Accept': 'application/json'
-                    }
+                    headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content, 'Accept': 'application/json' }
                 });
-
                 const data = await response.json();
-
                 if (data.success) {
-                    Swal.close();
-                    Swal.fire('¡Listo!', data.message, 'success').then(() => {
-                        location.reload();
-                    });
-                } else {
-                    Swal.fire('Error', data.message, 'error');
-                }
-            } catch (error) {
-                Swal.fire('Error', 'Hubo un problema de conexión.', 'error');
-            }
+                    Swal.fire('¡Listo!', data.message, 'success').then(() => location.reload());
+                } else { Swal.fire('Error', data.message, 'error'); }
+            } catch (error) { Swal.fire('Error', 'Problema de conexión.', 'error'); }
         }
 
         function exportarTablaCSV(nombreArchivo) {
@@ -1014,9 +762,7 @@ function actualizarStock(idProducto, operacion, btnElement) {
             const filas = tabla.querySelectorAll('tr');
             filas.forEach(fila => {
                 let row = [];
-                fila.querySelectorAll('th, td').forEach(col => {
-                    row.push('"' + col.textContent.trim().replace(/"/g, '""') + '"');
-                });
+                fila.querySelectorAll('th, td').forEach(col => row.push('"' + col.textContent.trim().replace(/"/g, '""') + '"'));
                 csv.push(row.join(','));
             });
             const blob = new Blob(['\ufeff' + csv.join('\n')], { type: 'text/csv;charset=utf-8;' });
@@ -1026,165 +772,107 @@ function actualizarStock(idProducto, operacion, btnElement) {
             link.click();
         }
 
-        let html5QrCode = null;
-        document.getElementById('scannerModal').addEventListener('shown.bs.modal', async function() {
-            try {
-                html5QrCode = new Html5Qrcode("reader");
-                const cameras = await Html5Qrcode.getCameras();
-                const selector = document.getElementById('camera-selector');
-                selector.innerHTML = '';
-                cameras.forEach((cam, i) => {
-                    const opt = document.createElement('option');
-                    opt.value = cam.id;
-                    opt.text = cam.label || 'Cámara ' + (i + 1);
-                    selector.appendChild(opt);
+        // ==========================================
+        // 6. LÓGICA DEL ESCÁNER (HTML5-QRCode)
+        // ==========================================
+        let html5QrcodeScanner;
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            const scannerModal = document.getElementById('scannerModal');
+            if(scannerModal) {
+                scannerModal.addEventListener('shown.bs.modal', function () {
+                    // Iniciar cámara con un rectángulo perfecto para códigos de barras
+                    html5QrcodeScanner = new Html5QrcodeScanner(
+                        "reader", { 
+                            fps: 10, 
+                            qrbox: { width: 280, height: 100 },
+                            aspectRatio: 1.5
+                        }, 
+                        /* verbose= */ false
+                    );
+                    html5QrcodeScanner.render(onScanSuccess);
                 });
-                if (cameras.length > 0) {
-                    html5QrCode.start(cameras[0].id, { fps: 15, qrbox: { width: 250, height: 150 } }, function(decodedText) {
-                        html5QrCode.stop().then(() => {
-                            bootstrap.Modal.getInstance(document.getElementById('scannerModal')).hide();
-                            Swal.fire({ title: 'Código detectado', text: decodedText, icon: 'success' }).then(() => {
-                                document.getElementById('codigo-manual').value = decodedText;
-                            });
-                        });
-                    });
-                }
-            } catch (e) { console.error('Error inicializando escáner:', e); }
-        });
 
-        document.getElementById('scannerModal').addEventListener('hidden.bs.modal', function() {
-            if (html5QrCode && html5QrCode.isScanning) {
-                html5QrCode.stop().catch(() => {});
-                html5QrCode.clear();
-                html5QrCode = null;
-            }
-        });
-
-        document.getElementById('camera-selector').addEventListener('change', async function() {
-            if (html5QrCode && html5QrCode.isScanning) {
-                await html5QrCode.stop();
-                html5QrCode.start(this.value, { fps: 15, qrbox: { width: 250, height: 150 } }, function(decodedText) {
-                    html5QrCode.stop().then(() => {
-                        bootstrap.Modal.getInstance(document.getElementById('scannerModal')).hide();
-                        Swal.fire({ title: 'Código detectado', text: decodedText, icon: 'success' });
-                    });
+                scannerModal.addEventListener('hidden.bs.modal', function () {
+                    if (html5QrcodeScanner) {
+                        html5QrcodeScanner.clear().catch(error => console.error("Failed to clear scanner.", error));
+                    }
                 });
             }
         });
 
-        async function procesarCodigoEscaneado(codigo) {
-            if (!navigator.onLine) {
-                Swal.fire('Error', 'No hay internet para buscar el código.', 'error');
-                return;
+        function onScanSuccess(decodedText, decodedResult) {
+            if (html5QrcodeScanner) html5QrcodeScanner.clear();
+            
+            let modalEl = document.getElementById('scannerModal');
+            let modalObj = bootstrap.Modal.getInstance(modalEl);
+            if(modalObj) modalObj.hide();
+            
+            const searchInput = document.getElementById('topbarSearchInput');
+            if(searchInput) {
+                searchInput.value = decodedText;
+                searchInput.focus();
+                searchInput.dispatchEvent(new Event('input', { bubbles: true })); 
             }
-
-            try {
-                const response = await fetch(`/api/productos/buscar-codigo/${codigo}`, {
-                    headers: { 'Accept': 'application/json' }
-                });
-                const data = await response.json();
-
-                if (data.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Producto Encontrado',
-                        text: `${data.producto.nombre} - Stock: ${data.producto.stock || data.producto.cantidad}`,
-                        background: '#141414', color: '#fff', confirmButtonColor: '#E50914'
-                    });
-                    bootstrap.Modal.getInstance(document.getElementById('scannerModal')).hide();
-                } else {
-                    let origen = codigo.startsWith('759') ? 'venezolano' : 'desconocido';
-                    Swal.fire({
-                        icon: 'question',
-                        title: 'Código no registrado',
-                        text: `El código ${codigo} (Origen: ${origen}) no existe en tu base de datos. ¿Deseas registrar este nuevo producto?`,
-                        showCancelButton: true,
-                        confirmButtonText: 'Sí, registrar',
-                        cancelButtonText: 'Cancelar',
-                        background: '#141414', color: '#fff', confirmButtonColor: '#25D366', cancelButtonColor: '#E50914'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            window.location.href = `/productos/crear?codigo=${codigo}`;
-                        }
-                    });
-                }
-            } catch (error) {
-                console.error("Error buscando el código:", error);
-                Swal.fire('Error', 'No se pudo conectar con el servidor.', 'error');
+            
+            if (window.Toast) {
+                window.Toast.fire({ icon: 'success', title: 'Código detectado: ' + decodedText });
             }
         }
 
-        document.getElementById('btn-buscar-manual').addEventListener('click', function() {
-            const codigo = document.getElementById('codigo-manual').value.trim();
-            if (!codigo) { Swal.fire('Campo vacío', 'Escribe un código de producto', 'warning'); return; }
-            procesarCodigoEscaneado(codigo);
-        });
+        function procesarCodigoModal() {
+            let code = document.getElementById('manualBarcodeInput').value.trim();
+            if(!code) return;
+            onScanSuccess(code, null);
+        }
 
-        document.getElementById('codigo-manual').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') document.getElementById('btn-buscar-manual').click();
-        });
-
-        window.addEventListener('offline', () => {
-            Swal.fire({
-                icon: 'warning',
-                title: '¡Sin Conexión!',
-                text: 'Se ha perdido el internet. El escáner necesita conexión para buscar los productos en la base de datos.',
-                confirmButtonColor: '#E50914',
-                background: '#141414',
-                color: '#fff'
-            });
-        });
-
-        window.addEventListener('online', () => {
-            const Toast = Swal.mixin({
-                toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true, background: '#141414', color: '#fff'
-            });
-            Toast.fire({ icon: 'success', title: 'Conexión restaurada' });
-        });
-
-        let html5QrCode = null;
-        document.getElementById('scannerModal').addEventListener('shown.bs.modal', async function() {
-            try {
-                html5QrCode = new Html5Qrcode("reader");
-                const cameras = await Html5Qrcode.getCameras();
-                const selector = document.getElementById('camera-selector');
-                selector.innerHTML = '';
-                cameras.forEach((cam, i) => {
-                    const opt = document.createElement('option');
-                    opt.value = cam.id;
-                    opt.text = cam.label || 'Cámara ' + (i + 1);
-                    selector.appendChild(opt);
-                });
-                if (cameras.length > 0) {
-                    html5QrCode.start(cameras[0].id, { fps: 15, qrbox: { width: 250, height: 150 } }, async function(decodedText) {
-                        await html5QrCode.stop();
-                        bootstrap.Modal.getInstance(document.getElementById('scannerModal')).hide();
-                        document.getElementById('codigo-manual').value = decodedText;
-                        procesarCodigoEscaneado(decodedText);
-                    });
+        function cerrarScannerYAbrirNuevo() {
+            let manualCode = document.getElementById('manualBarcodeInput').value.trim();
+            
+            if (html5QrcodeScanner) html5QrcodeScanner.clear();
+            let mScanner = bootstrap.Modal.getInstance(document.getElementById('scannerModal'));
+            if(mScanner) mScanner.hide();
+            
+            setTimeout(() => {
+                abrirModalNuevo();
+                if(manualCode) {
+                    document.getElementById('prodCodigo').value = manualCode;
                 }
-            } catch (e) { console.error('Error inicializando escáner:', e); }
-        });
-
-        document.getElementById('scannerModal').addEventListener('hidden.bs.modal', function() {
-            if (html5QrCode && html5QrCode.isScanning) {
-                html5QrCode.stop().catch(() => {});
-                html5QrCode.clear();
-                html5QrCode = null;
-            }
-        });
-
-        document.getElementById('camera-selector').addEventListener('change', async function() {
-            if (html5QrCode && html5QrCode.isScanning) {
-                await html5QrCode.stop();
-                html5QrCode.start(this.value, { fps: 15, qrbox: { width: 250, height: 150 } }, async function(decodedText) {
-                    await html5QrCode.stop();
-                    bootstrap.Modal.getInstance(document.getElementById('scannerModal')).hide();
-                    document.getElementById('codigo-manual').value = decodedText;
-                    procesarCodigoEscaneado(decodedText);
-                });
-            }
-        });
+            }, 400);
+        }
     </script>
+
+    <!-- BOTÓN FLOTANTE PARA ABRIR EL ESCÁNER -->
+    <button class="scanner-fab" data-bs-toggle="modal" data-bs-target="#scannerModal" title="Abrir Escáner de Código de Barras">
+        <i class="bi bi-upc-scan"></i>
+    </button>
+
+    <!-- MODAL: ESCÁNER DE CÓDIGOS -->
+    <div class="modal fade" id="scannerModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="background: var(--bg-card); border: 1px solid var(--border-color); box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                <div class="modal-header border-bottom border-secondary border-opacity-25">
+                    <h5 class="modal-title text-white fw-bold"><i class="bi bi-upc-scan text-success me-2"></i> Escanear Código</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-0" style="overflow: hidden;">
+                    <div class="scanner-laser-zone" style="width: 100%; height: 300px; background: #000; display: flex; align-items: center; justify-content: center;">
+                        <div id="reader" style="width: 100%; position: relative; z-index: 5;"></div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top border-secondary border-opacity-25 d-flex flex-column gap-3">
+                    <div class="d-flex gap-2 w-100">
+                        <input type="text" id="manualBarcodeInput" class="form-control bg-dark text-white border-secondary" placeholder="Ingresar código manual...">
+                        <button onclick="procesarCodigoModal()" class="btn btn-outline-secondary" title="Buscar Código"><i class="bi bi-search"></i></button>
+                    </div>
+                    <button onclick="cerrarScannerYAbrirNuevo()" class="btn w-100 fw-bold" style="background: linear-gradient(135deg, #E50914, #B20710); color: white; border: none;">
+                        <i class="bi bi-plus-lg me-1"></i> Registrar Nuevo Producto con este Código
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @include('partials.perfiles')
 </body>
 </html>

@@ -177,16 +177,23 @@ class InventarioController extends Controller
     {
         $request->validate([
             'nombre' => 'required|string|max:255',
-            'rif' => 'required|string|unique:proveedores,rif'
+            'rif' => 'required|string|unique:proveedores,rif',
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg,svg|max:2048'
         ]);
 
-        \App\Models\Proveedor::create([
+        $data = [
             'nombre' => $request->nombre,
             'rif' => $request->rif,
             'contacto' => $request->contacto,
             'telefono' => $request->telefono,
             'direccion' => $request->direccion,
-        ]);
+        ];
+
+        if ($request->hasFile('logo')) {
+            $data['logo'] = $request->file('logo')->store('proveedores');
+        }
+
+        \App\Models\Proveedor::create($data);
 
         return response()->json(['success' => true]);
     }
@@ -196,9 +203,20 @@ class InventarioController extends Controller
         $proveedor = \App\Models\Proveedor::findOrFail($id);
         $request->validate([
             'nombre' => 'required|string|max:255',
-            'rif' => 'required|string|unique:proveedores,rif,' . $id
+            'rif' => 'required|string|unique:proveedores,rif,' . $id,
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg,svg|max:2048'
         ]);
-        $proveedor->update($request->all());
+
+        $data = $request->only(['nombre', 'rif', 'contacto', 'telefono', 'direccion']);
+
+        if ($request->hasFile('logo')) {
+            if ($proveedor->logo) {
+                Storage::disk('public')->delete($proveedor->logo);
+            }
+            $data['logo'] = $request->file('logo')->store('proveedores');
+        }
+
+        $proveedor->update($data);
         return response()->json(['success' => true]);
     }
 
@@ -212,24 +230,29 @@ class InventarioController extends Controller
     public function procesarAbastecimiento(Request $request)
     {
         $request->validate([ 'producto_id' => 'required', 'cantidad' => 'required|numeric|min:1' ]);
-        
+
         $producto = Producto::findOrFail($request->producto_id);
         $producto->stock += $request->cantidad;
         $producto->save();
 
         try {
-            $fecha = now()->format('Y-m-d H:i:s');
-            $movimiento = new Movimiento([
-                'codigo_producto' => $producto->codigo,
-                'tipo' => 'Entrada',
-                'cantidad' => $request->cantidad,
-                'motivo' => 'Orden de Abastecimiento',
-                'usuario_accion' => Auth::user()->name,
-                'user_id' => Auth::id(),
-                'created_at' => $fecha
-            ]);
-            $movimiento->firma_hash = $movimiento->generarFirma();
-            $movimiento->firma_digital = hash('sha256', $producto->codigo . 'Entrada' . $request->cantidad . $fecha);
+            // Abastecimiento de proveedor SIEMPRE es Entrada
+            $tipoMovimiento = 'Entrada';
+            $cantidadMovimiento = $request->cantidad;
+
+            // Crear el movimiento
+            $movimiento = new Movimiento();
+            $movimiento->codigo_producto = $producto->codigo;
+            $movimiento->tipo = $tipoMovimiento;
+            $movimiento->cantidad = $cantidadMovimiento;
+            $movimiento->motivo = 'Orden de Abastecimiento';
+            $movimiento->usuario_accion = Auth::user()->name;
+            $movimiento->user_id = Auth::id();
+            $movimiento->save();
+
+            // Generar la firma SHA-256 después de obtener el ID
+            $cadena = $movimiento->id . $movimiento->codigo_producto . $movimiento->tipo . $movimiento->cantidad . $movimiento->motivo . $movimiento->usuario_accion;
+            $movimiento->firma_hash = hash('sha256', $cadena);
             $movimiento->save();
         } catch (\Exception $e) {
             \Log::error('Error creando movimiento de abastecimiento: ' . $e->getMessage());
@@ -248,16 +271,22 @@ class InventarioController extends Controller
         if (!$producto) return response()->json(['success' => false], 404);
 
         $stockAnterior = $producto->stock;
-        $diferencia = 0; $tipo = ''; $motivo = '';
+        $diferencia = 0;
+        $tipoMovimiento = '';
+        $cantidadMovimiento = 0;
+        $motivo = '';
 
-        if ($request->accion === 'sumar') { 
-            $producto->stock += 1; $diferencia = 1; $tipo = 'Entrada'; $motivo = 'Ajuste rápido (+1)'; 
-        } elseif ($request->accion === 'restar' && $producto->stock > 0) { 
-            $producto->stock -= 1; $diferencia = 1; $tipo = 'Salida'; $motivo = 'Ajuste rápido (-1)'; 
+        if ($request->accion === 'sumar') {
+            $producto->stock += 1;
+            $diferencia = 1;
+            $motivo = 'Ajuste rápido (+1)';
+        } elseif ($request->accion === 'restar' && $producto->stock > 0) {
+            $producto->stock -= 1;
+            $diferencia = -1;
+            $motivo = 'Ajuste rápido (-1)';
         } elseif ($request->accion === 'set') {
             $nuevoStock = max(0, (int) $request->valor);
             $diferencia = $nuevoStock - $stockAnterior;
-            $tipo = $diferencia > 0 ? 'Entrada' : 'Salida';
             $motivo = "Stock establecido a $nuevoStock";
             $producto->stock = $nuevoStock;
         }
@@ -297,20 +326,30 @@ class InventarioController extends Controller
             }
         }
 
+        // 1. Calcular si es Entrada o Salida basado en la diferencia
+        if ($diferencia > 0) {
+            $tipoMovimiento = 'Entrada';
+            $cantidadMovimiento = $diferencia;
+        } elseif ($diferencia < 0) {
+            $tipoMovimiento = 'Salida';
+            $cantidadMovimiento = abs($diferencia);
+        }
+
+        // 2. Crear el movimiento solo si hubo cambio real
         if ($diferencia != 0) {
             try {
-                $fecha = now()->format('Y-m-d H:i:s');
-                $movimiento = new Movimiento([
-                    'codigo_producto' => $producto->codigo,
-                    'tipo' => $tipo,
-                    'cantidad' => abs($diferencia),
-                    'motivo' => $motivo,
-                    'usuario_accion' => Auth::user()->name,
-                    'user_id' => Auth::id(),
-                    'created_at' => $fecha
-                ]);
-                $movimiento->firma_hash = $movimiento->generarFirma();
-                $movimiento->firma_digital = hash('sha256', $producto->codigo . $tipo . abs($diferencia) . $fecha);
+                $movimiento = new Movimiento();
+                $movimiento->codigo_producto = $producto->codigo;
+                $movimiento->tipo = $tipoMovimiento;
+                $movimiento->cantidad = $cantidadMovimiento;
+                $movimiento->motivo = $motivo;
+                $movimiento->usuario_accion = Auth::user()->name;
+                $movimiento->user_id = Auth::id();
+                $movimiento->save();
+
+                // 3. Generar la firma SHA-256 después de obtener el ID
+                $cadena = $movimiento->id . $movimiento->codigo_producto . $movimiento->tipo . $movimiento->cantidad . $movimiento->motivo . $movimiento->usuario_accion;
+                $movimiento->firma_hash = hash('sha256', $cadena);
                 $movimiento->save();
             } catch (\Exception $e) {
                 \Log::error('Error creando movimiento de auditoría: ' . $e->getMessage());
@@ -321,7 +360,7 @@ class InventarioController extends Controller
         $tasaBcv = $this->obtenerTasaBcv();
 
         return response()->json([
-            'success' => true, 
+            'success' => true,
             'nuevo_stock' => $producto->stock,
             'stock_total' => Producto::sum('stock'),
             'alertas_stock' => Producto::where('stock', '<=', 5)->count(),
@@ -381,18 +420,16 @@ class InventarioController extends Controller
             }
         }
 
-        $fecha = now()->format('Y-m-d H:i:s');
-        $firma = hash('sha256', $producto->codigo . 'Salida' . $request->cantidad . $fecha);
-
-        Movimiento::create([
+        $movimiento = Movimiento::create([
             'codigo_producto' => $producto->codigo,
             'tipo' => 'Salida',
             'cantidad' => $request->cantidad,
             'motivo' => $motivoTransfer,
             'usuario_accion' => Auth::user()->name,
-            'firma_digital' => $firma,
-            'created_at' => $fecha
         ]);
+
+        $movimiento->firma_hash = $movimiento->generarFirma();
+        $movimiento->save();
 
         return response()->json([
             'success' => true,
@@ -451,13 +488,12 @@ class InventarioController extends Controller
         ]));
 
         if ($request->stock > 0) {
-            $fecha = now()->format('Y-m-d H:i:s');
-            Movimiento::create([
+            $mov = Movimiento::create([
                 'codigo_producto' => $producto->codigo, 'tipo' => 'Entrada', 'cantidad' => $request->stock,
                 'motivo' => 'Stock inicial', 'usuario_accion' => Auth::user()->name,
-                'firma_digital' => hash('sha256', $producto->codigo . 'Entrada' . $request->stock . $fecha),
-                'created_at' => $fecha
             ]);
+            $mov->firma_hash = $mov->generarFirma();
+            $mov->save();
         }
         return response()->json(['success' => true]);
     }
@@ -493,15 +529,14 @@ class InventarioController extends Controller
         if (!$p) return response()->json(['success' => false, 'notFound' => true]);
         $p->increment('stock', 1);
         try {
-            $fecha = now()->format('Y-m-d H:i:s');
-            $movimiento = new Movimiento([
+            $movimiento = Movimiento::create([
                 'codigo_producto' => $p->codigo, 'tipo' => 'Entrada', 'cantidad' => 1, 'motivo' => 'Escaneo (+1)',
                 'usuario_accion' => Auth::user()->name ?? 'Sistema',
-                'user_id' => Auth::id(),
-                'created_at' => $fecha
+                'user_id' => Auth::id()
             ]);
+            
+            // Generar hash post-creación para tener el ID
             $movimiento->firma_hash = $movimiento->generarFirma();
-            $movimiento->firma_digital = hash('sha256', $p->codigo . 'Entrada' . 1 . $fecha);
             $movimiento->save();
         } catch (\Exception $e) {
             \Log::error('Error creando movimiento de escaneo: ' . $e->getMessage());
@@ -608,13 +643,23 @@ class InventarioController extends Controller
     // --- AUDITORÍA Y VENCIMIENTOS ---
     public function auditoria()
     {
+        // 1. AUTO-FIRMAR REGISTROS ANTIGUOS (Usa el modelo Movimiento)
+        // Buscamos donde firma_hash sea NULL
+        $registrosSinFirma = Movimiento::whereNull('firma_hash')->get();
+
+        foreach ($registrosSinFirma as $reg) {
+            // Concatenamos la data VITAL con los nombres EXACTOS de la BD
+            $cadenaOriginal = $reg->id . $reg->codigo_producto . $reg->tipo . $reg->cantidad . $reg->motivo . $reg->usuario_accion;
+            
+            // Generamos el hash y lo guardamos en la columna firma_hash
+            $reg->firma_hash = hash('sha256', $cadenaOriginal);
+            $reg->save();
+        }
+
+        // 2. Traer los movimientos para la vista
         $movimientos = Movimiento::orderBy('created_at', 'desc')->get();
-        $movimientos = $movimientos->map(function ($mov) {
-            $firmaVerificar = hash('sha256', $mov->codigo_producto . $mov->tipo . $mov->cantidad . $mov->created_at->format('Y-m-d H:i:s'));
-            $mov->firma_valida = ($mov->firma_digital === $firmaVerificar);
-            return $mov;
-        });
-        return view('inventario.auditoria', ['movimientos' => $movimientos, 'esAdmin' => Auth::user()?->rol === 'admin']);
+        
+        return view('inventario.auditoria', compact('movimientos'));
     }
 
     public function vencimientos()
@@ -629,6 +674,53 @@ class InventarioController extends Controller
     public function exportarPdf() { $productos = Producto::all(); return view('inventario.pdf', compact('productos')); }
     public function eliminarProducto(Request $request) { Producto::destroy($request->id); return response()->json(['success' => true]); }
     public function vistaEscaner() { return view('inventario.escaner'); }
+    
+    public function edit($id)
+    {
+        $producto = Producto::findOrFail($id);
+        return view('inventario.editar', compact('producto'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $producto = Producto::findOrFail($id);
+        $producto->update($request->all());
+        return redirect('/catalogo')->with('success', 'Producto actualizado correctamente.');
+    }
+
+    public function updateStock(Request $request, $id)
+    {
+        $producto = Producto::findOrFail($id);
+        $cantidadAnterior = $producto->stock;
+        $nuevaCantidad = $request->cantidad;
+        
+        $diferencia = $nuevaCantidad - $cantidadAnterior;
+        
+        $producto->stock = $nuevaCantidad;
+        $producto->save();
+
+        if ($diferencia < 0) {
+            $mov = Movimiento::create([
+                'codigo_producto' => $producto->codigo,
+                'tipo' => 'Salida',
+                'cantidad' => abs($diferencia),
+                'motivo' => 'Ajuste manual de stock',
+                'usuario_accion' => Auth::user()->name ?? 'Sistema',
+                'user_id' => Auth::id(),
+            ]);
+            $mov->firma_hash = $mov->generarFirma();
+            $mov->save();
+        }
+
+        return response()->json(['success' => true, 'nueva_cantidad' => $producto->stock]);
+    }
+
+    public function destroy($id)
+    {
+        $producto = Producto::findOrFail($id);
+        $producto->delete();
+        return redirect()->back()->with('success', 'Producto eliminado del sistema.');
+    }
     
     // --- GENERAR ORDEN DE COMPRA (CORREGIDO DE NUEVO Y CON LÓGICA MATEMÁTICA) ---
     public function generarOrdenCompra($id) 
@@ -739,17 +831,16 @@ class InventarioController extends Controller
 
             $producto->decrement('stock', $requisicion->cantidad);
 
-            $fecha = now()->format('Y-m-d H:i:s');
-            $firma = hash('sha256', $producto->codigo . 'Salida' . $requisicion->cantidad . $fecha);
-            Movimiento::create([
+            $mov = Movimiento::create([
                 'codigo_producto' => $producto->codigo,
                 'tipo' => 'Salida',
                 'cantidad' => $requisicion->cantidad,
                 'motivo' => 'Requisición Aprobada #' . $requisicion->id,
                 'usuario_accion' => Auth::user()->name,
-                'firma_digital' => $firma,
-                'created_at' => $fecha
             ]);
+            
+            $mov->firma_hash = $mov->generarFirma();
+            $mov->save();
 
             $requisicion->estado = 'Aprobada';
             $requisicion->save();

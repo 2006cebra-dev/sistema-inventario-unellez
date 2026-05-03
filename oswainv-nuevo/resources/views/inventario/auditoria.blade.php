@@ -314,38 +314,59 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($movimientos as $mov)
-                    <tr>
-                        <td>{{ $mov->created_at->format('d/m/Y H:i') }}</td>
-                        <td>
-                            <div>{{ $mov->codigo_producto }}</div>
-                            <small style="color: var(--text-secondary);">{{ $mov->producto?->nombre ?? 'Sin producto' }}</small>
-                        </td>
-                        <td>
-                            <span class="{{ $mov->tipo === 'Entrada' ? 'type-entrada' : 'type-salida' }}">
-                                {{ $mov->tipo }}
-                            </span>
-                        </td>
-                        <td><strong>{{ $mov->cantidad }}</strong></td>
-                        <td>{{ $mov->motivo }}</td>
-                        <td><span class="user-badge">{{ $mov->usuario_accion }}</span></td>
-                        <td><code class="firma-hash">{{ substr($mov->firma_digital, 0, 16) }}...</code></td>
-                        <td>
-                            @if($mov->firma_valida)
-                            <span class="firma-valid"><i class="bi bi-shield-check"></i> Válida</span>
-                            @else
-                            <span class="firma-invalid"><i class="bi bi-shield-exclamation"></i> Alterada</span>
-                            @endif
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="8" class="text-center py-5">
-                            <i class="bi bi-inbox" style="font-size: 3rem; color: var(--text-secondary);"></i>
-                            <p class="mt-2">No hay movimientos registrados</p>
-                        </td>
-                    </tr>
-                    @endforelse
+                    @foreach($movimientos as $mov)
+                        @php
+                            // 1. RECALCULAR HASH EN TIEMPO REAL CON NOMBRES EXACTOS
+                            $cadenaActual = $mov->id . $mov->codigo_producto . $mov->tipo . $mov->cantidad . $mov->motivo . $mov->usuario_accion;
+                            $hashEnTiempoReal = hash('sha256', $cadenaActual);
+
+                            // 2. SISTEMA DE SEMÁFORO DE INTEGRIDAD (Usando firma_hash)
+                            if (empty($mov->firma_hash)) {
+                                $estado = 'Antiguo';
+                                $claseBadge = 'border-secondary text-secondary';
+                                $icono = 'bi-clock-history';
+                                $textoFirma = 'SIN FIRMA';
+                            } elseif ($mov->firma_hash === $hashEnTiempoReal) {
+                                $estado = 'Seguro';
+                                $claseBadge = 'border-success text-success';
+                                $icono = 'bi-shield-check';
+                                $textoFirma = substr($mov->firma_hash, 0, 15) . '...';
+                            } else {
+                                $estado = 'Alterado';
+                                $claseBadge = 'border-danger text-danger bg-danger bg-opacity-10 fw-bold';
+                                $icono = 'bi-shield-exclamation';
+                                $textoFirma = 'HASH INVÁLIDO';
+                            }
+                        @endphp
+
+                        <tr>
+                            <td>{{ $mov->created_at->format('d/m/Y H:i') }}</td>
+                            <td>
+                                <div>{{ $mov->codigo_producto }}</div>
+                                <small style="color: var(--text-secondary);">{{ $mov->producto?->nombre ?? 'Sin producto' }}</small>
+                            </td>
+                            <td>
+                                <span class="{{ $mov->tipo === 'Entrada' ? 'type-entrada' : 'type-salida' }}">
+                                    {{ $mov->tipo }}
+                                </span>
+                            </td>
+                            <td><strong>{{ $mov->cantidad }}</strong></td>
+                            <td>{{ $mov->motivo }}</td>
+                            <td><span class="user-badge">{{ $mov->usuario_accion }}</span></td>
+                            <td class="text-secondary align-middle" style="font-family: monospace; font-size: 0.85rem; letter-spacing: 1px;">
+                                @if($estado == 'Alterado')
+                                    <span class="text-danger fw-bold">{{ $textoFirma }}</span>
+                                @else
+                                    {{ $textoFirma }}
+                                @endif
+                            </td>
+                            <td class="align-middle">
+                                <button class="btn btn-sm {{ $claseBadge }} d-flex align-items-center bg-transparent" style="cursor: default; border-radius: 6px;">
+                                    <i class="bi {{ $icono }} me-2"></i> {{ $estado }}
+                                </button>
+                            </td>
+                        </tr>
+                    @endforeach
                 </tbody>
             </table>
         </div>

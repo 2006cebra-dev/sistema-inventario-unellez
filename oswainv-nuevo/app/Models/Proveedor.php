@@ -14,6 +14,7 @@ class Proveedor extends Model
         'contacto',
         'telefono',
         'direccion',
+        'logo',
         'activo',
     ];
 
