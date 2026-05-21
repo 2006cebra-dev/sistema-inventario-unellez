@@ -11,8 +11,17 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->redirectGuestsTo(function (\Illuminate\Http\Request $request) {
+            if ($request->expectsJson() || str_starts_with($request->path(), 'api/')) {
+                return null;
+            }
+            return route('login');
+        });
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->render(function (\Illuminate\Auth\AuthenticationException $e, \Illuminate\Http\Request $request) {
+            if ($request->expectsJson() || str_starts_with($request->path(), 'api/')) {
+                return response()->json(['message' => $e->getMessage()], 401);
+            }
+        });
     })->create();

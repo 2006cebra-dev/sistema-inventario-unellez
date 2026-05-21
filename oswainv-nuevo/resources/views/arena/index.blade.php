@@ -15,7 +15,7 @@
 
         @keyframes rgbArena { 0% { background-position: 0% 50%; } 100% { background-position: 300% 50%; } }
 
-        .arena-container { max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem; }
+        .arena-container { max-width: 1200px; margin: 0 auto; padding: calc(68px + 2rem) 1.5rem 2rem; }
         .arena-header { text-align: center; margin-bottom: 2.5rem; position: relative; }
         .arena-header::after { content: ''; display: block; width: 80px; height: 3px; background: #E50914; margin: 1rem auto 0; border-radius: 2px; }
         .arena-logo-img { height: 48px; filter: drop-shadow(0 0 8px rgba(229,9,20,0.4)) brightness(0) invert(1); transform: perspective(400px) rotateY(-5deg); transition: transform .4s ease; }
