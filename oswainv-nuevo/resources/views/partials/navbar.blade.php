@@ -238,6 +238,128 @@
         0%, 100% { transform: scale(1); opacity: 1; }
         50% { transform: scale(1.08); opacity: 0.8; }
     }
+
+    /* ─── BOTTOM NAV MÓVIL (NETFLIX STYLE) ─── */
+    .mobile-bottom-nav {
+        position: fixed; bottom: 0; left: 0; right: 0; z-index: 1060;
+        background: rgba(8,8,8,0.97);
+        backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+        border-top: 1px solid rgba(255,255,255,0.04);
+        display: none;
+        justify-content: space-evenly;
+        align-items: flex-start;
+        padding: 0 env(safe-area-inset-bottom, 0);
+        height: 58px;
+        box-shadow: 0 -3px 20px rgba(0,0,0,0.7);
+    }
+    @media (max-width: 767px) {
+        .mobile-bottom-nav { display: flex; }
+        body { padding-bottom: 58px; }
+        .main-content { padding-bottom: calc(58px + 1.5rem); }
+        .scanner-fab { bottom: calc(58px + 12px) !important; }
+        .bot-fab { bottom: calc(58px + 12px) !important; }
+        .oswa-chat-window { bottom: calc(58px + 76px) !important; }
+        .topbar { padding: 0 2%; height: 56px; }
+        .topbar-logo { font-size: 1.2rem; gap: 8px; }
+        .logo-nav-unellez { height: 30px; }
+        .status-indicator { padding: 3px 8px; font-size: 0.6rem; }
+        .status-indicator .status-dot { width: 6px; height: 6px; }
+        :root { --topbar-height: 56px; }
+        .main-content { padding-top: calc(56px + 1rem); }
+    }
+    .mobile-bottom-nav .mb-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 1px;
+        text-decoration: none;
+        color: #555;
+        font-size: 0.55rem;
+        font-weight: 600;
+        padding: 4px 6px;
+        padding-top: 6px;
+        border-radius: 0;
+        transition: color 0.2s ease;
+        position: relative;
+        min-width: 48px;
+        flex: 1;
+        max-width: 72px;
+        -webkit-tap-highlight-color: transparent;
+        letter-spacing: 0.2px;
+    }
+    .mobile-bottom-nav .mb-item i {
+        font-size: 1.15rem;
+        transition: color 0.2s ease;
+        margin-bottom: 0;
+    }
+    .mobile-bottom-nav .mb-item span {
+        margin-top: 0;
+        line-height: 1.2;
+    }
+    .mobile-bottom-nav .mb-item::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 0;
+        height: 2px;
+        background: #E50914;
+        border-radius: 0 0 2px 2px;
+        transition: width 0.25s ease;
+    }
+    .mobile-bottom-nav .mb-item.active::after {
+        width: 24px;
+    }
+    .mobile-bottom-nav .mb-item:active {
+        transform: scale(0.92);
+    }
+    .mobile-bottom-nav .mb-item.active,
+    .mobile-bottom-nav .mb-item:active i {
+        color: #E50914;
+    }
+    .mobile-bottom-nav .mb-item.active span {
+        color: #E50914;
+    }
+    .mb-badge {
+        position: absolute; top: 1px; right: 2px;
+        background: #E50914;
+        color: #fff;
+        font-size: 0.45rem;
+        font-weight: 700;
+        padding: 1px 4px;
+        border-radius: 8px;
+        min-width: 14px;
+        text-align: center;
+        line-height: 1.2;
+    }
+
+    /* ─── POPUP MÓVIL (NETFLIX DROPDOWN STYLE) ─── */
+    .inv-popup { position: fixed; z-index: 1070; top: 0; left: 0; right: 0; bottom: 0; }
+    .inv-popup-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); }
+    .inv-popup-menu { position: absolute; bottom: calc(58px + 10px); left: 50%; transform: translateX(-50%); background: rgba(18,18,18,0.98); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 6px; min-width: 220px; box-shadow: 0 -8px 40px rgba(0,0,0,0.8); backdrop-filter: blur(20px); animation: popupUp 0.25s cubic-bezier(0.16,1,0.3,1); }
+    @keyframes popupUp { from { opacity: 0; transform: translateX(-50%) translateY(16px) scale(0.95); } to { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); } }
+    .inv-popup-header { padding: 8px 12px 4px; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 1.5px; color: #666; font-weight: 700; }
+    .inv-popup-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; color: #ddd; text-decoration: none; border-radius: 10px; font-size: 0.85rem; transition: background 0.15s; }
+    .inv-popup-item:active { background: rgba(229,9,20,0.15); color: #fff; }
+
+    /* ─── DRAWER NOTIFICACIONES MÓVIL ─── */
+    .notif-drawer-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 1080; }
+    .notif-drawer { position: fixed; top: 0; right: 0; bottom: 0; width: 85%; max-width: 340px; background: #141414; z-index: 1090; display: flex; flex-direction: column; box-shadow: -8px 0 30px rgba(0,0,0,0.7); animation: slideInRight 0.3s ease; }
+    @keyframes slideInRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
+    .notif-drawer-header { display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.06); flex-shrink: 0; }
+    .notif-drawer-body { flex: 1; overflow-y: auto; }
+    .notif-drawer-item { display: flex; align-items: flex-start; gap: 8px; padding: 0.8rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.03); transition: background 0.2s; }
+    .notif-drawer-item:active { background: rgba(255,255,255,0.04); }
+    .mb-notif-dismiss { background: none; border: none; color: #555; font-size: 1rem; padding: 4px; cursor: pointer; flex-shrink: 0; margin-top: 2px; }
+    .mb-notif-btn { border: none; border-radius: 6px; padding: 6px 12px; font-size: 0.7rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .mb-notif-btn.approbe { background: rgba(0,184,148,0.15); color: #00b894; }
+    .mb-notif-btn.approbe:active { background: #00b894; color: #fff; }
+    .mb-notif-btn.reject { background: rgba(229,9,20,0.15); color: #E50914; }
+    .mb-notif-btn.reject:active { background: #E50914; color: #fff; }
+    .mb-item.mb-btn { background: none; border: none; font-family: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    .mb-item.mb-btn:focus-visible { outline: none; }
 </style>
 
 <!-- HTML DEL NAVBAR GLOBAL -->
@@ -248,14 +370,35 @@
             <span class="logo-text">OSWA Inv</span>
         </div>
         <!-- INDICADOR DE CONEXIÓN -->
-        <div class="status-indicator online d-none d-md-flex ms-2" id="networkIndicator">
+        <div class="status-indicator online ms-2" id="networkIndicator">
             <span class="status-dot"></span>
             <span class="status-text ms-2" id="networkText">En línea</span>
         </div>
     </div>
 
+    <!-- BOTONES MÓVIL: Notificaciones + Cerrar sesión + Foto perfil -->
+    <div class="d-md-none d-flex align-items-center gap-1" style="margin-left:auto;">
+        <a class="text-decoration-none position-relative" onclick="toggleMbDrawer()" title="Notificaciones" style="color:#a3a3a3;font-size:1.15rem;padding:6px 10px;cursor:pointer;border-radius:8px;transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.06)'" onmouseout="this.style.background='transparent'">
+            <i class="bi bi-bell-fill"></i>
+            <span id="mbNotifBadgeTop" class="position-absolute top-0 start-100 translate-middle badge rounded-pill" style="background:#E50914;font-size:0.5rem;padding:2px 4px;min-width:14px;display:none;">0</span>
+        </a>
+        <a href="{{ route('logout') }}" class="text-decoration-none" style="color:#a3a3a3;font-size:1.15rem;padding:6px 10px;border-radius:8px;transition:background 0.2s;"
+           onmouseover="this.style.background='rgba(229,9,20,0.1)'" onmouseout="this.style.background='transparent'"
+           onclick="event.preventDefault(); document.getElementById('mobile-logout-form').submit();" title="Cerrar sesión">
+            <i class="bi bi-box-arrow-right"></i>
+        </a>
+        <button type="button" onclick="abrirSelectorPerfiles(event)" class="text-decoration-none" style="background:none;border:none;padding:2px;cursor:pointer;border-radius:50%;overflow:hidden;transition:opacity 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'" title="Cambiar cuenta">
+            @if(auth()->user()?->profile_photo_path)
+                <img src="{{ asset('storage/' . auth()->user()->profile_photo_path) }}" style="width:32px;height:32px;object-fit:cover;border-radius:50%;border:2px solid rgba(255,255,255,0.1);">
+            @else
+                <div style="width:32px;height:32px;border-radius:50%;background:#E50914;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:0.9rem;border:2px solid rgba(255,255,255,0.1);">{{ strtoupper(substr(auth()->user()?->name ?? 'U', 0, 1)) }}</div>
+            @endif
+        </button>
+    </div>
+    <form id="mobile-logout-form" action="{{ route('logout') }}" method="POST" class="d-none">@csrf</form>
+
     <!-- MENÚ CENTRAL -->
-    <div class="topbar-nav" id="topbarNav">
+    <div class="topbar-nav d-none d-md-flex" id="topbarNav">
         <div class="topbar-nav-item">
             <a href="{{ route('inventario') }}" class="nav-link-custom {{ request()->routeIs('inventario') ? 'active' : '' }}">Inicio</a>
         </div>
@@ -301,30 +444,23 @@
             <span id="chatUnreadBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill" style="background:#E50914;font-size:0.55rem;padding:2px 4px;min-width:16px;display:none;">0</span>
         </a>
 
-        <!-- OSWA Pulse: Campana de notificaciones -->
-        <div class="position-relative" id="notifContainer" style="cursor:pointer;">
-            <a class="text-decoration-none position-relative" onclick="toggleNotifDropdown()" title="Notificaciones" style="color:#a3a3a3;font-size:1.3rem;">
-                <i class="bi bi-bell-fill"></i>
-                <span id="notifBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill" style="background:#E50914;font-size:0.55rem;padding:2px 4px;min-width:16px;display:none;">0</span>
-            </a>
-            <div id="notifDropdown" class="dropdown-menu-netflix" style="display:none;position:absolute;right:0;top:100%;width:360px;max-height:420px;overflow:hidden;z-index:9999;margin-top:8px;">
-                <div class="dropdown-header" style="display:flex;justify-content:space-between;align-items:center;padding:0.6rem 1rem;">
-                    <span style="font-weight:600;font-size:0.9rem;">Notificaciones</span>
-                    <span onclick="markAllNotifRead()" style="font-size:0.7rem;color:#E50914;cursor:pointer;">Marcar todo leído</span>
-                </div>
-                <div id="notifList" style="max-height:320px;overflow-y:auto;padding:0;"></div>
-                <div style="padding:0.5rem 1rem;text-align:center;border-top:1px solid rgba(255,255,255,0.06);">
-                    <a href="{{ route('arena.index') }}" style="font-size:0.75rem;color:#666;text-decoration:none;">Ver todas en Arena 🏟️</a>
+        <div class="d-flex align-items-center">
+            <!-- OSWA Pulse: Campana de notificaciones -->
+            <div class="position-relative" id="notifContainer" style="cursor:pointer;">
+                <a class="text-decoration-none position-relative" onclick="toggleNotifDropdown()" title="Notificaciones" style="color:#a3a3a3;font-size:1.3rem;">
+                    <i class="bi bi-bell-fill"></i>
+                    <span id="notifBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill" style="background:#E50914;font-size:0.55rem;padding:2px 4px;min-width:16px;display:none;">0</span>
+                </a>
+                <div id="notifDropdown" class="dropdown-menu-netflix" style="display:none;position:absolute;right:0;top:100%;width:360px;max-height:420px;overflow:hidden;z-index:9999;margin-top:8px;">
+                    <div class="dropdown-header" style="display:flex;justify-content:space-between;align-items:center;padding:0.6rem 1rem;">
+                        <span style="font-weight:600;font-size:0.9rem;">Notificaciones</span>
+                        <span onclick="markAllNotifRead()" style="font-size:0.7rem;color:#E50914;cursor:pointer;">Marcar todo leído</span>
+                    </div>
+                    <div id="notifList" style="max-height:320px;overflow-y:auto;padding:0;"></div>
                 </div>
             </div>
-        </div>
 
-        <!-- OSWA Arena link -->
-        <a href="{{ route('arena.index') }}" class="text-decoration-none" title="OSWA Arena" style="color:#a3a3a3;font-size:1.3rem;transition:color 0.3s;" onmouseover="this.style.color='#ffd700'" onmouseout="this.style.color='#a3a3a3'">
-            <i class="bi bi-trophy-fill"></i>
-        </a>
-
-        <div class="user-dropdown" id="userDropdown">
+            <div class="user-dropdown" id="userDropdown">
             <div class="d-flex align-items-center gap-2" onclick="toggleUserDropdown()">
                 @if(auth()->user()?->profile_photo_path)
                     <img src="{{ asset('storage/' . auth()->user()->profile_photo_path) }}" style="width: 32px; height: 32px; object-fit: cover; border-radius: 4px; border: 1px solid #333;">
@@ -349,10 +485,13 @@
                 </form>
             </div>
         </div>
+        </div>
     </div>
 </nav>
 
 <div class="oswa-toast-container" id="oswa-toast-container"></div>
+
+@include('partials.mobile-bottom-nav')
 
 <!-- SCRIPTS GLOBALES -->
 <script>
@@ -457,6 +596,15 @@
                         badge.style.display = 'none';
                     }
                 }
+                const mbBadge = document.getElementById('mbChatBadge');
+                if (mbBadge) {
+                    if (data.count > 0) {
+                        mbBadge.textContent = data.count;
+                        mbBadge.style.display = 'inline';
+                    } else {
+                        mbBadge.style.display = 'none';
+                    }
+                }
             } catch(e) {}
         }
         actualizarBadgeChat();
@@ -529,8 +677,28 @@
                         badge.style.display = 'none';
                     }
                 }
+                const mbBadge = document.getElementById('mbNotifBadgeTop');
+                if (mbBadge) {
+                    if (data.count > 0) {
+                        mbBadge.textContent = data.count > 99 ? '99+' : data.count;
+                        mbBadge.style.display = 'inline';
+                    } else {
+                        mbBadge.style.display = 'none';
+                    }
+                }
             } catch(e) {}
         }
+
+        window.toggleMbDrawer = window.toggleMbDrawer || function() {
+            const drawer = document.getElementById('notifDrawer');
+            const overlay = document.getElementById('notifDrawerOverlay');
+            if (!drawer) return;
+            const show = drawer.style.display === 'none';
+            drawer.style.display = show ? 'flex' : 'none';
+            if (overlay) overlay.style.display = show ? 'block' : 'none';
+            if (show && typeof cargarNotifDrawer === 'function') cargarNotifDrawer();
+            document.body.style.overflow = show ? 'hidden' : '';
+        };
 
         actualizarBadgeNotif();
         setInterval(actualizarBadgeNotif, 12000);
@@ -643,7 +811,7 @@
             const menu = document.getElementById('userDropdownMenu');
             if(menu) { menu.classList.remove('show'); menu.style.display = ''; }
             const sel = document.getElementById('oswa-profile-selector');
-            if (sel) sel.classList.remove('oswa-hidden');
+            if (sel) { sel.style.display = ''; sel.classList.remove('oswa-hidden'); }
         };
     }
     if (!window.seleccionarPerfilConCarga) {

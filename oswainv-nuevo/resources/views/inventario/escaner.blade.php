@@ -144,6 +144,21 @@
         .offline-banner.show { display: block; }
         .offline-banner i { color: #e74c3c; margin-right: 8px; }
         .offline-banner span { color: #e74c3c; font-size: 0.85rem; font-weight: 500; }
+
+        .result-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.92); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 20; padding: 20px; }
+        .result-overlay.show { display: flex; }
+        .result-overlay .code-badge { font-size: 0.75rem; color: #888; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
+        .result-overlay .code-value { font-size: 1.1rem; font-weight: 700; color: #E50914; margin-bottom: 12px; font-family: monospace; }
+        .result-overlay .prod-img { width: 100px; height: 100px; object-fit: contain; border-radius: 8px; margin-bottom: 10px; background: #1c1c1c; }
+        .result-overlay .prod-name { font-size: 1.2rem; font-weight: 700; color: #fff; text-align: center; margin-bottom: 4px; }
+        .result-overlay .prod-stock { font-size: 0.9rem; color: #25D366; }
+        .result-overlay .prod-price { font-size: 0.9rem; color: #fdcb6e; margin-bottom: 12px; }
+        .result-overlay .overlay-actions { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; justify-content: center; }
+        .result-overlay .overlay-actions .btn { font-size: 0.8rem; padding: 8px 14px; border-radius: 6px; }
+        .result-overlay .loading-text { color: #888; font-size: 0.9rem; }
+        .result-overlay .loading-spinner { width: 32px; height: 32px; border: 3px solid #333; border-top-color: #E50914; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 12px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
         .oswa-toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 999999; display: flex; flex-direction: column; gap: 12px; pointer-events: none; max-width: 420px; }
         .oswa-toast { pointer-events: auto; background: rgba(28,28,28,0.95); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); color: #fff; padding: 16px 20px; border-radius: 12px; border: 1px solid rgba(229,9,20,0.25); box-shadow: 0 8px 32px rgba(0,0,0,0.6), 0 0 0 1px rgba(229,9,20,0.1) inset; display: flex; align-items: center; gap: 14px; font-size: 0.9rem; font-weight: 500; min-width: 320px; animation: oswaToastIn 0.5s cubic-bezier(0.16, 1, 0.3, 1); position: relative; overflow: hidden; transition: transform 0.3s ease, box-shadow 0.3s ease; }
         .oswa-toast:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(0,0,0,0.7), 0 0 0 1px rgba(229,9,20,0.2) inset; }
@@ -156,6 +171,17 @@
         @keyframes oswaToastProgress { from { width: 100%; } to { width: 0%; } }
         @keyframes oswaToastIn { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         @keyframes oswaToastOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(120%); opacity: 0; } }
+
+        @media (max-width: 576px) {
+            .result-img { height: 140px; }
+            .result-body { padding: 0.8rem 1rem; }
+            .result-name { font-size: 1rem; }
+            .result-actions { flex-direction: column; }
+            .scanner-viewer { min-height: 250px; }
+            .scanner-viewer::before { width: 180px; height: 100px; }
+            .scanner-viewer::after { width: 180px; }
+            .manual-input-box input { font-size: 1rem; padding: 12px 14px; }
+        }
     </style>
 </head>
 <body>
@@ -197,9 +223,27 @@
         </div>
     </div>
 
+    <div class="result-overlay" id="resultOverlay">
+        <div class="code-badge">Código</div>
+        <div class="code-value" id="resultCode">—</div>
+        <img class="prod-img" id="resultImg" src="" alt="" style="display:none;">
+        <div class="loading-spinner" id="loadingSpinner"></div>
+        <div class="loading-text" id="loadingText">Buscando producto...</div>
+        <div class="prod-name" id="resultName" style="display:none;"></div>
+        <div class="prod-stock" id="resultStock" style="display:none;"></div>
+        <div class="prod-price" id="resultPrice" style="display:none;"></div>
+        <div class="overlay-actions" id="overlayActions" style="display:none;">
+            <button class="btn btn-outline-light" onclick="reanudarScanner(); ocultarOverlay();"><i class="bi bi-camera me-1"></i> Escanear</button>
+            <button class="btn btn-outline-light" onclick="agregarStock()" id="btnAddStock"><i class="bi bi-plus-lg"></i> +1</button>
+            <button class="btn btn-danger" id="btnRegistrar" onclick="irACatalogo()"><i class="bi bi-plus-circle"></i> Registrar</button>
+            <a class="btn btn-danger" id="resultEditBtn" href=""><i class="bi bi-pencil"></i> Editar</a>
+        </div>
+    </div>
+
     <script>
         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
         let html5QrCode;
+        let ultimoProducto = null;
 
         function mostrarToast(mensaje, icono = 'bi bi-check-circle-fill') {
             const container = document.getElementById('oswa-toast-container');
@@ -220,7 +264,7 @@
             const config = { fps: 10, qrbox: { width: 250, height: 150 } };
             
             html5QrCode.start({ facingMode: "environment" }, config, (codigo) => {
-                if (html5QrCode.getState() === 2) { html5QrCode.pause(true); } 
+                pausarScanner();
                 document.getElementById('barcodeInput').value = codigo;
                 procesarBarcode();
             }).catch(err => {
@@ -251,16 +295,103 @@
             updateStatusIndicator();
         });
 
+        function ocultarOverlay() {
+            document.getElementById('resultOverlay').classList.remove('show');
+        }
+
+        function irACatalogo() {
+            const codigo = document.getElementById('resultCode').textContent;
+            if (html5QrCode) html5QrCode.stop().catch(()=>{});
+            window.location.href = '{{ route("catalogo") }}?nuevo_codigo=' + encodeURIComponent(codigo);
+        }
+
+        function mostrarResultado(producto, nuevoStock) {
+            document.getElementById('loadingSpinner').style.display = 'none';
+            document.getElementById('loadingText').style.display = 'none';
+            document.getElementById('resultName').textContent = producto.nombre || 'Sin nombre';
+            document.getElementById('resultName').style.display = 'block';
+            document.getElementById('resultStock').textContent = 'Stock: ' + nuevoStock + ' uds';
+            document.getElementById('resultStock').style.display = 'block';
+            document.getElementById('resultPrice').textContent = producto.precio ? '$' + parseFloat(producto.precio).toFixed(2) : '';
+            document.getElementById('resultPrice').style.display = producto.precio ? 'block' : 'none';
+            document.getElementById('resultEditBtn').href = '/productos/' + producto.id + '/editar';
+            document.getElementById('btnAddStock').style.display = producto.id ? '' : 'none';
+            document.getElementById('btnRegistrar').style.display = producto.id ? 'none' : '';
+            document.getElementById('resultEditBtn').style.display = producto.id ? '' : 'none';
+            document.getElementById('overlayActions').style.display = 'flex';
+            const img = document.getElementById('resultImg');
+            if (producto.imagen) {
+                img.src = '/storage/' + producto.imagen;
+                img.style.display = 'block';
+            } else {
+                img.style.display = 'none';
+            }
+            document.getElementById('resultOverlay').classList.add('show');
+        }
+
+        function mostrarLoading(codigo) {
+            document.getElementById('resultCode').textContent = codigo;
+            document.getElementById('resultImg').style.display = 'none';
+            document.getElementById('resultName').style.display = 'none';
+            document.getElementById('resultStock').style.display = 'none';
+            document.getElementById('resultPrice').style.display = 'none';
+            document.getElementById('overlayActions').style.display = 'none';
+            document.getElementById('loadingSpinner').style.display = 'block';
+            document.getElementById('loadingText').textContent = 'Buscando producto...';
+            document.getElementById('loadingText').style.display = 'block';
+            document.getElementById('resultOverlay').classList.add('show');
+        }
+
+        async function agregarStock() {
+            if (!ultimoProducto) return;
+            if (!ultimoProducto.id) {
+                irACatalogo();
+                return;
+            }
+            document.getElementById('loadingSpinner').style.display = 'block';
+            document.getElementById('loadingText').textContent = 'Agregando stock...';
+            document.getElementById('loadingText').style.display = 'block';
+            document.getElementById('resultName').style.display = 'none';
+            document.getElementById('resultStock').style.display = 'none';
+            document.getElementById('resultPrice').style.display = 'none';
+            document.getElementById('overlayActions').style.display = 'none';
+            document.getElementById('resultImg').style.display = 'none';
+            try {
+                const res = await fetch('{{ route("escanear.producto") }}', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
+                    body: JSON.stringify({ codigo: ultimoProducto.codigo })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    mostrarResultado(data.producto, data.nuevo_stock);
+                    mostrarToast('+1 ' + data.producto.nombre + ' — Stock: ' + data.nuevo_stock, 'bi bi-check-circle-fill');
+                }
+            } catch(e) {
+                mostrarToast('Error al agregar stock', 'bi bi-exclamation-triangle-fill');
+            }
+        }
+
+        function pausarScanner() {
+            if (html5QrCode) {
+                try { html5QrCode.pause(true); } catch(e) {}
+            }
+        }
+
+        function reanudarScanner() {
+            if (html5QrCode) {
+                try { html5QrCode.resume(); } catch(e) {}
+            }
+        }
+
         async function procesarBarcode() {
             const codigo = document.getElementById('barcodeInput').value.trim();
             if (!codigo) return;
 
-            if (html5QrCode && html5QrCode.getState() === 2) { html5QrCode.pause(true); }
-
-            Swal.fire({ title: 'Buscando...', text: 'Verificando base de datos...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() }, background: '#1c1c1c', color: '#fff' });
+            pausarScanner();
+            mostrarLoading(codigo);
 
             try {
-                // 1. Buscar en tu base de datos (Laravel)
                 const response = await fetch('{{ route("escanear.producto") }}', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
@@ -269,22 +400,20 @@
                 const data = await response.json();
 
                 if (data.success) {
-                    Swal.close();
-                    mostrarToast('+1 ' + data.producto.nombre + ' — Stock: ' + data.nuevo_stock, 'bi bi-check-circle-fill');
+                    ultimoProducto = data.producto;
+                    mostrarResultado(data.producto, data.nuevo_stock);
+                    mostrarToast(data.producto.nombre + ' — Stock: ' + data.nuevo_stock, 'bi bi-check-circle-fill');
                     document.getElementById('barcodeInput').value = '';
-                    if (html5QrCode && html5QrCode.getState() === 3) html5QrCode.resume();
                 } else {
                     if (!navigator.onLine) {
-                        Swal.close();
-                        mostrarToast('Sin conexión — no se puede buscar en internet.', 'bi bi-wifi-off');
+                        document.getElementById('loadingSpinner').style.display = 'none';
+                        document.getElementById('loadingText').textContent = 'Sin conexión';
                         document.getElementById('barcodeInput').value = '';
-                        if (html5QrCode && html5QrCode.getState() === 3) html5QrCode.resume();
                         return;
                     }
-                    
-                    // 2. Buscar en API Mundial (OpenFoodFacts)
-                    Swal.fire({ title: 'Código no registrado', text: 'Buscando información global en internet...', icon: 'info', showConfirmButton: false, background: '#1c1c1c', color: '#fff' });
-                    
+
+                    document.getElementById('loadingText').textContent = 'Buscando en internet...';
+
                     const apiMundial = await fetch(`https://world.openfoodfacts.org/api/v0/product/${codigo}.json`);
                     const dataMundial = await apiMundial.json();
 
@@ -292,48 +421,42 @@
                         let nombreInternet = dataMundial.product.product_name || dataMundial.product.generic_name || "Producto Nuevo";
                         let imagenInternet = dataMundial.product.image_front_url || dataMundial.product.image_url || "";
 
-                        Swal.fire({
-                            html: `
-                                <div style="text-align:center; padding:10px;">
-                                    <div style="width: 80px; height: 80px; border-radius: 50%; background: rgba(0,184,148,0.15); display: flex; align-items: center; justify-content: center; margin: 0 auto 15px;">
-                                        <i class="bi bi-cloud-check-fill" style="font-size: 40px; color: #00b894;"></i>
-                                    </div>
-                                    <h3 style="color:#ffffff; margin:10px 0 5px; font-weight:700;">¡Encontrado en Internet!</h3>
-                                    <p style="color:#b3b3b3; margin:0 0 15px; font-size:1.1rem; font-weight: 500;">${nombreInternet}</p>
-                                    ${imagenInternet ? `<img src="${imagenInternet}" style="width:150px; height:150px; object-fit:cover; border-radius:8px; box-shadow:0 4px 15px rgba(0,0,0,0.5); margin:10px auto; display:block;">` : `<i class="bi bi-box-seam" style="font-size:80px; color:#444;"></i>`}
-                                    <p style="color:#777; margin-top: 15px; font-size: 0.85rem;">Enviaremos estos datos al catálogo para que agregues el precio.</p>
-                                </div>
-                            `,
-                            background: '#1c1c1c',
-                            showConfirmButton: true,
-                            confirmButtonText: '<i class="bi bi-arrow-right-circle me-1"></i> Ir al Catálogo',
-                            confirmButtonColor: '#E50914',
-                            allowOutsideClick: false
-                        }).then(() => {
-                            if (html5QrCode) { html5QrCode.stop().catch(()=>{}); }
-                            // AQUI LA MAGIA: REDIRIGIMOS AL CATALOGO CON LOS DATOS
-                            window.location.href = `{{ route('catalogo') }}?nuevo_codigo=${codigo}&nuevo_nombre=${encodeURIComponent(nombreInternet)}&nueva_imagen=${encodeURIComponent(imagenInternet)}`;
-                        });
+                        document.getElementById('loadingSpinner').style.display = 'none';
+                        document.getElementById('loadingText').style.display = 'none';
+                        document.getElementById('resultName').textContent = nombreInternet;
+                        document.getElementById('resultName').style.display = 'block';
+                        document.getElementById('resultStock').textContent = 'No registrado en inventario';
+                        document.getElementById('resultStock').style.display = 'block';
+                        document.getElementById('resultPrice').style.display = 'none';
+                        document.getElementById('btnAddStock').style.display = 'none';
+                        document.getElementById('btnRegistrar').style.display = '';
+                        document.getElementById('resultEditBtn').style.display = 'none';
+                        document.getElementById('overlayActions').style.display = 'flex';
+                        const img = document.getElementById('resultImg');
+                        if (imagenInternet) {
+                            img.src = imagenInternet;
+                            img.style.display = 'block';
+                        } else {
+                            img.style.display = 'none';
+                        }
+                        mostrarToast('Producto encontrado en internet', 'bi bi-cloud-check-fill');
+                        ultimoProducto = { codigo: codigo, nombre: nombreInternet, imagen: imagenInternet, id: null };
                     } else {
-                        // El producto no existe ni en internet
-                        Swal.fire({
-                            icon: 'question',
-                            title: 'Producto no reconocido',
-                            text: 'El código de barras no existe en nuestra base de datos ni en internet. Vamos a registrarlo manualmente.',
-                            confirmButtonText: 'Registrar a mano',
-                            confirmButtonColor: '#E50914',
-                            background: '#1c1c1c', color: '#fff'
-                        }).then(() => {
-                            if (html5QrCode) { html5QrCode.stop().catch(()=>{}); }
-                            // REDIRIGIMOS AL CATALOGO SOLO CON EL CÓDIGO
-                            window.location.href = `{{ route('catalogo') }}?nuevo_codigo=${codigo}`;
-                        });
+                        document.getElementById('loadingSpinner').style.display = 'none';
+                        document.getElementById('loadingText').textContent = 'Producto no encontrado';
+                        document.getElementById('btnAddStock').style.display = 'none';
+                        document.getElementById('btnRegistrar').style.display = '';
+                        document.getElementById('resultEditBtn').style.display = 'none';
+                        document.getElementById('overlayActions').style.display = 'flex';
+                        ultimoProducto = { codigo: codigo, nombre: 'Producto Nuevo', imagen: null, id: null };
+                        mostrarToast('Código no encontrado', 'bi bi-question-circle-fill');
                     }
                 }
             } catch (error) {
                 console.error(error);
+                document.getElementById('loadingSpinner').style.display = 'none';
+                document.getElementById('loadingText').textContent = 'Error de conexión';
                 mostrarToast('Error de conexión al escanear.', 'bi bi-exclamation-triangle-fill');
-                if (html5QrCode && html5QrCode.getState() === 3) html5QrCode.resume();
             }
         }
     </script>

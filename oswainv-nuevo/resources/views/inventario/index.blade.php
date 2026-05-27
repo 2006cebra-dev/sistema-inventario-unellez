@@ -43,6 +43,17 @@
         .stat-value { font-family: 'Consolas', 'Monaco', 'Courier New', monospace; font-size: 1.8rem; font-weight: 800; }
         .stat-label { text-transform: uppercase; letter-spacing: 1px; font-size: 0.75rem; color: #888; }
         
+        /* --- TOP PRODUCTOS LISTA --- */
+        .top-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 10px; transition: background 0.2s; cursor: pointer; }
+        .top-item:hover { background: rgba(255,255,255,0.04); }
+        .top-item:active { background: rgba(229,9,20,0.08); }
+        .top-avatar { width: 44px; height: 44px; border-radius: 10px; background: #2a2a2a; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1rem; color: #fff; flex-shrink: 0; }
+        .top-info { flex: 1; min-width: 0; }
+        .top-name { font-size: 0.85rem; font-weight: 600; color: #e5e5e5; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 6px; }
+        .top-bar-wrap { height: 6px; background: #2a2a2a; border-radius: 3px; overflow: hidden; }
+        .top-bar { height: 100%; background: linear-gradient(90deg, #E50914, #ff6b6b); border-radius: 3px; transition: width 0.8s ease; min-width: 4px; }
+        .top-count { font-size: 1rem; font-weight: 700; color: #E50914; font-variant-numeric: tabular-nums; flex-shrink: 0; min-width: 30px; text-align: right; }
+        
         /* --- GRID DE GRÁFICAS PREMIUM --- */
         .oswa-charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 1.5rem; margin-top: 2rem; }
         .oswa-chart-card { background: rgba(28, 28, 28, 0.6); backdrop-filter: blur(20px); border: 1px solid rgba(43, 43, 43, 0.8); border-radius: 16px; padding: 1.5rem; transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1); animation: fadeInUp 0.5s ease forwards; opacity: 0; position: relative; overflow: hidden; }
@@ -305,9 +316,9 @@
                         <h5 class="oswa-chart-title">Top 5: Productos Más Vendidos</h5>
                     </div>
                 </div>
-                <div class="oswa-chart-body" style="min-height: 300px; position: relative; display: flex; justify-content: center; align-items: center;" id="container-top-productos">
-                    <canvas id="chartTopProductos" style="display: none;"></canvas>
-                    <div id="empty-top-productos" class="text-center" style="color: #666;">
+                <div class="oswa-chart-body" id="container-top-productos">
+                    <div id="topProductosList"></div>
+                    <div id="empty-top-productos" class="text-center" style="color: #666;display:none;">
                         <i class="bi bi-inbox fs-1 mb-2"></i>
                         <p class="mb-0 font-monospace">Esperando primeros registros...</p>
                     </div>
@@ -590,7 +601,6 @@
 
         // Gráficos Dinámicos del Dashboard
         let chartTendenciaInst = null;
-        let chartTopInst = null;
         let chartCatInst = null;
 
         function cargarGraficas() {
@@ -616,22 +626,34 @@
                         });
                     }
 
-                    // 2. Top Productos
-                    const chartTopElement = document.getElementById('chartTopProductos');
+                    // 2. Top Productos con foto + nombre
+                    const topList = document.getElementById('topProductosList');
                     const emptyTopElement = document.getElementById('empty-top-productos');
-                    if (chartTopInst) chartTopInst.destroy();
+                    const topLabels = data.top_labels || [];
+                    const topData = data.top_productos || [];
+                    const topPhotos = data.top_photos || [];
+                    const topIds = data.top_ids || [];
 
-                    if (data.top_labels.length > 0) {
-                        chartTopElement.style.display = 'block';
+                    if (topLabels.length > 0) {
                         emptyTopElement.style.display = 'none';
-                        const ctxTop = chartTopElement.getContext('2d');
-                        chartTopInst = new Chart(ctxTop, {
-                            type: 'bar',
-                            data: { labels: data.top_labels, datasets: [{ label: 'Unidades', data: data.top_productos, backgroundColor: '#E50914', borderRadius: 4 }] },
-                            options: { animation: { duration: 800 }, indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, grid: { color: '#2a2a2a' }, ticks: { color: '#aaa' } }, y: { grid: { display: false }, ticks: { color: '#f1f1f1' } } } }
-                        });
+                        const max = Math.max(...topData);
+                        topList.innerHTML = topLabels.map((name, i) => {
+                            const pct = max > 0 ? (topData[i] / max) * 100 : 0;
+                            const foto = topPhotos[i] || null;
+                            const id = topIds[i] || null;
+                            const initials = name.charAt(0).toUpperCase();
+                            const safeInitials = initials.replace(/['"&<>]/g, '');
+                            const avatarHtml = foto
+                                ? '<div style="width:44px;height:44px;border-radius:10px;overflow:hidden;flex-shrink:0;background:#2a2a2a;"><img src="' + foto + '" alt="" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display=\'none\';this.parentNode.textContent=\'' + safeInitials + '\'"></div>'
+                                : '<div class="top-avatar">' + safeInitials + '</div>';
+                            return '<div class="top-item"' + (id ? ' onclick="window.location.href=\'/productos/' + id + '/editar\'"' : '') + '>'
+                                + avatarHtml
+                                + '<div class="top-info"><div class="top-name">' + name + '</div><div class="top-bar-wrap"><div class="top-bar" style="width:' + pct + '%"></div></div></div>'
+                                + '<div class="top-count">' + topData[i] + ' uds</div>'
+                                + '</div>';
+                        }).join('');
                     } else {
-                        chartTopElement.style.display = 'none';
+                        topList.innerHTML = '';
                         emptyTopElement.style.display = 'block';
                     }
 

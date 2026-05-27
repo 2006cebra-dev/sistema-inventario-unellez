@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\ChatMessage;
 use App\Models\User;
 use App\Models\Notification;
-use App\Services\GamificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -84,8 +83,6 @@ class ChatController extends Controller
             'message' => $message,
             'type' => $type,
         ]);
-
-        GamificationService::addXp(Auth::user(), 'chat_message', "Mensaje en chat");
 
         return response()->json([
             'success' => true,

@@ -3,7 +3,7 @@
      ======================================================= -->
 
 <!-- Pantalla de Selección de Perfiles -->
-<div id="oswa-profile-selector" class="oswa-netflix-overlay oswa-hidden">
+<div id="oswa-profile-selector" class="oswa-netflix-overlay oswa-hidden" style="display:none">
     <div class="oswa-netflix-content">
 <div style="text-align: left; padding-left: 20px; margin-bottom: -40px; position: relative; z-index: 10;">
             <button onclick="cerrarSelectorPerfiles()" style="background: transparent; border: none; color: #b3b3b3; font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: color 0.3s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#b3b3b3'">
@@ -112,6 +112,21 @@ body.manage-mode .oswa-avatar-img, body.manage-mode .oswa-avatar { opacity: 0.5;
 .oswa-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(0, 0, 0, 0.85); z-index: 100000; display: flex; justify-content: center; align-items: center; transition: opacity 0.3s ease, visibility 0.3s; }
 .oswa-modal.oswa-hidden { opacity: 0; visibility: hidden; pointer-events: none; }
 .oswa-modal-content { background: #1c1c1c; padding: 2.5rem; border-radius: 8px; width: 90%; max-width: 450px; position: relative; border: 1px solid #333;}
+
+@media (max-width: 576px) {
+    .oswa-netflix-overlay { align-items: flex-start; padding-top: 1.5rem; }
+    .oswa-netflix-content { width: 100%; padding: 0 1rem; max-height: calc(100vh - 2rem); overflow-y: auto; }
+    .oswa-netflix-title { font-size: 1.2rem; margin-top: 0.5rem; margin-bottom: 1rem; }
+    .oswa-netflix-profiles { gap: 0.8rem; margin-bottom: 1.5rem; }
+    .oswa-avatar, .oswa-avatar-initials, .oswa-avatar-img { width: 80px; height: 80px; font-size: 2rem; }
+    .oswa-name { font-size: 0.85rem; margin-top: 0.5rem; }
+    .oswa-edit-icon { width: 28px; height: 28px; font-size: 0.8rem; top: 4px; right: 4px; }
+    .oswa-btn-manage, .oswa-btn-cancel { font-size: 0.8rem; padding: 8px 16px; margin: 6px; }
+    .oswa-btn-cancel.oswa-hidden { display: none; }
+    .oswa-netflix-content > div:first-child { margin-bottom: 0 !important; }
+    .oswa-netflix-content > div:first-child button { font-size: 0.9rem !important; }
+    .oswa-netflix-content > div:first-child button span { font-size: 0.9rem !important; }
+}
 .oswa-modal-content h2 { color: #fff; font-size: 1.8rem; margin-bottom: 1.5rem; text-align: center;}
 .oswa-close { position: absolute; top: 15px; right: 20px; color: grey; font-size: 2.5rem; cursor: pointer; transition: color 0.2s; line-height: 1; z-index: 100001;}
 .oswa-close:hover { color: white; }
@@ -160,11 +175,15 @@ body.manage-mode .oswa-avatar-img, body.manage-mode .oswa-avatar { opacity: 0.5;
             menu.classList.remove('show');
             menu.style.display = '';
         }
-        document.getElementById('oswa-profile-selector').classList.remove('oswa-hidden');
+        const sel = document.getElementById('oswa-profile-selector');
+        sel.style.display = '';
+        sel.classList.remove('oswa-hidden');
     };
 
     window.cerrarSelectorPerfiles = function() {
-        document.getElementById('oswa-profile-selector').classList.add('oswa-hidden');
+        const sel = document.getElementById('oswa-profile-selector');
+        sel.classList.add('oswa-hidden');
+        sel.style.display = 'none';
     };
 
     // Cambiar de Cuenta (lee contraseña guardada)

@@ -37,6 +37,5 @@ class LoginController extends Controller
 
     protected function authenticated(Request $request, $user)
     {
-        \App\Services\GamificationService::checkStreak($user);
     }
 }

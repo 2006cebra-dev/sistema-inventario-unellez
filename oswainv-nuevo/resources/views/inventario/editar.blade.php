@@ -92,12 +92,32 @@
             .topbar-search { display: none; }
         }
 
-        .main-content { padding-top: calc(var(--topbar-height) + 2rem); padding-left: 4%; padding-right: 4%; padding-bottom: 2rem; min-height: 100vh; }
+        html, body { overflow-x: hidden; overflow-y: auto; height: auto; min-height: 100vh; }
+        .main-content { padding-top: calc(var(--topbar-height) + 1rem); padding-left: 4%; padding-right: 4%; padding-bottom: 6rem; min-height: auto; height: auto; }
 
-        .edit-card { background: #1a1a1a; border: 1px solid #333; border-radius: 12px; overflow: hidden; }
+        .edit-card { background: #1a1a1a; border: 1px solid #333; border-radius: 12px; overflow: visible; }
         .edit-card .form-control { background-color: #222 !important; border: 1px solid #444 !important; color: #e5e5e5 !important; }
         .edit-card .form-control:focus { border-color: var(--accent-primary) !important; box-shadow: 0 0 0 0.2rem rgba(229,9,20,0.25) !important; }
         .edit-card .form-control::placeholder { color: #666 !important; }
+        @media (max-width: 767px) {
+            .main-content { padding-left: 0; padding-right: 0; padding-top: calc(var(--topbar-height) + 0.5rem); padding-bottom: 80px; }
+            .row.justify-content-center { margin: 0; }
+            .col-md-8 { padding: 0; }
+            .edit-card { border-radius: 0; border-left: none; border-right: none; }
+            .edit-card .card-body { padding: 12px 12px 0 !important; }
+            .edit-card .form-control { font-size: 0.85rem; padding: 8px 10px; }
+            .edit-card label { font-size: 0.75rem; margin-bottom: 2px !important; }
+            .row.mb-3 { margin-bottom: 0.5rem !important; }
+            .row.mb-3 > div { margin-bottom: 0.4rem; }
+            .d-flex.align-items-center.mb-4 { margin-bottom: 0.5rem !important; }
+            .d-flex.align-items-center.mb-4 h4 { font-size: 0.95rem; }
+            textarea.form-control { min-height: 60px; }
+            .edit-form-btns { display: none !important; }
+            .edit-mobile-bar { display: flex; position: fixed; bottom: 0; left: 0; right: 0; background: #1a1a1a; padding: 10px 16px; z-index: 10000; gap: 10px; border-top: 1px solid #333; box-shadow: 0 -4px 12px rgba(0,0,0,0.5); }
+            .edit-mobile-bar .btn { flex: 1; font-size: 0.85rem; padding: 10px; border-radius: 6px; }
+        }
+
+        .edit-mobile-bar { display: none; }
 
         @keyframes fadeSlideUp {
             from { opacity: 0; transform: translateY(40px); }
@@ -187,7 +207,7 @@
 
                 <div class="edit-card">
                     <div class="card-body p-4">
-                        <form action="{{ route('productos.update', $producto->id) }}" method="POST">
+                        <form id="editProductForm" action="{{ route('productos.update', $producto->id) }}" method="POST">
                             @csrf
                             @method('PUT')
 
@@ -233,16 +253,17 @@
                                 <textarea name="descripcion" class="form-control" rows="3">{{ $producto->descripcion }}</textarea>
                             </div>
 
-                            <div class="d-flex justify-content-end gap-2 mt-4 pt-3" style="border-top: 1px solid #333;">
-                                <a href="{{ url('/catalogo') }}" class="btn btn-outline-light">Cancelar</a>
-                                <button type="submit" class="btn fw-bold text-dark" style="background-color: #ffc107;">Guardar Cambios</button>
-                            </div>
                         </form>
                     </div>
                 </div>
             </div>
         </div>
     </main>
+
+    <div class="edit-mobile-bar">
+        <a href="{{ url('/catalogo') }}" class="btn btn-outline-light"><i class="bi bi-arrow-left me-1"></i> Volver</a>
+        <button type="submit" form="editProductForm" class="btn fw-bold" style="background-color: #ffc107; color:#000;">Guardar Cambios</button>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
@@ -268,7 +289,8 @@
         document.addEventListener('click', function(e) {
             if (!e.target.closest('.nav-dropdown')) {
                 document.querySelectorAll('.nav-dropdown.show').forEach(function(dd) { dd.classList.remove('show'); });
-        }
+            }
+        });
         function checkNetworkStatus() {
             const isOnline = navigator.onLine;
             document.querySelectorAll('.status-indicator').forEach(ind => {

@@ -165,10 +165,22 @@
         .auth-footer { margin-top: 2rem; text-align: center; font-size: 0.85rem; color: #888; }
         .auth-copyright { margin-top: auto; text-align: center; font-size: 0.75rem; color: #555; padding-top: 1rem; }
 
+        .mobile-brand { display: none; }
+
         @media (max-width: 900px) {
-            .auth-container { flex-direction: column; height: auto; border-radius: 0; width: 100%; }
-            .auth-left { flex: none; height: 200px; }
-            .auth-right { padding: 2rem; }
+            body { padding: 0; align-items: flex-start; }
+            .auth-container { flex-direction: column; height: auto; min-height: 100vh; width: 100%; max-width: 100vw; border-radius: 0; border: none; background: rgba(20,20,20,0.95); }
+            .auth-left { display: none; }
+            .auth-right { padding: 2rem 1.5rem; width: 100%; }
+            .form-control { font-size: 16px; padding: 12px 14px; }
+            .btn-auth { padding: 14px; font-size: 1rem; }
+            .mobile-brand { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-bottom: 1rem; }
+            .mobile-brand img { height: 48px; filter: brightness(0) invert(1) drop-shadow(0 0 12px rgba(255,255,255,0.2)); }
+            .mobile-brand .brand-name { font-size: 1.6rem; font-weight: 800; background: linear-gradient(90deg,#E50914,#ff6b6b,#B20710,#E50914); background-size: 300% 100%; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; letter-spacing: 2px; }
+            .auth-header h2 { font-size: 1.4rem; }
+            .auth-header p { font-size: 0.85rem; }
+            .row { margin: 0; }
+            .row > div { padding: 0; }
         }
 
         /* =========================================
@@ -244,6 +256,10 @@
 
         <!-- MITAD DERECHA: FORMULARIO -->
         <div class="auth-right">
+            <div class="mobile-brand">
+                <img src="{{ asset('img/logo-unellez.png') }}" alt="UNELLEZ">
+                <span class="brand-name">OSWA INV</span>
+            </div>
             <div class="auth-header">
                 <h2>Crear Cuenta</h2>
                 <p>Registre sus datos para acceder al sistema</p>

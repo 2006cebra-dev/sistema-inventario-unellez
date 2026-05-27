@@ -8,7 +8,6 @@ use App\Models\User;
 use App\Models\Requisicion;
 use App\Models\Mision;
 use App\Models\Notification;
-use App\Services\GamificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -86,6 +85,7 @@ class InventarioController extends Controller
         // Top 5 Productos Más Vendidos (por Salidas)
         $topVentas = Movimiento::select('codigo_producto', DB::raw('SUM(cantidad) as total_salidas'))
             ->where('tipo', 'Salida')
+            ->whereIn('codigo_producto', Producto::pluck('codigo'))
             ->groupBy('codigo_producto')
             ->orderByDesc('total_salidas')
             ->take(5)
@@ -155,9 +155,38 @@ class InventarioController extends Controller
             $fechaFin = now()->subMonth()->endOfMonth();
         }
 
-        // Top 5 Productos Más Vendidos en ese rango
+        // Distribución por Categorías (Stock Actual global)
+        $productos = Producto::all();
+        $categorias = $productos->groupBy('categoria')->map(fn($group) => $group->count());
+
+        // Tendencia de Salidas
+        $diasLabels = [];
+        $salidasData = [];
+
+        if ($rango === '7_dias') {
+            for ($i = 6; $i >= 0; $i--) {
+                $fecha = now()->subDays($i);
+                $diasLabels[] = $fecha->format('d/m');
+                $salidasData[] = (int) Movimiento::where('tipo', 'Salida')
+                    ->whereDate('created_at', $fecha)
+                    ->sum('cantidad');
+            }
+        } else {
+            $diasEnMes = $fechaInicio->daysInMonth;
+            for ($i = 1; $i <= $diasEnMes; $i++) {
+                $fecha = $fechaInicio->copy()->addDays($i - 1);
+                if ($fecha > now() && $rango === 'este_mes') break;
+                $diasLabels[] = $fecha->format('d/m');
+                $salidasData[] = (int) Movimiento::where('tipo', 'Salida')
+                    ->whereDate('created_at', $fecha)
+                    ->sum('cantidad');
+            }
+        }
+
+        // Top 5 Productos Más Vendidos en ese rango (excluye productos eliminados)
         $topVentas = Movimiento::select('codigo_producto', DB::raw('SUM(cantidad) as total_salidas'))
             ->where('tipo', 'Salida')
+            ->whereIn('codigo_producto', Producto::pluck('codigo'))
             ->whereBetween('created_at', [$fechaInicio, $fechaFin])
             ->groupBy('codigo_producto')
             ->orderByDesc('total_salidas')
@@ -166,40 +195,21 @@ class InventarioController extends Controller
 
         $topLabels = [];
         $topData = [];
+        $topPhotos = [];
+        $topIds = [];
         foreach ($topVentas as $venta) {
             $prod = Producto::where('codigo', $venta->codigo_producto)->first();
             $topLabels[] = $prod ? $prod->nombre : $venta->codigo_producto;
             $topData[] = (int) $venta->total_salidas;
-        }
-
-        // Distribución por Categorías (Stock Actual global)
-        $productos = Producto::all();
-        $categorias = $productos->groupBy('categoria')->map(fn($group) => $group->count());
-
-        // Tendencia Diaria de Salidas
-        $diasLabels = [];
-        $salidasData = [];
-        
-        if ($rango === '7_dias') {
-            for ($i = 6; $i >= 0; $i--) {
-                $fecha = now()->subDays($i);
-                $diasLabels[] = $fecha->translatedFormat('d-M');
-                $salidasData[] = (int) Movimiento::where('tipo', 'Salida')->whereDate('created_at', $fecha)->sum('cantidad');
-            }
-        } else {
-            // Para meses completos, agrupamos por los días de ese mes
-            $diasEnMes = $fechaInicio->daysInMonth;
-            for ($i = 1; $i <= $diasEnMes; $i++) {
-                $fecha = $fechaInicio->copy()->addDays($i - 1);
-                if ($fecha > now() && $rango === 'este_mes') break; // No mostrar futuro
-                $diasLabels[] = $fecha->format('d-M');
-                $salidasData[] = (int) Movimiento::where('tipo', 'Salida')->whereDate('created_at', $fecha)->sum('cantidad');
-            }
+            $topPhotos[] = $prod && $prod->imagen ? asset('storage/' . $prod->imagen) : null;
+            $topIds[] = $prod ? $prod->id : null;
         }
 
         return response()->json([
             'top_productos' => $topData,
             'top_labels' => $topLabels,
+            'top_photos' => $topPhotos,
+            'top_ids' => $topIds,
             'categorias' => array_values($categorias->toArray()),
             'categorias_labels' => array_keys($categorias->toArray()),
             'tendencias' => $salidasData,
@@ -365,13 +375,6 @@ class InventarioController extends Controller
 
         $producto->save();
 
-        // XP por ajuste
-        if ($diferencia > 0) {
-            GamificationService::addXp(Auth::user(), 'stock_entry', "Entrada de {$producto->nombre}");
-        } elseif ($diferencia < 0) {
-            GamificationService::addXp(Auth::user(), 'stock_exit', "Salida de {$producto->nombre}");
-        }
-
         // Notificar a admins si stock es crítico
         if ($producto->stock <= 5 && $producto->stock > 0) {
             $admins = User::where('rol', 'admin')->get();
@@ -525,8 +528,6 @@ class InventarioController extends Controller
         $movimiento->firma_hash = $movimiento->generarFirma();
         $movimiento->save();
 
-        GamificationService::addXp(Auth::user(), 'transfer_made', "Transferencia a {$request->sucursal}: {$request->cantidad}x {$producto->nombre}");
-
         return response()->json([
             'success' => true,
             'producto' => $producto->nombre,
@@ -610,8 +611,6 @@ class InventarioController extends Controller
             $mov->firma_hash = $mov->generarFirma();
             $mov->save();
         }
-
-        GamificationService::addXp(Auth::user(), 'product_created', "Producto creado: {$producto->nombre}");
 
         if ($request->ajax() || $request->wantsJson()) {
             return response()->json([

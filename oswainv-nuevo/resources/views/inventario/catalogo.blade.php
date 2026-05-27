@@ -31,6 +31,8 @@
         .product-card.stock-critical { border-left: 4px solid var(--accent-danger); }
         .product-card.stock-low { border-left: 4px solid var(--accent-warning); }
         .product-card.stock-normal { border-left: 4px solid var(--accent-success); }
+        .product-card.scan-highlight { border: 2px solid #E50914 !important; box-shadow: 0 0 20px rgba(229,9,20,0.3); animation: scanPulse 1s ease-in-out 3; }
+        @keyframes scanPulse { 0%, 100% { box-shadow: 0 0 10px rgba(229,9,20,0.2); } 50% { box-shadow: 0 0 25px rgba(229,9,20,0.5); } }
         
         .product-card-img { width: 100%; height: 220px; object-fit: contain; background-color: #050505; padding: 5px; border-bottom: 1px solid #222; }
         .product-card-img-placeholder { height: 180px; background: #222; display: flex; align-items: center; justify-content: center; color: #555; font-size: 3rem; }
@@ -108,6 +110,11 @@
             70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
             100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
         }
+        .swal2-toast { border: 1px solid #333 !important; box-shadow: 0 8px 32px rgba(0,0,0,0.6) !important; border-radius: 12px !important; padding: 16px !important; }
+        .swal2-toast .swal2-title { font-size: 0.9rem !important; margin: 0 !important; }
+        .swal2-toast .swal2-html-container { font-size: 0.8rem !important; margin: 4px 0 !important; }
+        .swal2-toast .swal2-actions { gap: 6px !important; margin-top: 10px !important; }
+        .swal2-toast .swal2-confirm, .swal2-toast .swal2-cancel { font-weight: 600 !important; padding: 6px 14px !important; border-radius: 6px !important; font-size: 0.8rem !important; min-width: 80px !important; }
     </style>
 </head>
 <body data-theme="dark">
@@ -387,14 +394,18 @@
 </footer>
 
     <!-- MODAL: NUEVO / EDITAR PRODUCTO -->
-    <div class="modal fade" id="modalProducto" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal fade" id="modalProducto" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
             <div class="modal-content" style="background: var(--bg-card); border: 1px solid var(--border-color); box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
                 <div class="modal-header border-bottom border-secondary border-opacity-25">
                     <h5 class="modal-title text-white fw-bold" id="modalProductoTitle"><i class="bi bi-box-seam text-danger me-2"></i> Gestión de Producto</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-4">
+                    <div class="d-md-none d-flex gap-2 mb-3 sticky-top" style="z-index:5;">
+                        <button type="button" id="btnGuardarMobile" class="btn btn-danger fw-bold flex-grow-1"><i class="bi bi-save me-1"></i> Guardar</button>
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    </div>
                     <form id="formProducto" enctype="multipart/form-data">
                         <input type="hidden" id="prodId" name="id">
                         <input type="hidden" id="prodImagenUrl" name="imagen_url">
@@ -499,6 +510,13 @@
 
             let mensajeExito = null;
 
+            const btnGuardarMobile = document.getElementById('btnGuardarMobile');
+            if (btnGuardarMobile) {
+                btnGuardarMobile.addEventListener('click', function() {
+                    document.getElementById('btnGuardarProducto').click();
+                });
+            }
+
             const btnGuardar = document.getElementById('btnGuardarProducto');
             if(btnGuardar) {
                 btnGuardar.addEventListener('click', function() {
@@ -524,8 +542,15 @@
                     })
                     .then(data => {
                         if(data.success) {
-                            mostrarToast('Producto guardado correctamente', 'bi bi-check-circle-fill');
-                            setTimeout(() => window.location.reload(), 800);
+                            const nombre = document.getElementById('prodNombre')?.value || data.producto?.nombre || '';
+                            const prodId = document.getElementById('prodId').value;
+                            if (prodId) {
+                                mostrarToast(nombre + ' actualizado correctamente', 'bi bi-check-circle-fill');
+                                setTimeout(() => window.location.reload(), 800);
+                            } else {
+                                mostrarToast(nombre + ' registrado en el catálogo', 'bi bi-check-circle-fill');
+                                setTimeout(() => window.location.reload(), 1200);
+                            }
                         }
                     })
                     .catch(error => {
@@ -653,14 +678,22 @@
 
         function confirmarEliminacion(id, nombre) {
             Swal.fire({
-                title: '¿Eliminar Producto?', html: 'Vas a borrar <b>' + nombre + '</b>.<br>¡No hay vuelta atrás!',
-                icon: 'warning', showCancelButton: true, confirmButtonColor: '#E50914', cancelButtonColor: '#444',
-                confirmButtonText: 'Sí, eliminar', cancelButtonText: 'No',
-                background: '#141414', color: '#fff',
-                position: 'top-end', toast: true, showConfirmButton: true,
-                timer: undefined, customClass: { popup: 'oswa-confirm-toast' }
+                title: '¿Eliminar ' + nombre + '?',
+                text: 'No hay vuelta atrás',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#E50914',
+                cancelButtonColor: '#444',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'No',
+                background: '#141414',
+                color: '#fff',
+                position: 'top-end',
+                toast: true
             }).then((result) => {
-                if (result.isConfirmed) document.getElementById('form-eliminar-' + id).submit();
+                if (result.isConfirmed) {
+                    document.getElementById('form-eliminar-' + id).submit();
+                }
             });
         }
 
@@ -811,22 +844,90 @@
             }
         });
 
-        function onScanSuccess(decodedText, decodedResult) {
+        async function onScanSuccess(decodedText, decodedResult) {
             if (html5QrcodeScanner) html5QrcodeScanner.clear();
             
             let modalEl = document.getElementById('scannerModal');
             let modalObj = bootstrap.Modal.getInstance(modalEl);
             if(modalObj) modalObj.hide();
             
-            const searchInput = document.getElementById('topbarSearchInput');
-            if(searchInput) {
-                searchInput.value = decodedText;
-                searchInput.focus();
-                searchInput.dispatchEvent(new Event('input', { bubbles: true })); 
-            }
-            
-            if (window.mostrarToast) {
-                mostrarToast('Código detectado: ' + decodedText, 'bi bi-check-circle-fill');
+            const codigo = decodedText.trim();
+            if (!codigo) return;
+
+            document.getElementById('topbarSearchInput').value = codigo;
+
+            let encontrado = null;
+            document.querySelectorAll('.product-card').forEach(card => {
+                const codeEl = card.querySelector('.product-card-code');
+                if (codeEl && codeEl.textContent.includes(codigo)) {
+                    encontrado = card;
+                }
+            });
+
+            if (encontrado) {
+                const dataAttr = encontrado.querySelector('[data-producto]');
+                if (dataAttr) {
+                    try {
+                        const producto = JSON.parse(dataAttr.getAttribute('data-producto'));
+                        setTimeout(() => editarProducto(producto), 400);
+                        mostrarToast('Producto: ' + producto.nombre, 'bi bi-check-circle-fill');
+                    } catch(e) {
+                        mostrarToast('Error al abrir producto', 'bi bi-exclamation-triangle-fill');
+                    }
+                } else {
+                    document.querySelectorAll('.product-card.scan-highlight').forEach(c => c.classList.remove('scan-highlight'));
+                    encontrado.classList.add('scan-highlight');
+                    encontrado.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    setTimeout(() => encontrado.classList.remove('scan-highlight'), 3000);
+                }
+            } else {
+                let nombreApi = '';
+                let imagenApi = '';
+                try {
+                    const apiRes = await fetch('https://world.openfoodfacts.org/api/v0/product/' + codigo + '.json');
+                    const apiData = await apiRes.json();
+                    if (apiData.status === 1 && apiData.product) {
+                        nombreApi = apiData.product.product_name || apiData.product.generic_name || '';
+                        imagenApi = apiData.product.image_front_url || apiData.product.image_url || '';
+                    }
+                } catch(e) { /* ignore api error */ }
+
+                let htmlContent = 'Código: <strong style="color:#E50914;font-family:monospace;font-size:1.2rem;">' + codigo + '</strong>';
+                if (nombreApi) {
+                    htmlContent += '<br><br><div style="display:flex;align-items:center;gap:12px;justify-content:center;background:#2a2a2a;padding:10px;border-radius:8px"><img src="' + imagenApi + '" style="width:70px;height:70px;object-fit:contain;border-radius:6px;background:#333" onerror="this.style.display=\'none\'"> <span style="font-weight:500;font-size:0.95rem">' + nombreApi + '</span></div>';
+                }
+                htmlContent += '<br>¿Deseas registrarlo en el catálogo?';
+
+                Swal.fire({
+                    icon: 'question',
+                    title: 'Producto no registrado',
+                    html: htmlContent,
+                    showCancelButton: true,
+                    confirmButtonText: '<i class="bi bi-plus-circle me-1"></i> Registrar',
+                    cancelButtonText: 'Cancelar',
+                    confirmButtonColor: '#E50914',
+                    cancelButtonColor: '#444',
+                    background: '#1c1c1c', color: '#fff',
+                    reverseButtons: true,
+                    focusConfirm: false
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        setTimeout(() => {
+                            abrirModalNuevo();
+                            setTimeout(() => {
+                                document.getElementById('prodCodigo').value = codigo;
+                                if (nombreApi) document.getElementById('prodNombre').value = nombreApi;
+                                if (imagenApi) {
+                                    const img = document.getElementById('imgPreview');
+                                    img.src = imagenApi;
+                                    img.style.display = 'block';
+                                    document.getElementById('imgPlaceholder').style.display = 'none';
+                                    document.getElementById('prodImagenUrl').value = imagenApi;
+                                }
+                            }, 300);
+                        }, 400);
+                    }
+                });
             }
         }
 

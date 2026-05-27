@@ -582,16 +582,31 @@
 
         // Eliminar Proveedor con confirmación
         function eliminarProveedor(id) {
-            if (!confirm('¿Seguro que deseas eliminar este proveedor?')) return;
-            fetch(`/proveedores/${id}/eliminar`, {
-                method: 'DELETE', headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content, 'Accept': 'application/json' }
-            }).then(res => res.json()).then(data => {
-                if(data.success) {
-                    mostrarToast('Proveedor eliminado', 'bi bi-building-slash');
-                    setTimeout(() => location.reload(), 800);
-                } else {
-                    mostrarToast(data.message || 'Error al eliminar.', 'bi bi-exclamation-triangle-fill');
-                }
+            Swal.fire({
+                title: '¿Eliminar Proveedor?',
+                text: 'Esta acción no se puede deshacer',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#E50914',
+                cancelButtonColor: '#444',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'No',
+                background: '#141414',
+                color: '#fff',
+                position: 'top-end',
+                toast: true
+            }).then((result) => {
+                if (!result.isConfirmed) return;
+                fetch(`/proveedores/${id}/eliminar`, {
+                    method: 'DELETE', headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content, 'Accept': 'application/json' }
+                }).then(res => res.json()).then(data => {
+                    if(data.success) {
+                        mostrarToast('Proveedor eliminado', 'bi bi-building-slash');
+                        setTimeout(() => location.reload(), 800);
+                    } else {
+                        mostrarToast(data.message || 'Error al eliminar.', 'bi bi-exclamation-triangle-fill');
+                    }
+                });
             });
         }
 

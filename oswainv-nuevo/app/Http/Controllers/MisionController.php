@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Mision;
 use App\Models\User;
 use App\Models\Notification;
-use App\Services\GamificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -66,8 +65,6 @@ class MisionController extends Controller
         $mision = Mision::findOrFail($id);
         $mision->update(['estado' => 'completada']);
 
-        GamificationService::addXp($mision->user, 'mission_completed', "Misión aprobada: {$mision->titulo}");
-
         Notification::create([
             'user_id' => $mision->user_id,
             'type' => 'mission_approved',
@@ -126,8 +123,6 @@ class MisionController extends Controller
         }
 
         $mision->update(['estado' => 'completada']);
-
-        GamificationService::addXp(Auth::user(), 'mission_completed', "Misión completada: {$mision->titulo}");
 
         $admins = User::where('rol', 'admin')->get();
         foreach ($admins as $admin) {

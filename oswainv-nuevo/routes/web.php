@@ -11,7 +11,6 @@ use App\Http\Controllers\PresenceController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\PriceHistoryController;
 use App\Http\Controllers\NotificationController;
-use App\Http\Controllers\ArenaController;
 use App\Models\Movimiento;
 
 // Ruta pública de la Landing Page
@@ -158,10 +157,6 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/api/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.readAll');
     Route::get('/api/notifications/stream', [NotificationController::class, 'stream'])->name('notifications.stream');
     Route::get('/api/notifications/sse', [NotificationController::class, 'sse'])->name('notifications.sse');
-
-    // --- OSWA ARENA (GAMIFICACIÓN) ---
-    Route::get('/arena', [ArenaController::class, 'index'])->name('arena.index');
-    Route::get('/api/arena/leaderboard', [ArenaController::class, 'leaderboard'])->name('arena.leaderboard');
 
     // --- RUTA TEMPORAL: REPARAR FIRMAS ANTIGUAS ---
     Route::get('/reparar-firmas', function () {

@@ -75,10 +75,22 @@
         .hover-white:hover { color: #fff !important; }
         .hover-red:hover { color: var(--accent) !important; text-decoration: underline !important; }
 
+        .mobile-brand { display: none; }
+
         @media (max-width: 992px) {
-            .auth-container { flex-direction: column; height: 95vh; overflow-y: auto; }
-            .auth-left { flex: none; height: 300px; }
-            .auth-right { padding: 3rem 2rem; flex: none; }
+            body { overflow-y: auto; height: auto; align-items: flex-start; padding: 0; }
+            .auth-container { flex-direction: column; height: auto; min-height: 100vh; max-width: 100vw; width: 100%; border-radius: 0; border: none; overflow-y: auto; animation: none; opacity: 1; background: rgba(18,18,18,0.95); }
+            .auth-left { display: none; }
+            .auth-right { padding: 2.5rem 1.5rem; flex: none; width: 100%; }
+            .auth-header h2 { font-size: 1.5rem; }
+            .auth-header p { font-size: 0.85rem; }
+            .form-control { font-size: 16px; padding: 12px 14px; }
+            .btn-auth { padding: 14px; font-size: 1rem; }
+            .mobile-brand { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-bottom: 1.5rem; }
+            .mobile-brand img { height: 48px; filter: brightness(0) invert(1) drop-shadow(0 0 12px rgba(255,255,255,0.2)); }
+            .mobile-brand .brand-name { font-size: 1.6rem; font-weight: 800; background: linear-gradient(90deg,#E50914,#ff6b6b,#B20710,#E50914); background-size: 300% 100%; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; letter-spacing: 2px; }
+            .anim-up-1, .anim-up-2, .anim-up-3, .anim-up-4, .anim-up-5, .anim-up-6, .anim-up-7, .anim-up-8 { opacity: 1 !important; animation: none !important; }
+            .anim-left-1, .anim-left-2, .anim-left-3 { opacity: 1 !important; animation: none !important; }
         }
 
         /* =========================================
@@ -124,6 +136,11 @@
         </div>
 
         <div class="auth-right">
+            
+            <div class="mobile-brand">
+                <img src="{{ asset('img/logo-unellez.png') }}" alt="UNELLEZ">
+                <span class="brand-name">OSWA INV</span>
+            </div>
             
             <div class="auth-header text-center mb-4 anim-up-1">
                 <h2 class="fw-bold text-white mb-1" style="font-size: 2rem;">Bienvenido</h2>
