@@ -4,6 +4,9 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Http\Controllers\InventarioController;
+use App\Http\Controllers\ProductoController;
+use App\Http\Controllers\ProveedorController;
+use App\Http\Controllers\RequisicionController;
 use App\Http\Controllers\BackupController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\MisionController;
@@ -25,29 +28,31 @@ Route::get('/home', fn() => redirect()->to('/dashboard'))->name('home');
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [InventarioController::class, 'index'])->name('inventario');
     Route::get('/api/dashboard/graficas', [InventarioController::class, 'getChartsData'])->name('api.graficas');
-    Route::get('/catalogo', [InventarioController::class, 'catalogo'])->name('catalogo');
-    Route::get('/proveedores', [InventarioController::class, 'proveedores'])->name('proveedores');
-    Route::post('/proveedores/guardar', [InventarioController::class, 'storeProveedor'])->name('proveedores.store');
-    Route::post('/proveedores/{id}/actualizar', [InventarioController::class, 'updateProveedor'])->name('proveedores.update');
-    Route::delete('/proveedores/{id}/eliminar', [InventarioController::class, 'destroyProveedor'])->name('proveedores.destroy');
-    Route::post('/proveedores/abastecer', [InventarioController::class, 'procesarAbastecimiento'])->name('proveedores.abastecer');
-    Route::get('/vencimientos', [InventarioController::class, 'vencimientos'])->name('vencimientos');
-    Route::get('/auditoria', [InventarioController::class, 'auditoria'])->name('auditoria');
-    Route::get('/escaner', [InventarioController::class, 'vistaEscaner'])->name('escaner');
-    Route::post('/ajustar-stock', [InventarioController::class, 'ajustarStock'])->name('ajustar.stock');
-    Route::post('/buscar-codigo', [InventarioController::class, 'buscarPorCodigo'])->name('buscar.codigo');
-    Route::post('/productos/escanear', [InventarioController::class, 'escanearProducto'])->name('escanear.producto');
-    Route::post('/productos/guardar', [InventarioController::class, 'guardarProducto'])->name('guardar.producto');
-    Route::put('/productos/{id}/actualizar', [InventarioController::class, 'actualizarProducto'])->name('productos.actualizar');
-    Route::post('/oswa-bot', [InventarioController::class, 'oswaBot'])->name('oswa.bot');
-    Route::get('/exportar-pdf', [InventarioController::class, 'exportarPdf'])->name('exportar.pdf');
-    Route::delete('/eliminar-producto', [InventarioController::class, 'eliminarProducto'])->name('eliminar.producto');
-    Route::get('/productos/{id}/editar', [InventarioController::class, 'edit'])->name('productos.edit');
-    Route::put('/productos/{id}', [InventarioController::class, 'update'])->name('productos.update');
-    Route::patch('/productos/{id}/stock', [InventarioController::class, 'updateStock'])->name('productos.stock');
-    Route::delete('/productos/{id}', [InventarioController::class, 'destroy'])->name('productos.destroy');
+    // --- CATÁLOGO Y PRODUCTOS ---
+    Route::get('/catalogo', [ProductoController::class, 'catalogo'])->name('catalogo');
+    Route::get('/escaner', [ProductoController::class, 'vistaEscaner'])->name('escaner');
+    Route::post('/ajustar-stock', [ProductoController::class, 'ajustarStock'])->name('ajustar.stock');
+    Route::post('/buscar-codigo', [ProductoController::class, 'buscarPorCodigo'])->name('buscar.codigo');
+    Route::post('/productos/escanear', [ProductoController::class, 'escanearProducto'])->name('escanear.producto');
+    Route::post('/productos/guardar', [ProductoController::class, 'guardarProducto'])->name('guardar.producto');
+    Route::put('/productos/{id}/actualizar', [ProductoController::class, 'actualizarProducto'])->name('productos.actualizar');
+    Route::delete('/eliminar-producto', [ProductoController::class, 'eliminarProducto'])->name('eliminar.producto');
+    Route::get('/productos/{id}/editar', [ProductoController::class, 'edit'])->name('productos.edit');
+    Route::put('/productos/{id}', [ProductoController::class, 'update'])->name('productos.update');
+    Route::patch('/productos/{id}/stock', [ProductoController::class, 'updateStock'])->name('productos.stock');
+    Route::delete('/productos/{id}', [ProductoController::class, 'destroy'])->name('productos.destroy');
     Route::post('/transferir-producto', [InventarioController::class, 'transferirProducto'])->name('transferir.producto');
     Route::get('/orden-compra/{id}', [InventarioController::class, 'generarOrdenCompra'])->name('orden.compra');
+    // --- PROVEEDORES ---
+    Route::get('/proveedores', [ProveedorController::class, 'proveedores'])->name('proveedores');
+    Route::post('/proveedores/guardar', [ProveedorController::class, 'storeProveedor'])->name('proveedores.store');
+    Route::post('/proveedores/{id}/actualizar', [ProveedorController::class, 'updateProveedor'])->name('proveedores.update');
+    Route::delete('/proveedores/{id}/eliminar', [ProveedorController::class, 'destroyProveedor'])->name('proveedores.destroy');
+    Route::post('/proveedores/abastecer', [ProveedorController::class, 'procesarAbastecimiento'])->name('proveedores.abastecer');
+    Route::get('/vencimientos', [InventarioController::class, 'vencimientos'])->name('vencimientos');
+    Route::get('/auditoria', [InventarioController::class, 'auditoria'])->name('auditoria');
+    Route::post('/oswa-bot', [InventarioController::class, 'oswaBot'])->name('oswa.bot');
+    Route::get('/exportar-pdf', [InventarioController::class, 'exportarPdf'])->name('exportar.pdf');
     
     // --- RUTA AGREGADA: PARA GENERAR EL COMPROBANTE DE TRANSFERENCIA ---
     Route::get('/transferencia/pdf', [InventarioController::class, 'generarPdfTransferencia'])->name('transferencia.pdf');
@@ -58,10 +63,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/usuarios/estatus', [InventarioController::class, 'cambiarEstatusUsuario'])->name('usuarios.cambiarEstatus');
     
     // --- SISTEMA DE REQUISICIONES ---
-    Route::get('/requisiciones/crear', [InventarioController::class, 'crearRequisicion'])->name('requisiciones.crear');
-    Route::post('/requisiciones/solicitar', [InventarioController::class, 'solicitarRequisicion'])->name('requisiciones.solicitar');
-    Route::post('/requisiciones/{id}/aprobar', [InventarioController::class, 'aprobarRequisicion'])->name('requisiciones.aprobar');
-    Route::post('/requisiciones/{id}/rechazar', [InventarioController::class, 'rechazarRequisicion'])->name('requisiciones.rechazar');
+    Route::get('/requisiciones/crear', [RequisicionController::class, 'crearRequisicion'])->name('requisiciones.crear');
+    Route::post('/requisiciones/solicitar', [RequisicionController::class, 'solicitarRequisicion'])->name('requisiciones.solicitar');
+    Route::post('/requisiciones/{id}/aprobar', [RequisicionController::class, 'aprobarRequisicion'])->name('requisiciones.aprobar');
+    Route::post('/requisiciones/{id}/rechazar', [RequisicionController::class, 'rechazarRequisicion'])->name('requisiciones.rechazar');
     
     // --- RESPALDO DE BASE DE DATOS (Solo Admin) ---
     Route::get('/respaldo-db', [InventarioController::class, 'respaldarBaseDatos'])->name('respaldo.db');
@@ -73,18 +78,18 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/despacho', [InventarioController::class, 'vistaDespacho'])->name('despacho.vista');
     Route::post('/despacho/procesar', [InventarioController::class, 'procesarDespachoBatch'])->name('despacho.procesar');
     // API interna para actualizar gráficas en vivo
-    Route::get('/api/graficas', [App\Http\Controllers\InventarioController::class, 'getChartsData'])->name('api.graficas');
+    Route::get('/api/graficas', [InventarioController::class, 'getChartsData'])->name('api.graficas.v2');
     
     // Máquina del Tiempo (Rollback de Auditoría)
-    Route::post('/auditoria/revertir/{id}', [App\Http\Controllers\InventarioController::class, 'revertirMovimiento'])->name('auditoria.revertir');
+    Route::post('/auditoria/revertir/{id}', [InventarioController::class, 'revertirMovimiento'])->name('auditoria.revertir');
     
     // API para estadísticas en tiempo real
-    Route::get('/api/stats/global', [App\Http\Controllers\InventarioController::class, 'getGlobalStats']);
+    Route::get('/api/stats/global', [InventarioController::class, 'getGlobalStats']);
     // Cierre de caja diario (Reporte de hoy)
-    Route::get('/reporte/cierre-diario', [App\Http\Controllers\InventarioController::class, 'generarCierreDiario'])->name('reporte.cierre');
+    Route::get('/reporte/cierre-diario', [InventarioController::class, 'generarCierreDiario'])->name('reporte.cierre');
     
     // Registrar Orden de Compra (Abastecimiento)
-    Route::post('/compras/store', [App\Http\Controllers\InventarioController::class, 'storeCompra'])->name('compras.store');
+    Route::post('/compras/store', [InventarioController::class, 'storeCompra'])->name('compras.store');
     
     // --- CAMBIO DE PERFIL NETFLIX ---
     Route::post('/cambiar-perfil-netflix', function (Request $request) {
@@ -156,7 +161,11 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/api/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
     Route::post('/api/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.readAll');
     Route::get('/api/notifications/stream', [NotificationController::class, 'stream'])->name('notifications.stream');
-    Route::get('/api/notifications/sse', [NotificationController::class, 'sse'])->name('notifications.sse');
+    // Route::get('/api/notifications/sse', [NotificationController::class, 'sse'])->name('notifications.sse'); // Deshabilitado - consume proceso PHP con sleep(3)
+
+    // --- PRECIOS POR PROVEEDOR ---
+    Route::get('/productos/{id}/proveedores-precio', [ProductoController::class, 'obtenerPreciosProveedor'])->name('productos.proveedores.precio.obtener');
+    Route::post('/productos/{id}/proveedores-precio', [ProductoController::class, 'guardarPreciosProveedor'])->name('productos.proveedores.precio');
 
     // --- RUTA TEMPORAL: REPARAR FIRMAS ANTIGUAS ---
     Route::get('/reparar-firmas', function () {

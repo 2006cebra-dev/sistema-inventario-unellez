@@ -17,10 +17,6 @@
             --accent-success: #00b894; --accent-danger: #e74c3c; --accent-warning: #fdcb6e;
             --topbar-height: 68px;
         }
-        [data-theme="light"] {
-            --bg-dark: #121212; --bg-card: #1c1c1c; --bg-input: #2a2a2a;
-            --border-color: #2b2b2b; --text-primary: #e5e5e5; --text-secondary: #a3a3a3;
-        }
         * { font-family: 'Inter', sans-serif; }
         body, html { overflow-x: hidden !important; max-width: 100vw; }
         body { background-color: var(--bg-main) !important; color: #e5e5e5 !important; margin: 0; }
@@ -342,8 +338,9 @@
                                 <tr class="text-secondary" style="font-size: 0.85rem;">
                                     <th>CÓDIGO</th>
                                     <th>PRODUCTO</th>
-                                    <th>STOCK ACTUAL</th>
+                                    <th>STOCK</th>
                                     <th>PRECIO VENTA</th>
+                                    <th>COSTO</th>
                                 </tr>
                             </thead>
                             <tbody id="tablaProductosProv"></tbody>
@@ -617,15 +614,18 @@
             tbody.innerHTML = '';
             
             if (!proveedor.productos || proveedor.productos.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-secondary py-4">No hay productos asignados a este proveedor.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center text-secondary py-4">No hay productos asignados a este proveedor.</td></tr>';
             } else {
                 proveedor.productos.forEach(prod => {
+                    const costo = prod.precio_costo ? '<span style="color:#fdcb6e;">$' + parseFloat(prod.precio_costo).toFixed(2) + '</span>' : '<span style="color:#444;">—</span>';
+                    const stockBajo = prod.stock <= (prod.stock_minimo || 5);
                     tbody.innerHTML += `
                         <tr style="border-bottom: 1px solid #222;">
                             <td class="text-secondary">${prod.codigo || 'N/A'}</td>
                             <td class="text-white fw-bold">${prod.nombre}</td>
-                            <td><span class="badge ${prod.stock > 5 ? 'bg-success' : 'bg-danger'} bg-opacity-25 px-2 py-1" style="color: ${prod.stock > 5 ? '#00b894' : '#e74c3c'}">${prod.stock}</span></td>
+                            <td><span class="badge ${stockBajo ? 'bg-danger' : 'bg-success'} bg-opacity-25 px-2 py-1" style="color: ${stockBajo ? '#e74c3c' : '#00b894'}">${prod.stock}</span></td>
                             <td class="text-success">$${parseFloat(prod.precio).toFixed(2)}</td>
+                            <td style="color:#fdcb6e;">${costo}</td>
                         </tr>
                     `;
                 });

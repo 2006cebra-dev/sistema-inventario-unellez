@@ -192,7 +192,7 @@
                     if ($prod->stock == 0) {
                         $estado = 'CRÍTICO';
                         $clase = 'badge-critico';
-                    } elseif ($prod->stock <= 5) {
+                    } elseif ($prod->stock_bajo) {
                         $estado = 'BAJO';
                         $clase = 'badge-bajo';
                     } else {

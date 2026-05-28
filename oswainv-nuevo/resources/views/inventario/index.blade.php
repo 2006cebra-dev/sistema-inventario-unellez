@@ -19,10 +19,6 @@
             --accent-success: #00b894; --accent-danger: #e74c3c; --accent-warning: #fdcb6e;
             --accent-info: #0984e3; --topbar-height: 68px;
         }
-        [data-theme="light"] {
-            --bg-dark: #121212; --bg-card: #1c1c1c; --bg-input: #2a2a2a;
-            --border-color: #2b2b2b; --text-primary: #e5e5e5; --text-secondary: #a3a3a3;
-        }
         * { font-family: 'Inter', sans-serif; }
         body, html { overflow-x: hidden !important; max-width: 100vw; }
         body { background-color: var(--bg-main) !important; color: #e5e5e5 !important; margin: 0; }
@@ -212,9 +208,14 @@
 
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h4 class="text-white mb-0 font-weight-bold">Resumen de Inventario</h4>
-            <a href="{{ route('catalogo') }}" class="btn btn-danger" style="background-color: #E50914; border: none;">
-                <i class="bi bi-grid-3x3-gap"></i> Ir al Catálogo
-            </a>
+            <div class="d-flex gap-2">
+                <a href="{{ route('exportar.pdf') }}" class="btn btn-sm fw-bold d-flex align-items-center gap-2" style="background: rgba(0,184,148,0.15); color: #00b894; border: 1px solid rgba(0,184,148,0.3); border-radius: 8px; padding: 8px 16px; transition: all 0.2s;" onmouseover="this.style.background='rgba(0,184,148,0.3)'" onmouseout="this.style.background='rgba(0,184,148,0.15)'">
+                    <i class="bi bi-filetype-pdf"></i> Exportar PDF
+                </a>
+                <a href="{{ route('catalogo') }}" class="btn btn-danger" style="background-color: #E50914; border: none;">
+                    <i class="bi bi-grid-3x3-gap"></i> Ir al Catálogo
+                </a>
+            </div>
         </div>
 
         <div class="row mb-5 oswa-3d-wrapper">
@@ -256,13 +257,16 @@
             </h5>
             <div class="row">
                 <div class="col-md-6 mb-3 mb-md-0">
-                    <h6 class="text-secondary mb-3"><i class="bi bi-box-seam me-1"></i> Bajo Stock (Menos de 5 unidades)</h6>
+                    <h6 class="text-secondary mb-3"><i class="bi bi-box-seam me-1"></i> Bajo Stock (según mínimo configurable)</h6>
                     <ul class="list-group list-group-flush bg-transparent">
                         @if(isset($productosBajoStock) && $productosBajoStock->count() > 0)
                             @foreach($productosBajoStock as $prod)
                                 <li class="list-group-item bg-transparent text-white border-secondary border-opacity-25 px-0 d-flex justify-content-between align-items-center">
-                                    {{ $prod->nombre }}
-                                    <span class="badge bg-danger bg-opacity-25 text-danger border border-danger rounded-pill">Quedan {{ $prod->stock }}</span>
+                                    <div>
+                                        <div>{{ $prod->nombre }}</div>
+                                        <small style="color:#888;font-size:0.7rem;">Mín: {{ $prod->stock_minimo }} {{ $prod->unidad_medida }}</small>
+                                    </div>
+                                    <span class="badge bg-danger bg-opacity-25 text-danger border border-danger rounded-pill">{{ $prod->stock }} {{ $prod->unidad_medida }}</span>
                                 </li>
                             @endforeach
                         @else
@@ -608,8 +612,9 @@
             const rango = document.getElementById('filtroGraficas') ? document.getElementById('filtroGraficas').value : '7_dias';
 
             fetch(`/api/graficas?rango=${rango}`)
-                .then(res => res.json())
+                .then(res => { if (!res.ok) throw new Error('Error ' + res.status); return res.json(); })
                 .then(data => {
+                    if (!data || !data.tendencias_labels) return;
                     // 1. Gráfica de Tendencias
                     if (chartTendenciaInst) chartTendenciaInst.destroy();
                     const ctxTrend = document.getElementById('chartTendencia');
@@ -660,14 +665,15 @@
                     // 3. Categorías
                     if (chartCatInst) chartCatInst.destroy();
                     const ctxCat = document.getElementById('chartCategorias');
-                    if (ctxCat && data.categorias_labels.length > 0) {
+                    if (ctxCat && data.categorias_labels && data.categorias_labels.length > 0) {
                         chartCatInst = new Chart(ctxCat.getContext('2d'), {
                             type: 'doughnut',
                             data: { labels: data.categorias_labels, datasets: [{ data: data.categorias, backgroundColor: ['#E50914', '#2b90d9', '#4CAF50', '#ffc107', '#9c27b0'], borderColor: '#1c1c1c', borderWidth: 2 }] },
                             options: { animation: { duration: 800 }, responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#e5e5e5', padding: 15 } } }, cutout: '65%' }
                         });
                     }
-                });
+                })
+                .catch(() => {});
         }
 
         // Cargar por primera vez al iniciar
@@ -675,20 +681,20 @@
 
         function sincronizarDashboard() {
             fetch('/api/stats/global')
-                .then(res => res.json())
+                .then(res => { if (!res.ok) throw new Error('Error ' + res.status); return res.json(); })
                 .then(data => {
-                    // Actualizar Tarjetas con animación suave
-                    document.getElementById('totalProductos').innerText = data.totalProductos;
-                    document.getElementById('stockTotal').innerText = data.stockTotal;
-                    document.getElementById('alertasStock').innerText = data.alertasStock;
-                    document.getElementById('capitalInvertido').innerText = '$' + data.capitalInvertido;
-                    document.getElementById('tasaBcv').innerText = data.tasaBcv;
-                    
-                    // Refrescar también las gráficas si la función existe
-                    if (typeof cargarGraficas === 'function') {
-                        cargarGraficas(); 
-                    }
-                });
+                    if (!data) return;
+                    const el = id => document.getElementById(id);
+                    const tp = el('totalProductos'), st = el('stockTotal'), as = el('alertasStock');
+                    const ci = el('capitalInvertido'), tb = el('tasaBcv');
+                    if (tp) tp.innerText = data.totalProductos ?? tp.innerText;
+                    if (st) st.innerText = data.stockTotal ?? st.innerText;
+                    if (as) as.innerText = data.alertasStock ?? as.innerText;
+                    if (ci) ci.innerText = data.capitalInvertido ? '$' + data.capitalInvertido : ci.innerText;
+                    if (tb) tb.innerText = data.tasaBcv ?? tb.innerText;
+                    if (typeof cargarGraficas === 'function') cargarGraficas();
+                })
+                .catch(() => {});
         }
 
         // Ejecutar cada 10 segundos
@@ -876,26 +882,26 @@
                 cinematicSound.play().catch(e => console.log("Autoplay de audio bloqueado"));
             } catch (e) {}
 
-            // 2. Secuencia de tiempos (Timeouts)
-            // A los 3 segundos: Ocultar logo, mostrar frase
+            // 2. Secuencia de tiempos (Timeouts) - reducida para velocidad
+            // A los 1 segundos: Ocultar logo, mostrar frase
             setTimeout(() => {
                 if(logo) logo.classList.add('d-none');
                 if(quote) {
                     quote.classList.remove('d-none');
                     quote.classList.add('show');
                 }
-            }, 3000);
+            }, 1000);
 
-            // A los 6.5 segundos: Desvanecer la pantalla negra completa
+            // A los 2.5 segundos: Desvanecer la pantalla negra completa
             setTimeout(() => {
                 overlay.classList.add('fade-out');
                 sessionStorage.setItem('oswaIntroPlayed', 'true');
-            }, 6500);
+            }, 2500);
 
-            // A los 8 segundos: Eliminar el código HTML del overlay para que no estorbe
+            // A los 3.5 segundos: Eliminar el código HTML del overlay
             setTimeout(() => {
                 overlay.remove();
-            }, 8000);
+            }, 3500);
         });
     </script>
 

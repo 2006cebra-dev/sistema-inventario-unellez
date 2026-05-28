@@ -21,7 +21,7 @@
 
 <!-- POPUP GESTIÓN (solo admin) -->
 @if(auth()->check() && auth()->user()->rol === 'admin')
-<div class="inv-popup" id="gestionPopup" style="display:none;">
+<div class="inv-popup" id="gestionPopup">
     <div class="inv-popup-overlay" onclick="toggleGestionMenu()"></div>
     <div class="inv-popup-menu">
         <div class="inv-popup-header">Gestión</div>
@@ -36,7 +36,7 @@
 @endif
 
 <!-- POPUP INVENTARIO (Catálogo / Despacho) -->
-<div class="inv-popup" id="invPopup" style="display:none;">
+<div class="inv-popup" id="invPopup">
     <div class="inv-popup-overlay" onclick="toggleInvMenu()"></div>
     <div class="inv-popup-menu">
         <div class="inv-popup-header">Inventario</div>
@@ -65,20 +65,20 @@ window.toggleInvMenu = function(e) {
     if (e) e.stopPropagation();
     const popup = document.getElementById('invPopup');
     if (!popup) return;
-    const show = popup.style.display === 'none';
-    popup.style.display = show ? 'block' : 'none';
+    const show = !popup.classList.contains('show');
+    popup.classList.toggle('show', show);
     const gestion = document.getElementById('gestionPopup');
-    if (gestion) gestion.style.display = 'none';
+    if (gestion) gestion.classList.remove('show');
 };
 
 window.toggleGestionMenu = function(e) {
     if (e) e.stopPropagation();
     const popup = document.getElementById('gestionPopup');
     if (!popup) return;
-    const show = popup.style.display === 'none';
-    popup.style.display = show ? 'block' : 'none';
+    const show = !popup.classList.contains('show');
+    popup.classList.toggle('show', show);
     const inv = document.getElementById('invPopup');
-    if (inv) inv.style.display = 'none';
+    if (inv) inv.classList.remove('show');
 };
 
 window.toggleMbDrawer = function() {
@@ -137,11 +137,11 @@ window.accionNotif = async function(id, accion) {
 document.addEventListener('click', function(e) {
     if (!e.target.closest('#invPopup') && !e.target.closest('#mbInvBtn')) {
         const popup = document.getElementById('invPopup');
-        if (popup) popup.style.display = 'none';
+        if (popup) popup.classList.remove('show');
     }
     if (!e.target.closest('#gestionPopup') && !e.target.closest('#mbGestionBtn')) {
         const popup = document.getElementById('gestionPopup');
-        if (popup) popup.style.display = 'none';
+        if (popup) popup.classList.remove('show');
     }
 });
 </script>

@@ -15,11 +15,13 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use App\Models\BitacoraAcceso;
+use App\Models\Proveedor;
 use PDF;
 use BaconQrCode\Renderer\Image\SvgImageBackEnd;
 use BaconQrCode\Renderer\ImageRenderer;
 use BaconQrCode\Renderer\RendererStyle\RendererStyle;
-use BaconQrCode\Writer; 
+use BaconQrCode\Writer;
 
 class InventarioController extends Controller
 {
@@ -28,7 +30,6 @@ class InventarioController extends Controller
         $this->middleware('auth')->except(['index']);
     }
 
-    // --- FUNCIÓN PRIVADA: BUSCAR TASA BCV REAL EN VIVO ---
     private function obtenerTasaBcv()
     {
         try {
@@ -37,17 +38,15 @@ class InventarioController extends Controller
                 return $response->json()['promedio'];
             }
         } catch (\Exception $e) {
-            return 39.50; 
+            return 39.50;
         }
         return 39.50;
     }
 
-    // --- DASHBOARD PRINCIPAL ---
     public function index()
     {
         $productos = Producto::orderBy('created_at', 'desc')->get();
-        
-        // --- BI: PREDICCIÓN DE DÍAS ESTIMADOS DE STOCK ---
+
         $treintaDiasAtras = now()->subDays(30);
         foreach ($productos as $producto) {
             $salidasRecientes = Movimiento::where('codigo_producto', $producto->codigo)
@@ -61,28 +60,26 @@ class InventarioController extends Controller
                 $producto->dias_estimados = null;
             }
         }
-        
+
         $totalProductos = $productos->count();
         $stockTotal = $productos->sum('stock');
-        $alertasStock = $productos->where('stock', '<=', 5)->count();
-        $capitalInvertido = $productos->sum(fn($p) => $p->stock * $p->precio);
-        
+        $alertasStock = $productos->filter(fn($p) => $p->stock_bajo)->count();
+        $capitalInvertido = $productos->sum(fn($p) => $p->stock * ($p->precio_costo ?: $p->precio));
+
         $tasaBcv = $this->obtenerTasaBcv();
         $capitalInvertidoBs = $capitalInvertido * $tasaBcv;
 
-        $stockSaludable = $productos->where('stock', '>', 5)->count();
-        $stockCritico = $productos->where('stock', '<=', 5)->count();
+        $stockSaludable = $productos->filter(fn($p) => !$p->stock_bajo)->count();
+        $stockCritico = $productos->filter(fn($p) => $p->stock_bajo)->count();
         $categorias = $productos->groupBy('categoria')->map(fn($group) => $group->count());
         $ultimoMovimiento = Movimiento::with('producto')->latest()->first();
         $esAdmin = Auth::check() && Auth::user()->rol === 'admin';
 
-        // Datos para Alertas Visuales
-        $productosBajoStock = Producto::where('stock', '<=', 5)->get();
+        $productosBajoStock = $productos->filter(fn($p) => $p->stock_bajo);
         $productosPorVencer = Producto::whereNotNull('fecha_vencimiento')
             ->where('fecha_vencimiento', '<=', \Carbon\Carbon::now()->addDays(30))
             ->get();
 
-        // Top 5 Productos Más Vendidos (por Salidas)
         $topVentas = Movimiento::select('codigo_producto', DB::raw('SUM(cantidad) as total_salidas'))
             ->where('tipo', 'Salida')
             ->whereIn('codigo_producto', Producto::pluck('codigo'))
@@ -101,7 +98,6 @@ class InventarioController extends Controller
 
         $users = User::where('is_active', true)->orderBy('name')->get();
 
-        // --- DATOS ESPECÍFICOS PARA EMPLEADO ---
         $misRequisiciones = collect();
         $movimientosHoy = 0;
         $requisicionesHoy = 0;
@@ -155,11 +151,9 @@ class InventarioController extends Controller
             $fechaFin = now()->subMonth()->endOfMonth();
         }
 
-        // Distribución por Categorías (Stock Actual global)
         $productos = Producto::all();
         $categorias = $productos->groupBy('categoria')->map(fn($group) => $group->count());
 
-        // Tendencia de Salidas
         $diasLabels = [];
         $salidasData = [];
 
@@ -183,7 +177,6 @@ class InventarioController extends Controller
             }
         }
 
-        // Top 5 Productos Más Vendidos en ese rango (excluye productos eliminados)
         $topVentas = Movimiento::select('codigo_producto', DB::raw('SUM(cantidad) as total_salidas'))
             ->where('tipo', 'Salida')
             ->whereIn('codigo_producto', Producto::pluck('codigo'))
@@ -217,257 +210,6 @@ class InventarioController extends Controller
         ]);
     }
 
-    // --- CATÁLOGO GENERAL DE PRODUCTOS ---
-    public function catalogo()
-    {
-        $productos = Producto::orderBy('created_at', 'desc')->get();
-        $esAdmin = Auth::check() && Auth::user()->rol === 'admin';
-        $auditorias = Movimiento::with(['producto', 'usuario'])->orderBy('created_at', 'desc')->limit(200)->get();
-        $proveedores = \App\Models\Proveedor::all();
-        $requisicionesPendientes = $esAdmin ? Requisicion::with(['user', 'producto'])->where('estado', 'Pendiente')->latest()->get() : [];
-
-        // --- B.I. PREDICCIÓN DE STOCK (Solo para la vista del Catálogo) ---
-        $treintaDiasAtras = now()->subDays(30);
-        foreach ($productos as $producto) {
-            $salidasRecientes = Movimiento::where('codigo_producto', $producto->codigo)
-                ->where('tipo', 'Salida')
-                ->where('created_at', '>=', $treintaDiasAtras)
-                ->sum('cantidad');
-            
-            $promedioDiario = $salidasRecientes / 30;
-
-            if ($promedioDiario > 0 && $producto->stock > 0) {
-                $diasRestantes = round($producto->stock / $promedioDiario);
-                $producto->fecha_agotamiento = now()->addDays($diasRestantes)->translatedFormat('d \d\e F, Y');
-            } else {
-                $producto->fecha_agotamiento = null;
-            }
-        }
-
-        return view('inventario.catalogo', compact('productos', 'esAdmin', 'auditorias', 'proveedores', 'requisicionesPendientes'));
-    }
-
-    // --- PROVEEDORES ---
-    public function proveedores()
-    {
-        $proveedores = \App\Models\Proveedor::with('productos')->orderBy('created_at', 'desc')->get();
-        $productos = \App\Models\Producto::all();
-        return view('inventario.proveedores', compact('proveedores'));
-    }
-
-    public function storeProveedor(Request $request)
-    {
-        $request->validate([
-            'nombre' => 'required|string|max:255',
-            'rif' => 'required|string|unique:proveedores,rif',
-            'logo' => 'nullable|image|mimes:jpeg,png,jpg,svg|max:2048'
-        ]);
-
-        $data = [
-            'nombre' => $request->nombre,
-            'rif' => $request->rif,
-            'contacto' => $request->contacto,
-            'telefono' => $request->telefono,
-            'direccion' => $request->direccion,
-        ];
-
-        if ($request->hasFile('logo')) {
-            $data['logo'] = $request->file('logo')->store('proveedores', 'public');
-        }
-
-        \App\Models\Proveedor::create($data);
-
-        return response()->json(['success' => true]);
-    }
-
-    public function updateProveedor(Request $request, $id)
-    {
-        $proveedor = \App\Models\Proveedor::findOrFail($id);
-        $request->validate([
-            'nombre' => 'required|string|max:255',
-            'rif' => 'required|string|unique:proveedores,rif,' . $id,
-            'logo' => 'nullable|image|mimes:jpeg,png,jpg,svg|max:2048'
-        ]);
-
-        $data = $request->only(['nombre', 'rif', 'contacto', 'telefono', 'direccion']);
-
-        if ($request->hasFile('logo')) {
-            if ($proveedor->logo) {
-                Storage::disk('public')->delete($proveedor->logo);
-            }
-            $data['logo'] = $request->file('logo')->store('proveedores', 'public');
-        }
-
-        $proveedor->update($data);
-        return response()->json(['success' => true]);
-    }
-
-    public function destroyProveedor($id)
-    {
-        $proveedor = \App\Models\Proveedor::findOrFail($id);
-        $proveedor->delete();
-        return response()->json(['success' => true]);
-    }
-
-    public function procesarAbastecimiento(Request $request)
-    {
-        $request->validate([ 'producto_id' => 'required', 'cantidad' => 'required|numeric|min:1' ]);
-
-        $producto = Producto::findOrFail($request->producto_id);
-        $producto->stock += $request->cantidad;
-        $producto->save();
-
-        try {
-            // Abastecimiento de proveedor SIEMPRE es Entrada
-            $tipoMovimiento = 'Entrada';
-            $cantidadMovimiento = $request->cantidad;
-
-            // Crear el movimiento
-            $movimiento = new Movimiento();
-            $movimiento->codigo_producto = $producto->codigo;
-            $movimiento->tipo = $tipoMovimiento;
-            $movimiento->cantidad = $cantidadMovimiento;
-            $movimiento->motivo = 'Orden de Abastecimiento';
-            $movimiento->usuario_accion = Auth::user()->name;
-            $movimiento->user_id = Auth::id();
-            $movimiento->save();
-
-            // Generar la firma SHA-256 después de obtener el ID
-            $cadena = $movimiento->id . $movimiento->codigo_producto . $movimiento->tipo . $movimiento->cantidad . $movimiento->motivo . $movimiento->usuario_accion;
-            $movimiento->firma_hash = hash('sha256', $cadena);
-            $movimiento->save();
-        } catch (\Exception $e) {
-            \Log::error('Error creando movimiento de abastecimiento: ' . $e->getMessage());
-        }
-
-        return response()->json(['success' => true]);
-    }
-
-    // --- AJUSTE MANUAL DE STOCK ---
-    public function ajustarStock(Request $request)
-    {
-        $request->validate(['id' => 'required|integer', 'accion' => 'required|string']);
-        if (!Auth::check()) return response()->json(['success' => false], 401);
-
-        $producto = Producto::find($request->id);
-        if (!$producto) return response()->json(['success' => false], 404);
-
-        $stockAnterior = $producto->stock;
-        $diferencia = 0;
-        $tipoMovimiento = '';
-        $cantidadMovimiento = 0;
-        $motivo = '';
-
-        if ($request->accion === 'sumar') {
-            $producto->stock += 1;
-            $diferencia = 1;
-            $motivo = 'Ajuste rápido (+1)';
-        } elseif ($request->accion === 'restar' && $producto->stock > 0) {
-            $producto->stock -= 1;
-            $diferencia = -1;
-            $motivo = 'Ajuste rápido (-1)';
-        } elseif ($request->accion === 'set') {
-            $nuevoStock = max(0, (int) $request->valor);
-            $diferencia = $nuevoStock - $stockAnterior;
-            $motivo = "Stock establecido a $nuevoStock";
-            $producto->stock = $nuevoStock;
-        }
-
-        $producto->save();
-
-        // Notificar a admins si stock es crítico
-        if ($producto->stock <= 5 && $producto->stock > 0) {
-            $admins = User::where('rol', 'admin')->get();
-            foreach ($admins as $admin) {
-                Notification::create([
-                    'user_id' => $admin->id,
-                    'type' => 'stock_alert',
-                    'title' => '🚨 Stock crítico: ' . $producto->nombre,
-                    'message' => "Quedan {$producto->stock} unidades. Código: {$producto->codigo}",
-                    'icon' => 'bi-exclamation-triangle-fill text-danger',
-                    'link' => route('catalogo'),
-                ]);
-            }
-        }
-
-        // Disparador de Telegram si el stock cae a nivel crítico
-        if ($producto->stock <= 5) {
-            $mensaje = "🚨 *ALERTA DE INVENTARIO OSWA Inv* 🚨\n\n";
-            $mensaje .= "El producto *{$producto->nombre}* ha alcanzado un nivel crítico de stock.\n";
-            $mensaje .= "📦 Unidades restantes: *{$producto->stock}*\n";
-            $mensaje .= "Recomendación: Emitir orden de abastecimiento pronto.";
-
-            $telegramToken = env('TELEGRAM_BOT_TOKEN');
-            $chatId = env('TELEGRAM_CHAT_ID');
-
-            if ($telegramToken && $chatId) {
-                try {
-                    Http::post("https://api.telegram.org/bot{$telegramToken}/sendMessage", [
-                        'chat_id' => $chatId,
-                        'text' => $mensaje,
-                        'parse_mode' => 'Markdown'
-                    ]);
-                } catch (\Exception $e) {
-                    \Log::error('Error enviando alerta de Telegram: ' . $e->getMessage());
-                }
-            }
-        }
-
-        if ($request->filled('soporte_base64')) {
-            $image_parts = explode(";base64,", $request->soporte_base64);
-            if (isset($image_parts[1])) {
-                $image_base64 = base64_decode($image_parts[1]);
-                $nameSoporte = time() . '_soporte_' . $producto->codigo . '.jpg';
-                Storage::disk('public')->put('soportes/' . $nameSoporte, $image_base64);
-                $motivo .= " | Soporte: " . $nameSoporte;
-            }
-        }
-
-        // 1. Calcular si es Entrada o Salida basado en la diferencia
-        if ($diferencia > 0) {
-            $tipoMovimiento = 'Entrada';
-            $cantidadMovimiento = $diferencia;
-        } elseif ($diferencia < 0) {
-            $tipoMovimiento = 'Salida';
-            $cantidadMovimiento = abs($diferencia);
-        }
-
-        // 2. Crear el movimiento solo si hubo cambio real
-        if ($diferencia != 0) {
-            try {
-                $movimiento = new Movimiento();
-                $movimiento->codigo_producto = $producto->codigo;
-                $movimiento->tipo = $tipoMovimiento;
-                $movimiento->cantidad = $cantidadMovimiento;
-                $movimiento->motivo = $motivo;
-                $movimiento->usuario_accion = Auth::user()->name;
-                $movimiento->user_id = Auth::id();
-                $movimiento->save();
-
-                // 3. Generar la firma SHA-256 después de obtener el ID
-                $cadena = $movimiento->id . $movimiento->codigo_producto . $movimiento->tipo . $movimiento->cantidad . $movimiento->motivo . $movimiento->usuario_accion;
-                $movimiento->firma_hash = hash('sha256', $cadena);
-                $movimiento->save();
-            } catch (\Exception $e) {
-                \Log::error('Error creando movimiento de auditoría: ' . $e->getMessage());
-            }
-        }
-
-        $capitalInvertidoNuevo = Producto::all()->sum(function ($p) { return $p->stock * $p->precio; });
-        $tasaBcv = $this->obtenerTasaBcv();
-
-        return response()->json([
-            'success' => true,
-            'nuevo_stock' => $producto->stock,
-            'stock_total' => Producto::sum('stock'),
-            'alertas_stock' => Producto::where('stock', '<=', 5)->count(),
-            'capital_invertido' => $capitalInvertidoNuevo,
-            'capital_invertido_bs' => $capitalInvertidoNuevo * $tasaBcv,
-            'tasa_bcv' => $tasaBcv
-        ]);
-    }
-
-    // --- TRANSFERENCIA ---
     public function transferirProducto(Request $request)
     {
         $request->validate(['producto_id' => 'required|integer', 'cantidad' => 'required|integer|min:1', 'sucursal' => 'required|string']);
@@ -503,9 +245,10 @@ class InventarioController extends Controller
 
         $destino = $sucursales[$request->sucursal] ?? ['lat' => 10.48, 'lng' => -66.89, 'dist' => 500];
         $costoFlete = $destino['dist'] * 0.25;
+        $fecha = now()->toDateTimeString();
 
         $producto->decrement('stock', $request->cantidad);
-        
+
         $motivoTransfer = 'Transferencia a ' . $request->sucursal;
         if ($request->filled('soporte_base64')) {
             $image_parts = explode(";base64,", $request->soporte_base64);
@@ -541,7 +284,6 @@ class InventarioController extends Controller
         ]);
     }
 
-    // --- GENERADOR DE PDF TRANSFERENCIA ---
     public function generarPdfTransferencia(Request $request)
     {
         $datos = $request->all();
@@ -549,179 +291,41 @@ class InventarioController extends Controller
         return $pdf->download('Guia_Despacho_'.time().'.pdf');
     }
 
-    // --- GUARDAR PRODUCTO ---
-    public function guardarProducto(Request $request)
-    {
-        $request->validate([
-            'nombre' => 'required|string|max:255',
-            'codigo' => 'required|string|unique:productos,codigo',
-            'precio' => 'required|numeric',
-            'categoria' => 'required|string|max:255',
-            'stock' => 'required|integer',
-            'imagen' => 'nullable|image|max:2048',
-            'imagen_url' => 'nullable|url',
-            'fecha_vencimiento' => 'nullable|date'
-        ]);
-        
-        $producto = new Producto();
-        $producto->codigo = $request->codigo;
-        $producto->nombre = $request->nombre;
-        $producto->precio = $request->precio;
-        $producto->categoria = $request->categoria ?? 'General';
-        $producto->stock = $request->stock;
-        $producto->descripcion = $request->nombre;
-        $producto->proveedor_id = $request->proveedor_id ?? null;
-
-        if ($request->filled('fecha_vencimiento')) {
-            $producto->fecha_vencimiento = $request->fecha_vencimiento;
-        }
-
-        if ($request->hasFile('imagen')) {
-            $ruta = $request->file('imagen')->store('productos', 'public');
-            $producto->imagen = $ruta;
-        } elseif ($request->filled('imagen_url')) {
-            try {
-                $content = file_get_contents($request->imagen_url);
-                if ($content) {
-                    $name = time() . '_api_' . $request->codigo . '.jpg';
-                    Storage::disk('public')->put('productos/' . $name, $content);
-                    $producto->imagen = 'productos/' . $name;
-                }
-            } catch (\Exception $e) { $producto->imagen = null; }
-        } elseif ($request->filled('imagen_base64')) {
-            $image_parts = explode(";base64,", $request->imagen_base64);
-            if (isset($image_parts[1])) {
-                $image_base64 = base64_decode($image_parts[1]);
-                $name = time() . '_camara_' . $request->codigo . '.jpg';
-                Storage::disk('public')->put('productos/' . $name, $image_base64);
-                $producto->imagen = 'productos/' . $name;
-            }
-        }
-
-        $producto->save();
-
-        if ($request->stock > 0) {
-            $mov = Movimiento::create([
-                'codigo_producto' => $producto->codigo,
-                'tipo' => 'Entrada',
-                'cantidad' => $request->stock,
-                'motivo' => 'Stock inicial',
-                'usuario_accion' => Auth::user()->name,
-            ]);
-            $mov->firma_hash = $mov->generarFirma();
-            $mov->save();
-        }
-
-        if ($request->ajax() || $request->wantsJson()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Producto registrado en el catálogo exitosamente.',
-                'producto' => $producto
-            ]);
-        }
-
-        return redirect()->back()->with('success', 'Producto registrado correctamente.');
-    }
-
-    // --- ACTUALIZAR PRODUCTO ---
-    public function actualizarProducto(Request $request, $id)
-    {
-        $producto = \App\Models\Producto::findOrFail($id);
-        
-        $request->validate([
-            'nombre' => 'required',
-            'precio' => 'required|numeric',
-            'stock' => 'required|integer',
-            'imagen' => 'nullable|image|max:2048',
-            'fecha_vencimiento' => 'nullable|date'
-        ]);
-
-        $oldPrice = $producto->precio;
-        $data = $request->except(['_method', '_token', 'imagen']);
-
-        if ($request->hasFile('imagen')) {
-            $data['imagen'] = $request->file('imagen')->store('productos', 'public');
-        }
-
-        $producto->update($data);
-
-        // Record price change
-        if ((float)$oldPrice !== (float)$request->precio) {
-            \App\Models\PriceHistory::create([
-                'producto_id' => $producto->id,
-                'precio_anterior' => $oldPrice,
-                'precio_nuevo' => $request->precio,
-                'user_id' => Auth::id(),
-            ]);
-        }
-
-        return response()->json(['success' => true]);
-    }
-
-    // --- SCANNER ---
-    public function escanearProducto(Request $request)
-    {
-        $p = Producto::where('codigo', $request->codigo)->first();
-        if (!$p) return response()->json(['success' => false, 'notFound' => true]);
-        $p->increment('stock', 1);
-        try {
-            $movimiento = Movimiento::create([
-                'codigo_producto' => $p->codigo, 'tipo' => 'Entrada', 'cantidad' => 1, 'motivo' => 'Escaneo (+1)',
-                'usuario_accion' => Auth::user()->name ?? 'Sistema',
-                'user_id' => Auth::id()
-            ]);
-            
-            // Generar hash post-creación para tener el ID
-            $movimiento->firma_hash = $movimiento->generarFirma();
-            $movimiento->save();
-        } catch (\Exception $e) {
-            \Log::error('Error creando movimiento de escaneo: ' . $e->getMessage());
-        }
-        return response()->json(['success' => true, 'producto' => $p, 'nuevo_stock' => $p->stock]);
-    }
-
-    // --- OSWA-BOT HÍBRIDO (GEMINI + RESPALDO INTELIGENTE) ---
     public function oswaBot(Request $request)
     {
         $preguntaRaw = $request->pregunta;
         $p = mb_strtolower($preguntaRaw, 'UTF-8');
         $usuario = Auth::user();
 
-        // --- LÓGICA DE RESPALDO (PALABRAS CLAVE Y REGEX) ---
         $respuestaRespaldo = function($p) use ($usuario) {
-            // Saludos y cortesía
             if (preg_match('/hola|buenos|epa|saludos|que tal/', $p)) {
                 return "¡Epa! Soy OSWA-Bot. ¿En qué te ayudo hoy con el inventario?";
             }
 
-            // Perfil del usuario conectado
             if (preg_match('/quien soy|mi perfil|mi rol|mi nombre/', $p)) {
                 return "Estás conectado como **{$usuario->name}** con privilegios de **{$usuario->rol}**.";
             }
 
-            // Búsqueda de PRECIO de un producto específico
             if (preg_match('/precio de (.+)|cuanto cuesta (.+)/', $p, $matches)) {
                 $nombreBusqueda = trim($matches[1] ?? $matches[2]);
                 $producto = Producto::where('nombre', 'LIKE', "%{$nombreBusqueda}%")->first();
                 return $producto ? "El precio de **{$producto->nombre}** es de **$" . number_format($producto->precio, 2) . "**." : "No conseguí ningún producto llamado '{$nombreBusqueda}'.";
             }
 
-            // Búsqueda de STOCK de un producto específico
             if (preg_match('/cuanto queda de (.+)|stock de (.+)|cuantos (.+) hay/', $p, $matches)) {
                 $nombreBusqueda = trim($matches[1] ?? $matches[2] ?? $matches[3]);
                 $producto = Producto::where('nombre', 'LIKE', "%{$nombreBusqueda}%")->first();
                 return $producto ? "Quedan **{$producto->stock}** unidades de **{$producto->nombre}** en el depósito." : "No encuentro ese producto para darte el stock.";
             }
 
-            // Reportes generales (Stock, Vencimientos, Capital)
             if (preg_match('/vencen|vence|vencimiento|caduca/', $p)) {
                 $vencen = Producto::whereNotNull('fecha_vencimiento')->where('fecha_vencimiento', '<=', now()->addDays(30))->count();
                 return "Tienes **{$vencen}** productos próximos a vencer (en los próximos 30 días).";
             }
 
             if (preg_match('/bajo stock|falta|alertas|critico/', $p)) {
-                $bajo = Producto::where('stock', '<=', 5)->count();
-                return "Atención: tienes **{$bajo}** productos con stock crítico (5 o menos unidades).";
+                $bajo = Producto::bajoStock()->count();
+                return "Atención: tienes **{$bajo}** productos con stock crítico (por debajo de su mínimo).";
             }
 
             if (preg_match('/total|invertido|capital|dinero/', $p)) {
@@ -737,7 +341,6 @@ class InventarioController extends Controller
                 return "La tasa oficial del BCV actual es de **" . $this->obtenerTasaBcv() . " Bs/USD**.";
             }
 
-            // Ayuda
             if (preg_match('/ayuda|comandos|que haces/', $p)) {
                 return "Puedo decirte el 'capital', 'vencimientos', 'bajo stock', 'tasa BCV' o el precio/stock de un producto si escribes 'precio de [nombre]'.";
             }
@@ -745,12 +348,11 @@ class InventarioController extends Controller
             return "Oye, no capté bien la idea. Intenta preguntarme por el capital, vencimientos o el precio de algo específico.";
         };
 
-        // --- INTENTO CON GEMINI ---
         try {
             $apiKey = env('GEMINI_API_KEY');
             if (!empty($apiKey)) {
                 $totalP = Producto::count();
-                $bajoS = Producto::where('stock', '<=', 5)->count();
+                $bajoS = Producto::bajoStock()->count();
                 $capitalT = Producto::all()->sum(fn($prod) => $prod->stock * $prod->precio);
                 $vencenP = Producto::whereNotNull('fecha_vencimiento')->where('fecha_vencimiento', '<=', now()->addDays(30))->count();
                 $ultimoM = Movimiento::latest()->first();
@@ -772,29 +374,22 @@ class InventarioController extends Controller
             Log::info("Error Gemini: " . $e->getMessage());
         }
 
-        // --- SIEMPRE RESPONDE EL RESPALDO SI LA IA FALLA ---
         return response()->json(['success' => true, 'respuesta' => $respuestaRespaldo($p)]);
     }
 
-    // --- AUDITORÍA Y VENCIMIENTOS ---
     public function auditoria()
     {
-        // 1. AUTO-FIRMAR REGISTROS ANTIGUOS (Usa el modelo Movimiento)
-        // Buscamos donde firma_hash sea NULL
         $registrosSinFirma = Movimiento::whereNull('firma_hash')->get();
 
         foreach ($registrosSinFirma as $reg) {
-            // Concatenamos la data VITAL con los nombres EXACTOS de la BD
             $cadenaOriginal = $reg->id . $reg->codigo_producto . $reg->tipo . $reg->cantidad . $reg->motivo . $reg->usuario_accion;
-            
-            // Generamos el hash y lo guardamos en la columna firma_hash
+
             $reg->firma_hash = hash('sha256', $cadenaOriginal);
             $reg->save();
         }
 
-        // 2. Traer los movimientos para la vista
         $movimientos = Movimiento::orderBy('created_at', 'desc')->get();
-        
+
         return view('inventario.auditoria', compact('movimientos'));
     }
 
@@ -806,7 +401,6 @@ class InventarioController extends Controller
         return view('inventario.vencimientos', compact('vencidos', 'porVencer', 'saludables'));
     }
 
-    // --- QR ---
     public function imprimirQr() {
         $productos = Producto::all();
         $qrCodes = [];
@@ -826,87 +420,24 @@ class InventarioController extends Controller
         return $pdf->stream('codigos_qr_' . time() . '.pdf');
     }
 
-    // --- OTROS MÉTODOS ---
     public function exportarPdf() {
         if (!Auth::check() || Auth::user()->rol !== 'admin') abort(403, 'No autorizado');
         $productos = Producto::all();
         return view('inventario.pdf', compact('productos'));
     }
-    public function eliminarProducto(Request $request) { Producto::destroy($request->id); return response()->json(['success' => true]); }
-    public function vistaEscaner() { return view('inventario.escaner'); }
-    
-    public function edit($id)
+
+    public function generarOrdenCompra($id)
     {
         $producto = Producto::findOrFail($id);
-        return view('inventario.editar', compact('producto'));
+        $fecha = now()->format('d/m/Y h:i A');
+
+        $stockIdeal = 100;
+        $cantidadSugerida = max(0, $stockIdeal - $producto->stock);
+
+        $pdf = PDF::loadView('inventario.orden_compra', compact('producto', 'fecha', 'cantidadSugerida', 'stockIdeal'));
+        return $pdf->download('Orden_Compra_' . $producto->codigo . '.pdf');
     }
 
-    public function update(Request $request, $id)
-    {
-        $producto = Producto::findOrFail($id);
-        $oldPrice = $producto->precio;
-        $producto->update($request->all());
-
-        if ((float)$oldPrice !== (float)$request->precio) {
-            \App\Models\PriceHistory::create([
-                'producto_id' => $producto->id,
-                'precio_anterior' => $oldPrice,
-                'precio_nuevo' => $request->precio,
-                'user_id' => Auth::id(),
-            ]);
-        }
-
-        return redirect('/catalogo')->with('success', 'Producto actualizado correctamente.');
-    }
-
-    public function updateStock(Request $request, $id)
-    {
-        $producto = Producto::findOrFail($id);
-        $cantidadAnterior = $producto->stock;
-        $nuevaCantidad = $request->cantidad;
-        
-        $diferencia = $nuevaCantidad - $cantidadAnterior;
-        
-        $producto->stock = $nuevaCantidad;
-        $producto->save();
-
-        if ($diferencia < 0) {
-            $mov = Movimiento::create([
-                'codigo_producto' => $producto->codigo,
-                'tipo' => 'Salida',
-                'cantidad' => abs($diferencia),
-                'motivo' => 'Ajuste manual de stock',
-                'usuario_accion' => Auth::user()->name ?? 'Sistema',
-                'user_id' => Auth::id(),
-            ]);
-            $mov->firma_hash = $mov->generarFirma();
-            $mov->save();
-        }
-
-        return response()->json(['success' => true, 'nueva_cantidad' => $producto->stock]);
-    }
-
-    public function destroy($id)
-    {
-        $producto = Producto::findOrFail($id);
-        $producto->delete();
-        return redirect()->back()->with('success', 'Producto eliminado del sistema.');
-    }
-    
-    // --- GENERAR ORDEN DE COMPRA (CORREGIDO DE NUEVO Y CON LÓGICA MATEMÁTICA) ---
-    public function generarOrdenCompra($id) 
-    { 
-        $producto = Producto::findOrFail($id); 
-        $fecha = now()->format('d/m/Y h:i A'); 
-        
-        // Lógica de inventario:
-        $stockIdeal = 100; // Asumimos que el número ideal de mercancía en el depósito es 100
-        $cantidadSugerida = max(0, $stockIdeal - $producto->stock); // Si tienes 20, te sugiere comprar 80. Si tienes más de 100, sugiere 0.
-        
-        $pdf = PDF::loadView('inventario.orden_compra', compact('producto', 'fecha', 'cantidadSugerida', 'stockIdeal')); 
-        return $pdf->download('Orden_Compra_' . $producto->codigo . '.pdf'); 
-    }
-    
     public function indexUsuarios()
     {
         if (!Auth::check() || Auth::user()->rol !== 'admin') abort(403, 'No autorizado');
@@ -914,7 +445,7 @@ class InventarioController extends Controller
         $logs = \App\Models\BitacoraAcceso::with('user')->latest()->take(20)->get();
         return view('usuarios.index', compact('usuarios', 'logs'));
     }
-    
+
     public function guardarUsuario(Request $request)
     {
         $request->validate([
@@ -942,156 +473,24 @@ class InventarioController extends Controller
         }
 
         User::create($data);
-        
+
         return response()->json(['success' => true, 'message' => 'Empleado registrado correctamente']);
     }
-    
+
     public function cambiarEstatusUsuario(Request $request)
     {
         $request->validate(['id' => 'required|integer']);
-        
+
         if (Auth::id() == $request->id) {
             return response()->json(['success' => false, 'message' => 'No puedes cambiar tu propio estatus']);
         }
-        
+
         $usuario = User::findOrFail($request->id);
         $usuario->is_active = !$usuario->is_active;
         $usuario->save();
-        
+
         $accion = $usuario->is_active ? 'activado' : 'suspendido';
         return response()->json(['success' => true, 'message' => "Usuario {$accion}", 'is_active' => $usuario->is_active]);
-    }
-
-    // --- SISTEMA DE REQUISICIONES ---
-    public function crearRequisicion()
-    {
-        $productos = Producto::where('stock', '>', 0)->orderBy('nombre', 'asc')->get();
-        return view('inventario.requisiciones.crear', compact('productos'));
-    }
-
-    public function solicitarRequisicion(Request $request)
-    {
-        $request->validate([
-            'productos' => 'required|array',
-            'productos.*' => 'required|integer|min:1'
-        ]);
-
-        if (!Auth::check()) {
-            return redirect()->back()->with('error', 'Debes iniciar sesión para hacer una solicitud.');
-        }
-
-        try {
-            DB::beginTransaction();
-
-            foreach ($request->productos as $producto_id => $cantidad) {
-                Requisicion::create([
-                    'user_id' => Auth::id(),
-                    'producto_id' => $producto_id,
-                    'cantidad' => $cantidad,
-                    'estado' => 'Pendiente'
-                ]);
-            }
-
-            DB::commit();
-
-            $admins = User::where('rol', 'admin')->get();
-            foreach ($admins as $admin) {
-                Notification::create([
-                    'user_id' => $admin->id,
-                    'type' => 'requisition_created',
-                    'title' => '📋 Nueva requisición de ' . Auth::user()->name,
-                    'message' => count($request->productos) . ' producto(s) solicitado(s)',
-                    'icon' => 'bi-file-earmark-text-fill',
-                    'link' => route('inventario'),
-                ]);
-            }
-
-            return redirect()->route('catalogo')->with('success', '¡Solicitud enviada al Administrador exitosamente!');
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return redirect()->back()->with('error', 'Error al enviar la solicitud: ' . $e->getMessage());
-        }
-    }
-
-    public function aprobarRequisicion($id)
-    {
-        if (!Auth::check() || Auth::user()->rol !== 'admin') return response()->json(['success' => false, 'message' => 'No autorizado'], 403);
-
-        try {
-            DB::beginTransaction();
-
-            $requisicion = Requisicion::with('producto')->findOrFail($id);
-
-            if ($requisicion->estado !== 'Pendiente') {
-                DB::rollBack();
-                return response()->json(['success' => false, 'message' => 'La requisición ya fue procesada.']);
-            }
-
-            $producto = $requisicion->producto;
-            if (!$producto) {
-                DB::rollBack();
-                return response()->json(['success' => false, 'message' => 'Producto no encontrado.']);
-            }
-
-            if ($producto->stock < $requisicion->cantidad) {
-                DB::rollBack();
-                return response()->json(['success' => false, 'message' => 'Stock insuficiente para aprobar esta solicitud.']);
-            }
-
-            $producto->decrement('stock', $requisicion->cantidad);
-
-            $mov = Movimiento::create([
-                'codigo_producto' => $producto->codigo,
-                'tipo' => 'Salida',
-                'cantidad' => $requisicion->cantidad,
-                'motivo' => 'Requisición Aprobada #' . $requisicion->id,
-                'usuario_accion' => Auth::user()->name,
-            ]);
-            
-            $mov->firma_hash = $mov->generarFirma();
-            $mov->save();
-
-            $requisicion->estado = 'Aprobada';
-            $requisicion->save();
-
-            DB::commit();
-
-            Notification::create([
-                'user_id' => $requisicion->user_id,
-                'type' => 'requisition_approved',
-                'title' => '✅ Requisición aprobada',
-                'message' => "Tu solicitud de {$requisicion->producto->nombre} fue aprobada",
-                'icon' => 'bi-check-circle-fill text-success',
-                'link' => route('catalogo'),
-            ]);
-
-            return response()->json(['success' => true, 'message' => 'Requisición aprobada y stock actualizado.']);
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json(['success' => false, 'message' => 'Error al procesar: ' . $e->getMessage()]);
-        }
-    }
-
-    public function rechazarRequisicion($id)
-    {
-        if (!Auth::check() || Auth::user()->rol !== 'admin') return response()->json(['success' => false, 'message' => 'No autorizado'], 403);
-
-        $requisicion = Requisicion::findOrFail($id);
-        $requisicion->estado = 'Rechazada';
-        $requisicion->save();
-
-        Notification::create([
-            'user_id' => $requisicion->user_id,
-            'type' => 'requisition_rejected',
-            'title' => '❌ Requisición rechazada',
-            'message' => "Tu solicitud de {$requisicion->producto->nombre} fue rechazada",
-            'icon' => 'bi-x-circle-fill text-danger',
-            'link' => route('catalogo'),
-        ]);
-
-        return response()->json(['success' => true, 'message' => 'Requisición rechazada.']);
     }
 
     public function respaldarBaseDatos()
@@ -1152,10 +551,8 @@ class InventarioController extends Controller
         return response()->download($tempPath)->deleteFileAfterSend(true);
     }
 
-    // --- MÓDULO DE DESPACHO RÁPIDO (BATCH) ---
     public function vistaDespacho()
     {
-        // Se eliminó 'codigo_barras' para evitar el QueryException, la tabla solo usa 'codigo'
         $productos = Producto::where('stock', '>', 0)->get(['id', 'codigo', 'nombre', 'precio', 'stock']);
         return view('inventario.despacho', compact('productos'));
     }
@@ -1176,7 +573,7 @@ class InventarioController extends Controller
 
             foreach ($request->items as $item) {
                 $producto = Producto::find($item['id']);
-                
+
                 if (!$producto || $producto->stock < $item['cantidad']) {
                     throw new \Exception("Stock insuficiente para el producto: " . ($producto ? $producto->nombre : 'Desconocido'));
                 }
@@ -1206,7 +603,6 @@ class InventarioController extends Controller
         }
     }
 
-    // --- MÁQUINA DEL TIEMPO (ROLLBACK CRIPTOGRÁFICO) ---
     public function revertirMovimiento(Request $request, $id)
     {
         if (!Auth::check() || Auth::user()->rol !== 'admin') {
@@ -1221,22 +617,18 @@ class InventarioController extends Controller
 
             if (!$producto) throw new \Exception("El producto original ya no existe.");
 
-            // La operación inversa: Si salió, entra. Si entró, sale.
             $tipoInverso = $movOriginal->tipo === 'Entrada' ? 'Salida' : 'Entrada';
 
-            // Validar que haya stock si vamos a revertir una entrada (convertirla en salida)
             if ($tipoInverso === 'Salida' && $producto->stock < $movOriginal->cantidad) {
                 throw new \Exception("Stock insuficiente para revertir esta entrada original.");
             }
 
-            // Ajustar el stock real
             if ($tipoInverso === 'Entrada') {
                 $producto->increment('stock', $movOriginal->cantidad);
             } else {
                 $producto->decrement('stock', $movOriginal->cantidad);
             }
 
-            // Crear el movimiento compensatorio
             $movNuevo = Movimiento::create([
                 'codigo_producto' => $producto->codigo,
                 'tipo' => $tipoInverso,
@@ -1246,7 +638,6 @@ class InventarioController extends Controller
                 'user_id' => Auth::id()
             ]);
 
-            // Generar nuevo Hash SHA-256
             $cadena = $movNuevo->id . $movNuevo->codigo_producto . $movNuevo->tipo . $movNuevo->cantidad . $movNuevo->motivo . $movNuevo->usuario_accion;
             $movNuevo->firma_hash = hash('sha256', $cadena);
             $movNuevo->save();
@@ -1259,23 +650,21 @@ class InventarioController extends Controller
         }
     }
 
-    // --- ESTADÍSTICAS GLOBALES PARA TIEMPO REAL ---
     public function getGlobalStats() {
         $productos = Producto::all();
-        $capitalInvertido = $productos->sum(fn($p) => $p->stock * $p->precio);
+        $capitalInvertido = $productos->sum(fn($p) => $p->stock * ($p->precio_costo ?: $p->precio));
         $tasa = $this->obtenerTasaBcv();
-        
+
         return response()->json([
             'totalProductos' => $productos->count(),
             'stockTotal' => $productos->sum('stock'),
-            'alertasStock' => $productos->where('stock', '<=', 5)->count(),
+            'alertasStock' => $productos->filter(fn($p) => $p->stock_bajo)->count(),
             'capitalInvertido' => number_format($capitalInvertido, 2),
             'capitalBs' => number_format($capitalInvertido * $tasa, 2),
             'tasaBcv' => number_format($tasa, 2)
         ]);
     }
 
-    // --- CIERRE DE CAJA DIARIO ---
     public function generarCierreDiario() {
         $hoy = now()->startOfDay();
         $movimientosHoy = Movimiento::where('created_at', '>=', $hoy)->with('producto')->get();
@@ -1285,14 +674,12 @@ class InventarioController extends Controller
             'operaciones' => $movimientosHoy->count(),
             'fecha' => now()->format('d/m/Y')
         ];
-        
-        // Usamos la misma vista de PDF pero filtrada solo para hoy
-        $productos = Producto::all(); 
+
+        $productos = Producto::all();
         $pdf = PDF::loadView('inventario.pdf_cierre', compact('resumen', 'movimientosHoy'));
         return $pdf->download('Cierre_Diario_'.now()->format('d_m_Y').'.pdf');
     }
 
-    // --- REGISTRAR ORDEN DE COMPRA Y ABASTECER ---
     public function storeCompra(Request $request)
     {
         $request->validate([
@@ -1309,12 +696,10 @@ class InventarioController extends Controller
             $producto = \App\Models\Producto::findOrFail($request->producto_id);
             $proveedor = \App\Models\Proveedor::findOrFail($request->proveedor_id);
 
-            // 1. Aumentar el stock del producto
             $producto->increment('stock', $request->cantidad);
 
-            // 2. Registrar el movimiento para la Auditoría
             $motivoCompra = "COMPRA a " . $proveedor->nombre . " | Costo: $" . $request->costo_total . " | Vence: " . $request->fecha_vencimiento;
-            
+
             $movimiento = \App\Models\Movimiento::create([
                 'codigo_producto' => $producto->codigo,
                 'tipo' => 'Entrada',
@@ -1324,7 +709,6 @@ class InventarioController extends Controller
                 'user_id' => Auth::id()
             ]);
 
-            // 3. Sellar con SHA-256
             $cadena = $movimiento->id . $movimiento->codigo_producto . $movimiento->tipo . $movimiento->cantidad . $movimiento->motivo . $movimiento->usuario_accion;
             $movimiento->firma_hash = hash('sha256', $cadena);
             $movimiento->save();

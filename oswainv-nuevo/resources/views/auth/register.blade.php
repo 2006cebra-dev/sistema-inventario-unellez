@@ -9,310 +9,184 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <style>
         :root {
-            --accent: #E50914; /* Rojo OSWA Inv */
-            --bg-main: #0a0a0a;
-            --bg-card: #141414;
-            --input-bg: #1f1f1f;
+            --accent: #E50914;
+            --bg-main: #050505;
+            --bg-card: #121212;
+            --input-bg: #1e1e1e;
         }
         
         body {
             background-color: var(--bg-main);
             font-family: 'Inter', sans-serif;
-            min-height: 100vh;
+            height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             margin: 0;
             color: #fff;
-            padding: 20px 0;
-        }
-
-        .auth-container {
-            display: flex;
-            width: 1000px;
-            max-width: 95%;
-            min-height: 650px; /* Un poco más alto para los campos extra */
-            background: var(--bg-card);
-            border-radius: 20px;
             overflow: hidden;
-            box-shadow: 0 15px 50px rgba(0,0,0,0.8);
-            border: 1px solid #222;
         }
 
-        /* 1. EL VIDEO DE AFUERA */
         .bg-video-full {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100vw; height: 100vh;
-            object-fit: cover;
-            z-index: -2;
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: cover; z-index: -2;
         }
-        
-        /* Filtro oscuro para el video de afuera */
         .bg-overlay {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100vw; height: 100vh;
-            background: rgba(0, 0, 0, 0.6); /* Ajusta si lo quieres más claro o más oscuro */
-            z-index: -1;
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.5); z-index: -1;
         }
 
-        /* 2. LA TARJETA COMPLETA */
         .auth-container {
-            display: flex;
-            width: 1000px;
-            max-width: 95%;
-            min-height: 650px;
-            background: rgba(20, 20, 20, 0.95); /* Casi negro sólido */
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 0 15px 50px rgba(0,0,0,0.8);
-            border: 1px solid #222;
-            z-index: 10;
-            position: relative;
+            display: flex; width: 1200px; max-width: 95vw; height: 85vh; min-height: 700px;
+            background: rgba(18, 18, 18, 0.95); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            border-radius: 20px; overflow: hidden; box-shadow: 0 25px 60px rgba(0,0,0,0.9);
+            border: 1px solid rgba(255,255,255,0.05); z-index: 10;
+            opacity: 0; animation: aparecerTarjeta 0.6s ease-out forwards;
         }
 
-        /* 3. MITAD IZQUIERDA (CON TU FOTO STATIC) */
         .auth-left {
-            flex: 1;
-            background: url('{{ asset("img/fondo-login.jpg") }}') center/cover;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            border-right: 1px solid rgba(255,255,255,0.05);
+            flex: 1; background-position: center; background-size: cover; background-repeat: no-repeat;
+            background-image: url('{{ asset("img/fondo-login.jpg") }}');
+            position: relative; display: flex; flex-direction: column; align-items: center;
+            justify-content: center; text-align: center; border-right: 1px solid rgba(255,255,255,0.05);
         }
+        .auth-left-overlay {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(to right, rgba(0,0,0,0.3), rgba(18,18,18,0.95)); z-index: 1;
+        }
+        .auth-left-content { position: relative; z-index: 2; padding: 3rem; }
         
-        /* Capa para oscurecer tu foto y resaltar el logo de la Unellez */
-        .auth-left::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.4), rgba(0,0,0,0.9));
-            z-index: 1;
-        }
-
-        .auth-left-content {
-            position: relative;
-            z-index: 2;
-            padding: 2rem;
-        }
-
-        /* 4. MITAD DERECHA (FORMULARIO) */
-        .auth-right {
-            flex: 1;
-            padding: 3rem 4rem;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            background: transparent;
-        }
-
-        /* Lado Derecho: Formulario (Fondo más sólido para leer bien) */
-        .auth-right {
-            flex: 1;
-            padding: 3rem 4rem;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            background: rgba(20, 20, 20, 0.95);
-        }
-
-        .auth-logo-icon { font-size: 3.5rem; color: var(--accent); margin-bottom: 1rem; }
-        .auth-title-brand { font-size: 2.2rem; font-weight: 700; letter-spacing: 5px; margin-bottom: 0.5rem; color: #fff; }
-        .auth-subtitle-brand { font-size: 0.85rem; letter-spacing: 3px; color: #aaa; text-transform: uppercase; }
+        .auth-title-brand { font-size: 3rem; font-weight: 800; letter-spacing: 6px; color: #fff; margin-bottom: 0.5rem; }
+        .auth-subtitle-brand { font-size: 1rem; letter-spacing: 3px; color: #aaa; text-transform: uppercase; }
 
         .auth-right {
-            flex: 1;
-            padding: 3rem 4rem;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .auth-header { margin-bottom: 2rem; }
-        .auth-header h2 { font-weight: 600; font-size: 1.8rem; margin-bottom: 0.5rem; }
-        .auth-header p { color: #888; font-size: 0.9rem; }
-
-        .form-group { margin-bottom: 1.2rem; }
-        .form-label {
-            font-size: 0.75rem; color: var(--accent); text-transform: uppercase;
-            letter-spacing: 1.5px; font-weight: 600; margin-bottom: 0.5rem; display: block;
+            flex: 1; padding: 3rem 4rem; display: flex; flex-direction: column; justify-content: center; background: transparent;
         }
 
         .form-control {
-            background-color: var(--input-bg); border: 1px solid #333; color: #fff;
-            border-radius: 8px; padding: 0.8rem 1.2rem; font-size: 0.95rem;
+            background-color: var(--input-bg); border: 1px solid #333; color: #fff; border-radius: 8px;
             transition: all 0.3s; box-shadow: none;
         }
-
         .form-control:focus { background-color: #252525; border-color: var(--accent); box-shadow: none; color: #fff; }
-        .form-control::placeholder { color: #555; }
+        .form-control::placeholder { color: #666; }
 
-        .auth-link { color: var(--accent); text-decoration: none; transition: color 0.2s; }
-        .auth-link:hover { color: #ff4757; text-decoration: underline; }
-
-        .btn-auth {
-            background-color: var(--accent); color: #fff; border: none; border-radius: 8px;
-            padding: 1rem; font-weight: 600; letter-spacing: 1px; text-transform: uppercase;
-            width: 100%; transition: all 0.3s; cursor: pointer; margin-top: 1rem;
-        }
-
-        .btn-auth:hover { background-color: #b20710; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(229, 9, 20, 0.4); }
-
-        .auth-footer { margin-top: 2rem; text-align: center; font-size: 0.85rem; color: #888; }
-        .auth-copyright { margin-top: auto; text-align: center; font-size: 0.75rem; color: #555; padding-top: 1rem; }
+        .btn-auth:hover { background-color: #b20710 !important; border-color: #b20710 !important; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(229, 9, 20, 0.4); }
+        .hover-white:hover { color: #fff !important; }
+        .hover-red:hover { color: var(--accent) !important; text-decoration: underline !important; }
 
         .mobile-brand { display: none; }
 
-        @media (max-width: 900px) {
-            body { padding: 0; align-items: flex-start; }
-            .auth-container { flex-direction: column; height: auto; min-height: 100vh; width: 100%; max-width: 100vw; border-radius: 0; border: none; background: rgba(20,20,20,0.95); }
+        @media (max-width: 992px) {
+            body { overflow-y: auto; height: auto; align-items: flex-start; padding: 0; }
+            .auth-container { flex-direction: column; height: auto; min-height: 100vh; max-width: 100vw; width: 100%; border-radius: 0; border: none; overflow-y: auto; animation: none; opacity: 1; background: rgba(18,18,18,0.95); }
             .auth-left { display: none; }
-            .auth-right { padding: 2rem 1.5rem; width: 100%; }
-            .form-control { font-size: 16px; padding: 12px 14px; }
-            .btn-auth { padding: 14px; font-size: 1rem; }
-            .mobile-brand { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-bottom: 1rem; }
-            .mobile-brand img { height: 48px; filter: brightness(0) invert(1) drop-shadow(0 0 12px rgba(255,255,255,0.2)); }
-            .mobile-brand .brand-name { font-size: 1.6rem; font-weight: 800; background: linear-gradient(90deg,#E50914,#ff6b6b,#B20710,#E50914); background-size: 300% 100%; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; letter-spacing: 2px; }
+            .auth-right { padding: 2rem 1.5rem; flex: none; width: 100%; }
             .auth-header h2 { font-size: 1.4rem; }
             .auth-header p { font-size: 0.85rem; }
-            .row { margin: 0; }
-            .row > div { padding: 0; }
+            .form-control { font-size: 16px; padding: 10px 14px; }
+            .btn-auth { padding: 12px; font-size: 1rem; }
+            .mobile-brand { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-bottom: 1.5rem; }
+            .mobile-brand img { height: 48px; filter: brightness(0) invert(1) drop-shadow(0 0 12px rgba(255,255,255,0.2)); }
+            .mobile-brand .brand-name { font-size: 1.6rem; font-weight: 800; background: linear-gradient(90deg,#E50914,#ff6b6b,#B20710,#E50914); background-size: 300% 100%; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; letter-spacing: 2px; }
+            .anim-up-1, .anim-up-2, .anim-up-3, .anim-up-4, .anim-up-5, .anim-up-6, .anim-up-7, .anim-up-8 { opacity: 1 !important; animation: none !important; }
+            .anim-left-1, .anim-left-2, .anim-left-3 { opacity: 1 !important; animation: none !important; }
         }
 
-        /* =========================================
-           ANIMACIONES DE ENTRADA (ESTILO CINE)
-           ========================================= */
-           
-        /* 1. Animación base: Deslizar hacia la izquierda */
-        @keyframes deslizarHaciaIzquierda {
-            0% {
-                opacity: 0;
-                transform: translateX(60px); /* Empieza 60px a la derecha */
-            }
-            100% {
-                opacity: 1;
-                transform: translateX(0); /* Termina en su posición original */
-            }
-        }
+        @keyframes aparecerTarjeta { 0% { opacity: 0; transform: scale(0.97); } 100% { opacity: 1; transform: scale(1); } }
+        @keyframes deslizarIzquierda { 0% { opacity: 0; transform: translateX(50px); } 100% { opacity: 1; transform: translateX(0); } }
+        @keyframes deslizarArriba { 0% { opacity: 0; transform: translateY(30px); } 100% { opacity: 1; transform: translateY(0); } }
 
-        /* 2. Animación de la tarjeta principal (Aparecer suave) */
-        @keyframes aparecerTarjeta {
-            0% { opacity: 0; transform: scale(0.98); }
-            100% { opacity: 1; transform: scale(1); }
-        }
+        .anim-left-1 { opacity: 0; animation: deslizarIzquierda 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.2s forwards; }
+        .anim-left-2 { opacity: 0; animation: deslizarIzquierda 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.4s forwards; }
+        .anim-left-3 { opacity: 0; animation: deslizarIzquierda 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.6s forwards; }
 
-        .auth-container {
-            /* Mantenemos lo que ya tenías y le sumamos la animación */
-            animation: aparecerTarjeta 0.6s ease-out forwards;
-        }
-
-        /* 3. Aplicar animación en CASCADA a los elementos de la izquierda */
-        
-        .auth-logo-icon {
-            opacity: 0; /* Inicia oculto */
-            /* Se ejecuta a los 0.2 segundos */
-            animation: deslizarHaciaIzquierda 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.2s forwards;
-        }
-
-        .auth-title-brand {
-            opacity: 0; /* Inicia oculto */
-            /* Se ejecuta a los 0.4 segundos */
-            animation: deslizarHaciaIzquierda 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.4s forwards;
-        }
-
-        .auth-subtitle-brand {
-            opacity: 0; /* Inicia oculto */
-            /* Se ejecuta a los 0.6 segundos */
-            animation: deslizarHaciaIzquierda 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.6s forwards;
-        }
+        .anim-up-1 { opacity: 0; animation: deslizarArriba 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.3s forwards; }
+        .anim-up-2 { opacity: 0; animation: deslizarArriba 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.5s forwards; }
+        .anim-up-3 { opacity: 0; animation: deslizarArriba 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.7s forwards; }
+        .anim-up-4 { opacity: 0; animation: deslizarArriba 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.9s forwards; }
+        .anim-up-5 { opacity: 0; animation: deslizarArriba 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 1.1s forwards; }
+        .anim-up-6 { opacity: 0; animation: deslizarArriba 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 1.3s forwards; }
+        .anim-up-7 { opacity: 0; animation: deslizarArriba 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 1.5s forwards; }
+        .anim-up-8 { opacity: 0; animation: deslizarArriba 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 1.7s forwards; }
     </style>
 </head>
 <body>
-    <!-- 1. VIDEO DE FONDO GIGANTE -->
+
     <video autoplay muted loop playsinline class="bg-video-full">
-        <!-- Carlos: Asegúrate de llamar a tu video 'video-fondo.mp4' para no confundirlo con la foto -->
         <source src="{{ asset('img/video-fondo.mp4') }}" type="video/mp4">
     </video>
-    <!-- Capa oscura para que el video no encandile -->
     <div class="bg-overlay"></div>
 
-    <!-- 2. LA TARJETA PRINCIPAL -->
     <div class="auth-container">
         
-        <!-- MITAD IZQUIERDA: LLEVA LA FOTO POR CSS -->
         <div class="auth-left">
+            <div class="auth-left-overlay"></div>
             <div class="auth-left-content">
-                <div class="auth-logo-icon">
-                    <img src="{{ asset('img/logo-unellez.png') }}" alt="UNELLEZ" style="height: 90px; filter: brightness(0) invert(1) drop-shadow(0 0 10px rgba(255,255,255,0.2)); margin-bottom: 10px;">
+                <div class="auth-logo-icon anim-left-1">
+                    <img src="{{ asset('img/logo-unellez.png') }}" alt="UNELLEZ" style="height: 110px; filter: brightness(0) invert(1) drop-shadow(0 0 15px rgba(255,255,255,0.3)); margin-bottom: 15px;">
                 </div>
-                <div class="auth-title-brand">OSWA INV</div>
-                <div class="auth-subtitle-brand">Sistema de Gestión Exclusivo</div>
+                <div class="auth-title-brand anim-left-2">OSWA INV</div>
+                <div class="auth-subtitle-brand anim-left-3">Sistema de Gestión Exclusivo</div>
             </div>
         </div>
 
-        <!-- MITAD DERECHA: FORMULARIO -->
         <div class="auth-right">
+            
             <div class="mobile-brand">
                 <img src="{{ asset('img/logo-unellez.png') }}" alt="UNELLEZ">
                 <span class="brand-name">OSWA INV</span>
             </div>
-            <div class="auth-header">
-                <h2>Crear Cuenta</h2>
-                <p>Registre sus datos para acceder al sistema</p>
+            
+            <div class="auth-header text-center mb-3 anim-up-1">
+                <h2 class="fw-bold text-white mb-1" style="font-size: 1.7rem;">Crear Cuenta</h2>
+                <p class="text-secondary" style="font-size: 0.85rem;">Registre sus datos para acceder al sistema</p>
             </div>
 
-            <!-- Formulario apuntando a la ruta de registro de Laravel -->
-            <form method="POST" action="{{ route('register') }}">
+            <form method="POST" action="{{ route('register') }}" class="w-100 mx-auto" style="max-width: 400px;">
                 @csrf
                 
-                <div class="form-group">
-                    <label class="form-label" for="name">Nombre Completo</label>
+                <div class="form-group mb-2 anim-up-2">
+                    <label class="form-label text-secondary fw-bold mb-1" style="font-size: 0.7rem; letter-spacing: 1px; text-transform: uppercase;">Nombre Completo</label>
                     <input type="text" id="name" name="name" class="form-control" placeholder="Ej. Yorgelys Blanco" value="{{ old('name') }}" required autofocus>
                     @error('name')
                         <span class="text-danger" style="font-size: 0.8rem; margin-top: 5px; display: block;">{{ $message }}</span>
                     @enderror
                 </div>
 
-                <div class="form-group">
-                    <label class="form-label" for="email">Correo Electrónico</label>
+                <div class="form-group mb-2 anim-up-3">
+                    <label class="form-label text-secondary fw-bold mb-1" style="font-size: 0.7rem; letter-spacing: 1px; text-transform: uppercase;">Correo Electrónico</label>
                     <input type="email" id="email" name="email" class="form-control" placeholder="ejemplo@unellez.edu.ve" value="{{ old('email') }}" required>
                     @error('email')
                         <span class="text-danger" style="font-size: 0.8rem; margin-top: 5px; display: block;">{{ $message }}</span>
                     @enderror
                 </div>
 
-                <!-- Fila para las contraseñas -->
-                <div class="row">
-                    <div class="col-md-6 form-group">
-                        <label class="form-label" for="password">Contraseña</label>
-                        <input type="password" id="password" name="password" class="form-control" placeholder="Mínimo 8 caracteres" required>
-                        @error('password')
-                            <span class="text-danger" style="font-size: 0.8rem; margin-top: 5px; display: block;">{{ $message }}</span>
-                        @enderror
-                    </div>
-
-                    <div class="col-md-6 form-group">
-                        <label class="form-label" for="password_confirmation">Confirmar</label>
-                        <input type="password" id="password_confirmation" name="password_confirmation" class="form-control" placeholder="Repita contraseña" required>
-                    </div>
+                <div class="form-group mb-2 anim-up-4">
+                    <label class="form-label text-secondary fw-bold mb-1" style="font-size: 0.7rem; letter-spacing: 1px; text-transform: uppercase;">Contraseña</label>
+                    <input type="password" id="password" name="password" class="form-control" placeholder="Mínimo 8 caracteres" required>
+                    @error('password')
+                        <span class="text-danger" style="font-size: 0.8rem; margin-top: 5px; display: block;">{{ $message }}</span>
+                    @enderror
                 </div>
 
-                <button type="submit" class="btn-auth">Registrarse</button>
+                <div class="form-group mb-3 anim-up-5">
+                    <label class="form-label text-secondary fw-bold mb-1" style="font-size: 0.7rem; letter-spacing: 1px; text-transform: uppercase;">Confirmar Contraseña</label>
+                    <input type="password" id="password_confirmation" name="password_confirmation" class="form-control" placeholder="Repita contraseña" required>
+                </div>
+
+                <button type="submit" class="btn btn-danger btn-auth fw-bold w-100 mb-3 py-2 anim-up-6" style="background-color: #E50914; border-color: #E50914; font-size: 1rem; border-radius: 8px; letter-spacing: 0.5px;">
+                    <i class="bi bi-person-plus me-2"></i> Registrarse
+                </button>
+
+                <div class="auth-footer text-center text-secondary mb-4 anim-up-7" style="font-size: 0.95rem;">
+                    ¿Ya tiene cuenta? <a href="{{ route('login') }}" class="text-white fw-bold text-decoration-none hover-red">Iniciar Sesión</a>
+                </div>
             </form>
 
-            <div class="auth-footer">
-                <span style="color: #666;">¿Ya tiene cuenta?</span> <a href="{{ route('login') }}" class="auth-link fw-bold">Iniciar Sesión</a>
-            </div>
-
-            <div class="auth-copyright">
-                &copy; <script>document.write(new Date().getFullYear())</script> OSWA Inv — Carlos Braca & Yorgelys Blanco — Ingeniería en Informática V Semestre | <strong>UNELLEZ</strong>
+            <div class="auth-copyright text-center mt-auto pt-4 border-top border-secondary border-opacity-25 w-100 mx-auto anim-up-8" style="font-size: 0.75rem; color: #666; max-width: 420px;">
+                &copy; <script>document.write(new Date().getFullYear())</script> <strong class="text-white">OSWA Inv</strong>. Todos los derechos reservados.<br>
+                Desarrollado con <i class="bi bi-code-slash text-secondary mx-1"></i> y <i class="bi bi-heart-fill text-danger mx-1"></i> por <strong class="text-white">Carlos Braca & Yorgelys Blanco</strong><br>
+                <span class="mt-1 d-block">Ingeniería en Informática — V Semestre | <strong class="text-white" style="letter-spacing: 0.5px;">UNELLEZ</strong></span>
             </div>
         </div>
     </div>
-
 </body>
 </html>

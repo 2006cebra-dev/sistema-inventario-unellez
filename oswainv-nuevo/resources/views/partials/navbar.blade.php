@@ -336,9 +336,11 @@
     }
 
     /* ─── POPUP MÓVIL (NETFLIX DROPDOWN STYLE) ─── */
-    .inv-popup { position: fixed; z-index: 1070; top: 0; left: 0; right: 0; bottom: 0; }
+    .inv-popup { position: fixed; z-index: 1070; top: 0; left: 0; right: 0; bottom: 0; visibility: hidden; opacity: 0; transition: visibility 0.2s, opacity 0.2s; }
+    .inv-popup.show { visibility: visible; opacity: 1; }
     .inv-popup-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); }
-    .inv-popup-menu { position: absolute; bottom: calc(58px + 10px); left: 50%; transform: translateX(-50%); background: rgba(18,18,18,0.98); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 6px; min-width: 220px; box-shadow: 0 -8px 40px rgba(0,0,0,0.8); backdrop-filter: blur(20px); animation: popupUp 0.25s cubic-bezier(0.16,1,0.3,1); }
+    .inv-popup-menu { position: absolute; bottom: calc(58px + 10px); left: 50%; transform: translateX(-50%) scale(0.95) translateY(16px); background: rgba(18,18,18,0.98); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 6px; min-width: 220px; box-shadow: 0 -8px 40px rgba(0,0,0,0.8); backdrop-filter: blur(20px); transition: transform 0.25s cubic-bezier(0.16,1,0.3,1), opacity 0.2s; opacity: 0; pointer-events: none; }
+    .inv-popup.show .inv-popup-menu { transform: translateX(-50%) scale(1) translateY(0); opacity: 1; pointer-events: auto; }
     @keyframes popupUp { from { opacity: 0; transform: translateX(-50%) translateY(16px) scale(0.95); } to { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); } }
     .inv-popup-header { padding: 8px 12px 4px; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 1.5px; color: #666; font-weight: 700; }
     .inv-popup-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; color: #ddd; text-decoration: none; border-radius: 10px; font-size: 0.85rem; transition: background 0.15s; }

@@ -26,4 +26,11 @@ class Proveedor extends Model
     {
         return $this->hasMany(\App\Models\Producto::class, 'proveedor_id');
     }
+
+    public function productosPivot()
+    {
+        return $this->belongsToMany(\App\Models\Producto::class, 'producto_proveedor')
+            ->withPivot('precio_costo', 'codigo_proveedor')
+            ->withTimestamps();
+    }
 }

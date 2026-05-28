@@ -17,10 +17,6 @@
             --accent-success: #00b894; --accent-danger: #e74c3c; --accent-warning: #fdcb6e;
             --topbar-height: 68px;
         }
-        [data-theme="light"] {
-            --bg-dark: #121212; --bg-card: #1c1c1c; --bg-input: #2a2a2a;
-            --border-color: #2b2b2b; --text-primary: #e5e5e5; --text-secondary: #a3a3a3;
-        }
         * { font-family: 'Inter', sans-serif; }
         body, html { overflow-x: hidden !important; max-width: 100vw; }
         body { background-color: var(--bg-main) !important; color: #e5e5e5 !important; margin: 0; }
@@ -80,6 +76,14 @@
 
         /* Botón Flotante del Escáner */
         .scanner-fab { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; border-radius: 16px; background: linear-gradient(135deg, var(--accent-primary), #B20710); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; border: none; cursor: pointer; box-shadow: 0 4px 20px rgba(229,9,20,0.4); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 999; }
+        @media (max-width: 767.98px) { .scanner-fab { bottom: 85px; } }
+        
+        /* Paginación estilo Netflix */
+        .pagination { gap: 4px; }
+        .pagination .page-item .page-link { background: #1c1c1c; border: 1px solid #333; color: #a3a3a3; border-radius: 8px !important; padding: 8px 14px; font-weight: 500; transition: all 0.2s; margin: 0 2px; }
+        .pagination .page-item .page-link:hover { background: #2a2a2a; color: #fff; border-color: #E50914; }
+        .pagination .page-item.active .page-link { background: #E50914; border-color: #E50914; color: #fff; box-shadow: 0 0 10px rgba(229,9,20,0.3); }
+        .pagination .page-item.disabled .page-link { opacity: 0.4; pointer-events: none; }
         .scanner-fab:hover { transform: scale(1.15) translateY(-5px); box-shadow: 0 8px 25px rgba(229,9,20,0.6); border: 1px solid #ff6b6b; }
 
         /* --- ESTILOS DEL ESCÁNER VIP (CORREGIDO) --- */
@@ -187,12 +191,12 @@
 
                 <div class="products-grid" id="productsGrid">
                     @forelse($productos as $producto)
-                    <div class="product-card {{ $producto->stock <= 2 ? 'stock-critical' : ($producto->stock <= 5 ? 'stock-low' : 'stock-normal') }}">
+                    <div class="product-card {{ $producto->stock == 0 ? 'stock-critical' : ($producto->stock_bajo ? 'stock-low' : 'stock-normal') }}">
                         @if($producto->imagen)
                             @if(filter_var($producto->imagen, FILTER_VALIDATE_URL))
-                                <img src="{{ $producto->imagen }}" alt="{{ $producto->nombre }}" class="product-card-img">
+                                <img src="{{ $producto->imagen }}" alt="{{ $producto->nombre }}" class="product-card-img" loading="lazy">
                             @else
-                                <img src="{{ asset('storage/' . $producto->imagen) }}" alt="{{ $producto->nombre }}" class="product-card-img">
+                                <img src="{{ asset('storage/' . $producto->imagen) }}" alt="{{ $producto->nombre }}" class="product-card-img" loading="lazy">
                             @endif
                         @else
                             <div class="product-card-img-placeholder"><i class="bi bi-image"></i></div>
@@ -201,11 +205,24 @@
                         <div class="product-card-info">
                             <div class="product-card-title">{{ $producto->nombre }}</div>
                             <div class="product-card-meta">{{ $producto->marca ?? 'Sin marca' }} • {{ $producto->categoria }}</div>
-                            <div class="product-card-code"><i class="bi bi-upc-scan"></i> {{ $producto->codigo }}</div>
+                            <div class="product-card-code"><i class="bi bi-upc-scan"></i> {{ $producto->codigo }} @if($producto->unidad_medida && $producto->unidad_medida !== 'unidad')<span class="badge ms-1" style="font-size:0.55rem;background:rgba(255,255,255,0.06);color:#888;vertical-align:middle;">{{ $producto->unidad_medida }}</span>@endif</div>
+                            @if($producto->precio_costo && auth()->user()->rol == 'admin')
+                            <div style="font-size:0.7rem;color:#666;margin-bottom:6px;">
+                                <i class="bi bi-currency-dollar me-1"></i>Costo: ${{ number_format($producto->precio_costo, 2) }}
+                                @if($producto->proveedor && $producto->proveedor->nombre)
+                                    <span class="ms-2"><i class="bi bi-buildings me-1"></i>{{ $producto->proveedor->nombre }}</span>
+                                @endif
+                            </div>
+                            @endif
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 @if(auth()->user()->rol == 'admin')
                                     <div class="fw-bold" style="color: #00b894; font-size: 1.1rem; display: flex; align-items: center; gap: 6px;">
                                         ${{ number_format($producto->precio, 2) }}
+                                        @if($producto->margen !== null)
+                                            <span class="badge" style="font-size:0.6rem;background:{{ $producto->margen >= 30 ? 'rgba(0,184,148,0.2)' : ($producto->margen >= 15 ? 'rgba(253,203,110,0.2)' : 'rgba(229,9,20,0.2)') }};color:{{ $producto->margen >= 30 ? '#00b894' : ($producto->margen >= 15 ? '#fdcb6e' : '#E50914') }};">
+                                                {{ $producto->margen }}%
+                                            </span>
+                                        @endif
                                         <i class="bi bi-graph-up-arrow" style="font-size: 0.85rem; color: #666; cursor: pointer;" title="Ver historial de precios" onclick="verHistorialPrecios({{ $producto->id }}, '{{ addslashes($producto->nombre) }}')"></i>
                                     </div>
                                 @else
@@ -240,11 +257,16 @@
                             @if(Auth::user()->rol === 'admin')
                             
                             <!-- Control de Stock VIP -->
-                            <div class="d-flex justify-content-between align-items-center mb-3 px-2 py-1" style="background-color: #0a0a0a; border-radius: 12px; border: 1px solid #333; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);">
+                            <div class="d-flex justify-content-between align-items-center mb-2 px-2 py-1" style="background-color: #0a0a0a; border-radius: 12px; border: 1px solid #333; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);">
                                 <button type="button" class="btn btn-sm text-secondary fs-5 px-3 border-0 transition-all" onmouseover="this.style.color='#E50914'" onmouseout="this.style.color='#6c757d'" onclick="actualizarStockRapido({{ $producto->id }}, -1)">-</button>
-                                <input type="number" id="stock-input-{{ $producto->id }}" value="{{ $producto->stock }}" class="fw-bold fs-5 text-white text-center border-0 bg-transparent oswa-stock-input" style="width: 60px; outline: none;" onchange="guardarStockManual({{ $producto->id }})">
+                                <input type="number" id="stock-input-{{ $producto->id }}" value="{{ $producto->stock }}" class="fw-bold fs-5 text-white text-center border-0 bg-transparent oswa-stock-input" style="width: 60px; outline: none;" onchange="guardarStockManual({{ $producto->id }})" data-stock-maximo="{{ $producto->stock_maximo }}" data-producto-nombre="{{ $producto->nombre }}">
                                 <button type="button" class="btn btn-sm text-secondary fs-5 px-3 border-0 transition-all" onmouseover="this.style.color='#00b894'" onmouseout="this.style.color='#6c757d'" onclick="actualizarStockRapido({{ $producto->id }}, 1)">+</button>
                             </div>
+                            @if($producto->stock_bajo)
+                                <div class="mb-2 text-center" style="font-size:0.7rem;color:#E50914;">
+                                    <i class="bi bi-exclamation-triangle-fill me-1"></i>Stock mínimo: {{ $producto->stock_minimo }} {{ $producto->unidad_medida }}
+                                </div>
+                            @endif
 
                             <!-- Botones de Acción (Editar principal, Eliminar secundario) -->
                             <div class="d-flex gap-2">
@@ -288,6 +310,10 @@
                         <p class="mt-3">Aún no hay productos registrados en el inventario.</p>
                     </div>
                     @endforelse
+                </div>
+
+                <div class="d-flex justify-content-center mt-4">
+                    {{ $productos->links('pagination::bootstrap-5') }}
                 </div>
             </div>
 
@@ -438,12 +464,43 @@
                                 </div>
                                 <div class="row mb-3">
                                     <div class="col-sm-6">
-                                        <label class="form-label text-secondary">Precio ($)</label>
+                                        <label class="form-label text-secondary">Precio Venta ($)</label>
                                         <input type="number" step="0.01" id="prodPrecio" name="precio" class="form-control bg-dark text-white border-secondary" required>
                                     </div>
                                     <div class="col-sm-6">
-                                        <label class="form-label text-secondary">Stock Inicial</label>
+                                        <label class="form-label text-secondary">Precio Costo ($)</label>
+                                        <input type="number" step="0.01" id="prodPrecioCosto" name="precio_costo" class="form-control bg-dark text-white border-secondary" placeholder="0.00">
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-sm-4">
+                                        <label class="form-label text-secondary">Stock Actual</label>
                                         <input type="number" id="prodStock" name="stock" class="form-control bg-dark text-white border-secondary" required>
+                                    </div>
+                                    <div class="col-sm-4">
+                                        <label class="form-label text-secondary">Stock Mínimo</label>
+                                        <input type="number" id="prodStockMinimo" name="stock_minimo" class="form-control bg-dark text-white border-secondary" placeholder="5">
+                                    </div>
+                                    <div class="col-sm-4">
+                                        <label class="form-label text-secondary">Stock Máximo</label>
+                                        <input type="number" id="prodStockMaximo" name="stock_maximo" class="form-control bg-dark text-white border-secondary" placeholder="—">
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-sm-6">
+                                        <label class="form-label text-secondary">Unidad de Medida</label>
+                                        <select id="prodUnidad" name="unidad_medida" class="form-select bg-dark text-white border-secondary">
+                                            <option value="unidad">Unidad</option>
+                                            <option value="kg">Kilogramo (kg)</option>
+                                            <option value="g">Gramo (g)</option>
+                                            <option value="l">Litro (L)</option>
+                                            <option value="ml">Mililitro (ml)</option>
+                                            <option value="caja">Caja</option>
+                                            <option value="paquete">Paquete</option>
+                                            <option value="tonelada">Tonelada</option>
+                                            <option value="metro">Metro (m)</option>
+                                            <option value="par">Par</option>
+                                        </select>
                                     </div>
                                 </div>
                             </div>
@@ -462,13 +519,21 @@
                         <!-- NUEVO: SELECTOR DE PROVEEDOR -->
                         <div class="row mb-3">
                             <div class="col-12">
-                                <label class="form-label text-secondary"><i class="bi bi-buildings me-1"></i> Proveedor Asignado (Opcional)</label>
+                                 <label class="form-label text-secondary"><i class="bi bi-buildings me-1"></i> Proveedor Asignado (Opcional)</label>
                                 <select id="prod-proveedor" name="proveedor_id" class="form-select bg-dark text-white border-secondary">
                                     <option value="">-- Sin proveedor asignado --</option>
                                     @foreach(\App\Models\Proveedor::all() as $prov)
                                         <option value="{{ $prov->id }}">{{ $prov->nombre }}</option>
                                     @endforeach
                                 </select>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <label class="form-label text-secondary"><i class="bi bi-currency-dollar me-1"></i> Precios por Proveedor</label>
+                                <div id="preciosProveedorContainer" style="max-height:200px;overflow-y:auto;">
+                                    <div style="color:#555;font-size:0.8rem;padding:8px 0;">Selecciona un proveedor y guarda para registrar su precio.</div>
+                                </div>
                             </div>
                         </div>
                     </form>
@@ -531,14 +596,28 @@
                         formData.append('_method', 'PUT');
                     }
 
+                    // Validar stock ≤ stock_maximo antes de enviar
+                    const stockVal = parseInt(document.getElementById('prodStock')?.value);
+                    const maxVal = parseInt(document.getElementById('prodStockMaximo')?.value);
+                    if (maxVal > 0 && stockVal > maxVal) {
+                        mostrarToast('El stock (' + stockVal + ') supera el máximo permitido (' + maxVal + ')', 'bi bi-exclamation-triangle-fill');
+                        return;
+                    }
+
+                    // Loading state
+                    const originalHtml = btnGuardar.innerHTML;
+                    btnGuardar.disabled = true;
+                    btnGuardar.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Guardando...';
+
                     fetch(url, {
                         method: 'POST',
                         headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
                         body: formData
                     })
                     .then(async response => {
-                        if (!response.ok) throw await response.json();
-                        return response.json();
+                        const data = await response.json();
+                        if (!response.ok) throw data;
+                        return data;
                     })
                     .then(data => {
                         if(data.success) {
@@ -554,8 +633,14 @@
                         }
                     })
                     .catch(error => {
-                        console.error(error);
-                        let msg = error.message || 'Revisa los campos e intenta de nuevo.';
+                        console.error('Error al guardar:', error);
+                        btnGuardar.disabled = false;
+                        btnGuardar.innerHTML = originalHtml;
+                        let msg = error.message || error.error || 'Revisa los campos e intenta de nuevo.';
+                        if (error.errors) {
+                            const list = Object.values(error.errors).flat();
+                            msg = list.join('<br>');
+                        }
                         mostrarToast(msg, 'bi bi-exclamation-triangle-fill');
                     });
                 });
@@ -593,7 +678,12 @@
             const input = document.getElementById('stock-input-' + id);
             if (!input) return;
             let nuevoValor = parseInt(input.value) + cambio;
-            if (nuevoValor < 0) return; 
+            if (nuevoValor < 0) return;
+            const maximo = input.getAttribute('data-stock-maximo');
+            if (maximo && parseInt(maximo) > 0 && nuevoValor > parseInt(maximo)) {
+                mostrarToast('Stock máximo: ' + maximo + ' ' + (input.getAttribute('data-producto-nombre') || ''), 'bi bi-exclamation-triangle-fill');
+                return;
+            }
             input.value = nuevoValor;
             animarStock(input, cambio);
             mandarStockAlBackend(id, nuevoValor);
@@ -604,6 +694,12 @@
             if (!input) return;
             let nuevoValor = parseInt(input.value);
             if (isNaN(nuevoValor) || nuevoValor < 0) { input.value = 0; nuevoValor = 0; }
+            const maximo = input.getAttribute('data-stock-maximo');
+            if (maximo && parseInt(maximo) > 0 && nuevoValor > parseInt(maximo)) {
+                mostrarToast('Stock máximo: ' + maximo + ' (' + (input.getAttribute('data-producto-nombre') || '') + ')', 'bi bi-exclamation-triangle-fill');
+                input.value = parseInt(maximo);
+                return;
+            }
             mandarStockAlBackend(id, nuevoValor);
         }
 
@@ -620,16 +716,30 @@
                 headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': token, 'Accept': 'application/json' },
                 body: JSON.stringify({ cantidad: cantidad })
             })
-            .then(res => res.json())
+            .then(async res => {
+                const data = await res.json();
+                if (!res.ok) throw data;
+                return data;
+            })
             .then(data => {
                 if (data.success) mostrarToast('Inventario actualizado', 'bi bi-check-circle-fill');
+            })
+            .catch(err => {
+                mostrarToast(err.error || 'Error al actualizar stock', 'bi bi-exclamation-triangle-fill');
+                // Revertir visual
+                const input = document.getElementById('stock-input-' + id);
+                if (input && err.stock_actual) input.value = err.stock_actual;
             });
         }
 
         function abrirModalNuevo() {
             document.getElementById('formProducto').reset();
             document.getElementById('prodId').value = '';
+            document.getElementById('prodStockMinimo').value = 5;
+            document.getElementById('prodUnidad').value = 'unidad';
             document.getElementById('modalProductoTitle').innerHTML = '<i class="bi bi-box-seam text-danger me-2"></i> Nuevo Producto';
+            const container = document.getElementById('preciosProveedorContainer');
+            if (container) container.innerHTML = '<div style="color:#555;font-size:0.8rem;padding:8px 0;">Guarda el producto primero, luego edítalo para asignar precios por proveedor.</div>';
             
             const imgPreview = document.getElementById('imgPreview');
             const imgPlaceholder = document.getElementById('imgPlaceholder');
@@ -643,7 +753,12 @@
             document.getElementById('prodId').value = producto.id;
             document.getElementById('prodNombre').value = producto.nombre;
             document.getElementById('prodPrecio').value = producto.precio;
+            document.getElementById('prodPrecioCosto').value = producto.precio_costo || '';
             document.getElementById('prodStock').value = producto.stock || producto.cantidad;
+            document.getElementById('prodStockMinimo').value = producto.stock_minimo ?? 5;
+            document.getElementById('prodStockMaximo').value = producto.stock_maximo || '';
+            const selUnidad = document.getElementById('prodUnidad');
+            if (selUnidad) selUnidad.value = producto.unidad_medida || 'unidad';
             document.getElementById('prodCategoria').value = producto.categoria || '';
             document.getElementById('prod-vencimiento').value = producto.fecha_vencimiento ? producto.fecha_vencimiento.split(' ')[0] : '';
             document.getElementById('prodCodigo').value = producto.codigo || producto.codigo_barras || '';
@@ -662,8 +777,36 @@
                     imgPreview.src = ''; imgPreview.style.display = 'none'; imgPlaceholder.style.display = 'flex';
                 }
             }
+            // Cargar precios por proveedor
+            cargarPreciosProveedor(producto.id);
+
             document.getElementById('modalProductoTitle').innerHTML = '<i class="bi bi-pencil-square text-warning me-2"></i> Editar Producto';
             new bootstrap.Modal(document.getElementById('modalProducto')).show();
+        }
+
+        async function cargarPreciosProveedor(productoId) {
+            const container = document.getElementById('preciosProveedorContainer');
+            if (!container) return;
+            container.innerHTML = '<div style="color:#666;font-size:0.8rem;padding:8px 0;"><i class="bi bi-hourglass-split me-1"></i>Cargando...</div>';
+            try {
+                const res = await fetch('/productos/' + productoId + '/proveedores-precio');
+                const data = await res.json();
+                if (!data.length) {
+                    container.innerHTML = '<div style="color:#555;font-size:0.8rem;padding:8px 0;">Sin proveedores adicionales. Selecciona uno y guarda el producto para asignar precio.</div>';
+                    return;
+                }
+                container.innerHTML = data.map(p => {
+                    const costo = p.pivot.precio_costo ? '$' + parseFloat(p.pivot.precio_costo).toFixed(2) : '<span style="color:#555;">—</span>';
+                    const codProv = p.pivot.codigo_proveedor || '';
+                    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 8px;border-bottom:1px solid rgba(255,255,255,0.04);font-size:0.8rem;">' +
+                        '<span><i class="bi bi-buildings me-1" style="color:#888;"></i>' + p.nombre + '</span>' +
+                        '<span style="color:#00b894;font-weight:600;">' + costo + '</span>' +
+                        (codProv ? '<span style="color:#666;font-size:0.7rem;">Código: ' + codProv + '</span>' : '') +
+                    '</div>';
+                }).join('');
+            } catch(e) {
+                container.innerHTML = '<div style="color:#E50914;font-size:0.8rem;padding:8px 0;">Error al cargar precios.</div>';
+            }
         }
 
         function previewImage(event) {
@@ -1140,6 +1283,19 @@
             let contador = document.getElementById('contador-requisicion');
             if(contador) contador.innerText = carritoRequisicion.length;
         });
+
+        // Persistir pestaña activa entre páginas
+        const tabLinks = document.querySelectorAll('[data-bs-toggle="pill"]');
+        tabLinks.forEach(tab => {
+            tab.addEventListener('shown.bs.tab', () => {
+                sessionStorage.setItem('catalogoActiveTab', tab.id);
+            });
+        });
+        const savedTab = sessionStorage.getItem('catalogoActiveTab');
+        if (savedTab) {
+            const tabEl = document.getElementById(savedTab);
+            if (tabEl) bootstrap.Tab.getOrCreateInstance(tabEl).show();
+        }
 
         window.agregarARequisicion = function(id, nombre, stock) {
             let existe = carritoRequisicion.find(item => item.id === id);
