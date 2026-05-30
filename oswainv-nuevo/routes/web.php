@@ -98,24 +98,21 @@ Route::middleware(['auth'])->group(function () {
             'password' => 'required|string'
         ]);
 
-        $currentUser = Auth::user();
-        if (!$currentUser) {
-            return response()->json(['success' => false, 'message' => 'Sesión no válida'], 401);
-        }
-
-        // Verificar contraseña del usuario ACTUAL
-        if (!\Illuminate\Support\Facades\Hash::check($request->password, $currentUser->password)) {
-            return response()->json(['success' => false, 'message' => 'Contraseña incorrecta']);
-        }
-
         $targetUser = \App\Models\User::find($request->user_id);
         if (!$targetUser) {
             return response()->json(['success' => false, 'message' => 'Usuario no encontrado'], 404);
         }
 
+        // Verificar contraseña del perfil DESTINO
+        if (!\Illuminate\Support\Facades\Hash::check($request->password, $targetUser->password)) {
+            return response()->json(['success' => false, 'message' => 'Contraseña incorrecta']);
+        }
+
         if (!$targetUser->is_active) {
             return response()->json(['success' => false, 'message' => 'Esta cuenta está desactivada']);
         }
+
+        $currentUser = Auth::user();
 
         Auth::login($targetUser);
         $request->session()->save();

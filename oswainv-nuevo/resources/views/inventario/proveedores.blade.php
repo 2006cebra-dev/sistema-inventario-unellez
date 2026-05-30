@@ -126,7 +126,7 @@
                         </div>
                         
                         <!-- FOOTER ACCIONES (Admin) -->
-                        @if(auth()->user()?->rol == 'admin')
+                        @if(Auth::check() && Auth::user()->rol === 'admin')
                         <div class="card-footer bg-transparent p-3" style="border-top: 1px solid rgba(255,255,255,0.05);">
                             <div class="d-flex justify-content-between align-items-center">
                                 

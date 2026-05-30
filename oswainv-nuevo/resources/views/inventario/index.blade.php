@@ -182,27 +182,8 @@
     @include('partials.navbar')
     
     <main class="main-content">
-        <!-- BANNER OPERATIVO COMPACTO (REDISEÑADO) -->
-        <div class="welcome-banner mb-4 animate-page-enter" style="position: relative; border-radius: 16px; overflow: hidden; background-image: url('{{ asset('img/refrigeracion_centros_datos.jpg') }}'); background-size: cover; background-position: center; border: 1px solid var(--n-border); box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
-            <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(90deg, rgba(18,18,18,0.98) 0%, rgba(18,18,18,0.85) 45%, rgba(229,9,20,0.15) 100%); z-index: 1;"></div>
-            <div class="p-4 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3" style="position: relative; z-index: 2;">
-                <div>
-                    <div class="d-flex align-items-center mb-2 gap-2">
-                        <img src="{{ asset('img/logo-unellez.png') }}" style="height: 22px; filter: brightness(0) invert(1);" alt="UNELLEZ">
-                        <span class="hero-subtitle-rgb" style="font-size: 0.75rem; letter-spacing: 2px;">SISTEMA DE INVENTARIO</span>
-                    </div>
-                    <h3 class="text-white fw-bold mb-1" style="letter-spacing: -0.5px;">Panel Operativo OSWA Inv</h3>
-                    <p class="mb-0" style="color: #a3a3a3; font-size: 0.9rem;">Auditoría en tiempo real y seguridad criptográfica activa.</p>
-                </div>
-                <div class="d-flex gap-2">
-                    <button type="button" class="btn btn-sm fw-bold d-flex align-items-center gap-2" style="background: rgba(229,9,20,0.15); color: #E50914; border: 1px solid rgba(229,9,20,0.3); border-radius: 8px; padding: 8px 16px; transition: all 0.2s;" onmouseover="this.style.background='rgba(229,9,20,0.3)'" onmouseout="this.style.background='rgba(229,9,20,0.15)'" data-bs-toggle="modal" data-bs-target="#modalArquitecturaVIP">
-                        <i class="bi bi-info-circle"></i> Ver Info del Proyecto
-                    </button>
-                </div>
-            </div>
-        </div>
-        
-        <div id="panel-estadisticas" class="mt-5 pt-3">
+
+        <div id="panel-estadisticas">
         
         @if(Auth::check() && Auth::user()->rol === 'admin')
 

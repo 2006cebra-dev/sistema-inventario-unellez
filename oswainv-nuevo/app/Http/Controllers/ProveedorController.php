@@ -26,6 +26,9 @@ class ProveedorController extends Controller
 
     public function storeProveedor(Request $request)
     {
+        if (Auth::user()->rol !== 'admin') {
+            return response()->json(['success' => false, 'error' => 'No autorizado'], 403);
+        }
         $request->validate([
             'nombre' => 'required|string|max:255',
             'rif' => 'required|string|unique:proveedores,rif',
@@ -51,6 +54,9 @@ class ProveedorController extends Controller
 
     public function updateProveedor(Request $request, $id)
     {
+        if (Auth::user()->rol !== 'admin') {
+            return response()->json(['success' => false, 'error' => 'No autorizado'], 403);
+        }
         $proveedor = Proveedor::findOrFail($id);
         $request->validate([
             'nombre' => 'required|string|max:255',
@@ -73,6 +79,9 @@ class ProveedorController extends Controller
 
     public function destroyProveedor($id)
     {
+        if (Auth::user()->rol !== 'admin') {
+            return response()->json(['success' => false, 'error' => 'No autorizado'], 403);
+        }
         $proveedor = Proveedor::findOrFail($id);
         $proveedor->delete();
         return response()->json(['success' => true]);
@@ -80,6 +89,9 @@ class ProveedorController extends Controller
 
     public function procesarAbastecimiento(Request $request)
     {
+        if (Auth::user()->rol !== 'admin') {
+            return response()->json(['success' => false, 'error' => 'No autorizado'], 403);
+        }
         $request->validate([ 'producto_id' => 'required', 'cantidad' => 'required|numeric|min:1' ]);
 
         $producto = Producto::findOrFail($request->producto_id);

@@ -81,24 +81,8 @@
 <!-- Fallback de perfiles para páginas sin navbar que usan layouts.app -->
 <script>
     if (!window.abrirSelectorPerfiles) {
-        window.abrirSelectorPerfiles = async function(e) {
+        window.abrirSelectorPerfiles = function(e) {
             if (e) e.preventDefault();
-            const { value: password } = await Swal.fire({
-                title: 'Verifica tu identidad',
-                text: 'Ingresa tu contraseña para cambiar de cuenta',
-                input: 'password',
-                inputPlaceholder: 'Contraseña',
-                showCancelButton: true,
-                confirmButtonText: 'Continuar',
-                cancelButtonText: 'Cancelar',
-                confirmButtonColor: '#E50914',
-                cancelButtonColor: '#333',
-                background: '#121212',
-                color: '#fff',
-                inputAttributes: { autocapitalize: 'off', autocomplete: 'off' }
-            });
-            if (!password) return;
-            sessionStorage.setItem('oswa_temp_password', password);
             const menu = document.getElementById('userDropdownMenu');
             if(menu) { menu.classList.remove('show'); menu.style.display = ''; }
             const sel = document.getElementById('oswa-profile-selector');
@@ -108,25 +92,27 @@
     if (!window.seleccionarPerfilConCarga) {
         window.seleccionarPerfilConCarga = async function(userId) {
             if(document.body.classList.contains('manage-mode')) return;
-            const password = sessionStorage.getItem('oswa_temp_password');
-            if (!password) {
-                const { value: pwd } = await Swal.fire({
-                    title: 'Ingresa tu contraseña',
-                    input: 'password',
-                    inputPlaceholder: 'Contraseña',
-                    showCancelButton: true,
-                    confirmButtonText: 'Cambiar',
-                    cancelButtonText: 'Cancelar',
-                    confirmButtonColor: '#E50914',
-                    cancelButtonColor: '#333',
-                    background: '#121212',
-                    color: '#fff',
-                    inputAttributes: { autocapitalize: 'off', autocomplete: 'off' }
-                });
-                if (!pwd) return;
-                sessionStorage.setItem('oswa_temp_password', pwd);
-                return seleccionarPerfilConCarga(userId);
-            }
+
+            // Cerrar overlay para que SweetAlert sea visible
+            if (window.cerrarSelectorPerfiles) cerrarSelectorPerfiles();
+
+            const { value: password } = await Swal.fire({
+                title: 'Ingresa la contraseña',
+                text: 'Contraseña del perfil para acceder',
+                input: 'password',
+                inputPlaceholder: 'Contraseña',
+                showCancelButton: true,
+                confirmButtonText: 'Cambiar',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#E50914',
+                cancelButtonColor: '#333',
+                background: '#121212',
+                color: '#fff',
+                inputAttributes: { autocapitalize: 'off', autocomplete: 'off' }
+            });
+
+            if (!password) return;
+
             document.body.style.cursor = 'wait';
             try {
                 const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
@@ -136,24 +122,20 @@
                     body: JSON.stringify({ user_id: userId, password })
                 });
                 if (!res.ok) {
-                    sessionStorage.removeItem('oswa_temp_password');
                     document.body.style.cursor = 'default';
-                    if (typeof mostrarToast !== 'undefined') mostrarToast('Error al cambiar de cuenta', 'bi bi-exclamation-triangle-fill');
+                    if (typeof mostrarToast !== 'undefined') mostrarToast('Error del servidor', 'bi bi-exclamation-triangle-fill');
                     return;
                 }
                 const data = await res.json();
-                sessionStorage.removeItem('oswa_temp_password');
+                document.body.style.cursor = 'default';
                 if (data.success) {
                     localStorage.setItem('oswa_switched_to', data.user_name);
                     window.location.href = data.redirect || '/dashboard';
-                }
-                else {
-                    document.body.style.cursor = 'default';
-                    Swal.fire({ icon: 'error', title: 'Error', text: data.message || 'Contraseña incorrecta', confirmButtonColor: '#E50914', background: '#121212', color: '#fff' });
+                } else {
+                    mostrarToast('Contraseña incorrecta', 'bi bi-shield-exclamation');
                 }
             } catch(e) {
                 document.body.style.cursor = 'default';
-                sessionStorage.removeItem('oswa_temp_password');
                 console.error(e);
                 if (typeof mostrarToast !== 'undefined') mostrarToast('Error de conexión', 'bi bi-exclamation-triangle-fill');
             }

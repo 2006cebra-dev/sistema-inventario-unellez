@@ -51,6 +51,9 @@ class ProductoController extends Controller
 
     public function guardarProducto(Request $request)
     {
+        if (Auth::user()->rol !== 'admin') {
+            return response()->json(['success' => false, 'error' => 'No autorizado'], 403);
+        }
         $request->validate([
             'nombre' => 'required|string|max:255',
             'codigo' => 'required|string|unique:productos,codigo',
@@ -145,6 +148,9 @@ class ProductoController extends Controller
 
     public function actualizarProducto(Request $request, $id)
     {
+        if (Auth::user()->rol !== 'admin') {
+            return response()->json(['success' => false, 'error' => 'No autorizado'], 403);
+        }
         $producto = \App\Models\Producto::findOrFail($id);
 
         $request->validate([
@@ -239,6 +245,9 @@ class ProductoController extends Controller
 
     public function updateStock(Request $request, $id)
     {
+        if (Auth::user()->rol !== 'admin') {
+            return response()->json(['success' => false, 'error' => 'No autorizado'], 403);
+        }
         $producto = Producto::findOrFail($id);
         $cantidadAnterior = $producto->stock;
         $nuevaCantidad = (int)$request->cantidad;
@@ -288,6 +297,9 @@ class ProductoController extends Controller
 
     public function destroy($id)
     {
+        if (Auth::user()->rol !== 'admin') {
+            return redirect()->back()->with('error', 'No autorizado');
+        }
         $producto = Producto::findOrFail($id);
         $producto->delete();
         return redirect()->back()->with('success', 'Producto eliminado del sistema.');
@@ -295,6 +307,9 @@ class ProductoController extends Controller
 
     public function eliminarProducto(Request $request)
     {
+        if (Auth::user()->rol !== 'admin') {
+            return response()->json(['success' => false, 'error' => 'No autorizado'], 403);
+        }
         Producto::destroy($request->id);
         return response()->json(['success' => true]);
     }
@@ -308,7 +323,9 @@ class ProductoController extends Controller
     public function ajustarStock(Request $request)
     {
         $request->validate(['id' => 'required|integer', 'accion' => 'required|string']);
-        if (!Auth::check()) return response()->json(['success' => false], 401);
+        if (Auth::user()->rol !== 'admin') {
+            return response()->json(['success' => false, 'error' => 'No autorizado'], 403);
+        }
 
         $producto = Producto::find($request->id);
         if (!$producto) return response()->json(['success' => false], 404);
@@ -436,6 +453,9 @@ class ProductoController extends Controller
 
     public function escanearProducto(Request $request)
     {
+        if (Auth::user()->rol !== 'admin') {
+            return response()->json(['success' => false, 'error' => 'No autorizado'], 403);
+        }
         $p = Producto::where('codigo', $request->codigo)->first();
         if (!$p) return response()->json(['success' => false, 'notFound' => true]);
         $p->increment('stock', 1);
@@ -461,12 +481,18 @@ class ProductoController extends Controller
 
     public function obtenerPreciosProveedor($id)
     {
+        if (Auth::user()->rol !== 'admin') {
+            return response()->json(['error' => 'No autorizado'], 403);
+        }
         $producto = \App\Models\Producto::with('proveedores')->findOrFail($id);
         return response()->json($producto->proveedores);
     }
 
     public function guardarPreciosProveedor(Request $request, $id)
     {
+        if (Auth::user()->rol !== 'admin') {
+            return response()->json(['success' => false, 'error' => 'No autorizado'], 403);
+        }
         $producto = \App\Models\Producto::findOrFail($id);
         $proveedorId = $request->proveedor_id;
         $precioCosto = $request->precio_costo;

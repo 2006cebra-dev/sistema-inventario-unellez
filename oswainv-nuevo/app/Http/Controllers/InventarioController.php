@@ -682,6 +682,9 @@ class InventarioController extends Controller
 
     public function storeCompra(Request $request)
     {
+        if (Auth::user()->rol !== 'admin') {
+            return response()->json(['success' => false, 'error' => 'No autorizado'], 403);
+        }
         $request->validate([
             'proveedor_id' => 'required',
             'producto_id' => 'required',

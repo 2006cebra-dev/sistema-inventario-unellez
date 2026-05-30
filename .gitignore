@@ -1,0 +1,7 @@
+cloudflared.exe
+config.yml
+/node_modules
+/vendor
+/.idea
+*.log
+.DS_Store
