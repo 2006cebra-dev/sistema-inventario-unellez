@@ -112,4 +112,61 @@ class User extends Authenticatable
 
         return in_array($permiso, $permisos);
     }
+
+    public function addXp($xp, $action, $description = null)
+    {
+        $this->xp = ($this->xp ?? 0) + $xp;
+        $nivelNuevo = (int) floor($this->xp / 100) + 1;
+        $subioNivel = $nivelNuevo > ($this->nivel ?? 1);
+        $this->nivel = $nivelNuevo;
+        $this->save();
+
+        $this->xpLogs()->create([
+            'xp' => $xp,
+            'action' => $action,
+            'description' => $description,
+        ]);
+
+        if ($subioNivel) {
+            \App\Models\Notification::create([
+                'user_id' => $this->id,
+                'type' => 'level_up',
+                'message' => "🎉 ¡Subiste al nivel {$this->nivel}!",
+            ]);
+        }
+
+        $this->checkAndUnlockAchievements();
+    }
+
+    public function checkAndUnlockAchievements()
+    {
+        $stats = [
+            'stock_entries' => $this->movimientos()->whereIn('tipo', ['entrada', 'salida'])->count(),
+            'stock_exits' => $this->movimientos()->where('tipo', 'salida')->count(),
+            'products_registered' => \App\Models\Producto::where('user_id', $this->id)->count(),
+            'missions_completed' => \App\Models\Mision::where('user_id', $this->id)->where('status', 'completada')->count(),
+            'requisitions_made' => $this->requisiciones()->count(),
+            'login_streak' => $this->current_streak ?? 0,
+            'chat_messages' => $this->sentMessages()->count(),
+            'transfers_made' => \App\Models\Movimiento::where('user_id', $this->id)->where('tipo', 'transferencia')->count(),
+        ];
+
+        $achievements = \App\Models\Achievement::all();
+        $desbloqueados = $this->achievements()->pluck('achievement_id')->toArray();
+
+        foreach ($achievements as $ach) {
+            if (in_array($ach->id, $desbloqueados)) continue;
+
+            $valor = $stats[$ach->criteria_type] ?? 0;
+            if ($valor >= $ach->criteria_value) {
+                $this->achievements()->attach($ach->id, ['unlocked_at' => now()]);
+                $this->addXp($ach->xp_reward, 'achievement_bonus', "Logro: {$ach->name}");
+                \App\Models\Notification::create([
+                    'user_id' => $this->id,
+                    'type' => 'achievement_unlocked',
+                    'message' => "🏆 ¡Logro desbloqueado: {$ach->name}!",
+                ]);
+            }
+        }
+    }
 }

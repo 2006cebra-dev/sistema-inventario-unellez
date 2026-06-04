@@ -27,6 +27,7 @@ Route::get('/home', fn() => redirect()->to('/dashboard'))->name('home');
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [InventarioController::class, 'index'])->name('inventario');
+    Route::get('/perfil', [InventarioController::class, 'perfil'])->name('perfil');
     Route::get('/api/dashboard/graficas', [InventarioController::class, 'getChartsData'])->name('api.graficas');
     // --- CATÁLOGO Y PRODUCTOS ---
     Route::get('/catalogo', [ProductoController::class, 'catalogo'])->name('catalogo');
@@ -67,6 +68,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/roles/guardar', [InventarioController::class, 'guardarRol'])->name('roles.guardar');
     Route::get('/roles/permisos/{nombre}', [InventarioController::class, 'obtenerPermisosRol'])->name('roles.permisos');
     Route::get('/usuarios/exportar', [InventarioController::class, 'exportarUsuarios'])->name('usuarios.exportar');
+    Route::get('/mapa-sucursales', [InventarioController::class, 'mapaSucursales'])->name('mapa.sucursales');
     
     // --- SISTEMA DE REQUISICIONES ---
     Route::get('/requisiciones/crear', [RequisicionController::class, 'crearRequisicion'])->name('requisiciones.crear');

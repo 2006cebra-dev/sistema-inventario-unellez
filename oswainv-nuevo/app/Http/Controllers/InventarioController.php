@@ -138,6 +138,13 @@ class InventarioController extends Controller
         ));
     }
 
+    public function mapaSucursales()
+    {
+        $sucursales = config('sucursales');
+        $productos = Producto::select('id', 'nombre', 'codigo', 'stock', 'stock_minimo', 'precio')->get();
+        return view('inventario.mapa-sucursales', compact('sucursales', 'productos'));
+    }
+
     public function getChartsData(Request $request)
     {
         $rango = $request->query('rango', '7_dias');
@@ -218,31 +225,7 @@ class InventarioController extends Controller
         $producto = Producto::find($request->producto_id);
         if (!$producto || $producto->stock < $request->cantidad) return response()->json(['success' => false, 'message' => 'Stock insuficiente'], 400);
 
-        $sucursales = [
-            'Caracas' => ['lat' => 10.4806, 'lng' => -66.8983, 'dist' => 500],
-            'Maracaibo' => ['lat' => 10.6427, 'lng' => -71.6125, 'dist' => 450],
-            'Valencia' => ['lat' => 10.1620, 'lng' => -68.0077, 'dist' => 350],
-            'Barquisimeto' => ['lat' => 10.0678, 'lng' => -69.3474, 'dist' => 280],
-            'San Cristóbal' => ['lat' => 7.7669, 'lng' => -72.2250, 'dist' => 320],
-            'Mérida' => ['lat' => 8.5912, 'lng' => -71.1434, 'dist' => 170],
-            'Puerto La Cruz' => ['lat' => 10.2167, 'lng' => -64.6333, 'dist' => 820],
-            'Maturín' => ['lat' => 9.7458, 'lng' => -63.1767, 'dist' => 950],
-            'Ciudad Guayana' => ['lat' => 8.2913, 'lng' => -62.7092, 'dist' => 1100],
-            'Coro' => ['lat' => 11.4045, 'lng' => -69.6734, 'dist' => 480],
-            'Cumaná' => ['lat' => 10.4616, 'lng' => -64.1824, 'dist' => 750],
-            'Guanare' => ['lat' => 9.0418, 'lng' => -69.7421, 'dist' => 90],
-            'San Juan de los Morros' => ['lat' => 9.9115, 'lng' => -67.3538, 'dist' => 430],
-            'Trujillo' => ['lat' => 9.3701, 'lng' => -70.4350, 'dist' => 160],
-            'San Felipe' => ['lat' => 10.3399, 'lng' => -68.7452, 'dist' => 310],
-            'Barcelona' => ['lat' => 10.1362, 'lng' => -64.6862, 'dist' => 810],
-            'Porlamar' => ['lat' => 10.9575, 'lng' => -63.8697, 'dist' => 900],
-            'La Guaira' => ['lat' => 10.5992, 'lng' => -66.9347, 'dist' => 520],
-            'San Fernando de Apure' => ['lat' => 7.8878, 'lng' => -67.4724, 'dist' => 380],
-            'Puerto Ayacucho' => ['lat' => 5.6639, 'lng' => -67.6236, 'dist' => 600],
-            'Tucupita' => ['lat' => 9.0611, 'lng' => -62.0510, 'dist' => 1200],
-            'San Carlos' => ['lat' => 9.6593, 'lng' => -68.5833, 'dist' => 260],
-        ];
-
+        $sucursales = config('sucursales');
         $destino = $sucursales[$request->sucursal] ?? ['lat' => 10.48, 'lng' => -66.89, 'dist' => 500];
         $costoFlete = $destino['dist'] * 0.25;
         $fecha = now()->toDateTimeString();
@@ -885,5 +868,34 @@ class InventarioController extends Controller
             DB::rollBack();
             return redirect()->back()->with('error', 'Error al procesar la compra: ' . $e->getMessage());
         }
+    }
+
+    public function perfil()
+    {
+        $user = Auth::user();
+        $xpActual = $user->xp ?? 0;
+        $nivel = $user->nivel ?? 1;
+        $xpSiguiente = $nivel * 100;
+        $xpBar = min(100, ($xpActual / max($xpSiguiente, 1)) * 100);
+
+        $achievements = \App\Models\Achievement::all();
+        $user->load('achievements');
+        $desbloqueados = $user->achievements->count();
+        $totalLogros = $achievements->count();
+
+        $activityLabels = [];
+        $activityData = [];
+        for ($i = 6; $i >= 0; $i--) {
+            $date = now()->subDays($i)->format('Y-m-d');
+            $activityLabels[] = now()->subDays($i)->format('d/m');
+            $activityData[] = Movimiento::where('user_id', $user->id)
+                ->whereDate('created_at', $date)->count();
+        }
+
+        return view('inventario.perfil', compact(
+            'user', 'xpActual', 'nivel', 'xpSiguiente', 'xpBar',
+            'achievements', 'desbloqueados', 'totalLogros',
+            'activityLabels', 'activityData'
+        ));
     }
 }

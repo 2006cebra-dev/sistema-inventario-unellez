@@ -842,9 +842,12 @@
             });
         }
 
+        let priceChartInstance = null;
+
         function verHistorialPrecios(productoId, nombre) {
             document.getElementById('priceHistoryTitle').textContent = nombre;
             document.getElementById('priceHistoryContent').innerHTML = '<div class="text-center py-4" style="color:#666;"><i class="bi bi-hourglass-split" style="font-size:2rem;"></i><p class="mt-2">Cargando métricas...</p></div>';
+            document.getElementById('priceChartContainer').innerHTML = '';
             const modal = new bootstrap.Modal(document.getElementById('modalPriceHistory'));
             modal.show();
 
@@ -855,8 +858,61 @@
                         document.getElementById('priceHistoryContent').innerHTML = '<div class="text-center py-4" style="color:#555;"><i class="bi bi-clock-history" style="font-size:2.5rem;"></i><p class="mt-3" style="font-size:0.9rem;">Sin cambios de precio registrados.</p></div>';
                         return;
                     }
-                    let html = '<div style="max-height:400px;overflow-y:auto;">';
-                    data.forEach(h => {
+                    data.reverse();
+                    const labels = data.map(h => new Date(h.created_at).toLocaleDateString('es-ES', {day:'2-digit', month:'2-digit'}));
+                    const usdPrices = data.map(h => parseFloat(h.precio_usd_nuevo));
+                    const bsPrices = data.map(h => h.precio_bs_nuevo != null ? parseFloat(h.precio_bs_nuevo) : null);
+
+                    document.getElementById('priceChartContainer').innerHTML = '<canvas id="priceChart" height="150"></canvas>';
+                    if (priceChartInstance) priceChartInstance.destroy();
+                    priceChartInstance = new Chart(document.getElementById('priceChart'), {
+                        type: 'line',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Precio USD',
+                                data: usdPrices,
+                                borderColor: '#00b894',
+                                backgroundColor: 'rgba(0,184,148,0.1)',
+                                fill: true, tension: 0.3,
+                                pointBackgroundColor: '#00b894',
+                                pointBorderColor: '#fff',
+                                pointBorderWidth: 1,
+                                pointRadius: 4,
+                            }, bsPrices[0] != null ? {
+                                label: 'Precio Bs.',
+                                data: bsPrices,
+                                borderColor: '#fdcb6e',
+                                backgroundColor: 'rgba(253,203,110,0.1)',
+                                fill: true, tension: 0.3,
+                                pointBackgroundColor: '#fdcb6e',
+                                pointBorderColor: '#fff',
+                                pointBorderWidth: 1,
+                                pointRadius: 4,
+                                yAxisID: 'y1',
+                            } : null].filter(Boolean),
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            interaction: { mode: 'index', intersect: false },
+                            plugins: {
+                                legend: { labels: { color: '#888', font: { size: 11 } } }
+                            },
+                            scales: {
+                                x: { ticks: { color: '#666', maxTicksLimit: 10 }, grid: { color: 'rgba(255,255,255,0.03)' } },
+                                y: { beginAtZero: false, ticks: { color: '#666', callback: v => '$' + v }, grid: { color: 'rgba(255,255,255,0.03)' } },
+                                y1: bsPrices[0] != null ? {
+                                    position: 'right',
+                                    ticks: { color: '#fdcb6e', callback: v => 'Bs.' + v },
+                                    grid: { display: false },
+                                } : undefined,
+                            }
+                        }
+                    });
+
+                    let html = '<div style="max-height:300px;overflow-y:auto;margin-top:1rem;">';
+                    data.slice().reverse().forEach(h => {
                         const time = new Date(h.created_at).toLocaleString('es-ES', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'});
                         const quien = h.user_name || 'Sistema';
                         const subio = parseFloat(h.precio_nuevo) >= parseFloat(h.precio_anterior);
@@ -1188,6 +1244,7 @@
                 </div>
                 <div class="modal-body p-4">
                     <h6 class="text-white mb-3" id="priceHistoryTitle">Producto</h6>
+                    <div id="priceChartContainer" style="margin-bottom:1rem;"></div>
                     <div id="priceHistoryContent">
                         <div class="text-center py-4" style="color:#666;">
                             <i class="bi bi-hourglass-split" style="font-size: 2rem;"></i>

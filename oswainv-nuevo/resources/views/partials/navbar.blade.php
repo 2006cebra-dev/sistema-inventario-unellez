@@ -433,6 +433,7 @@
                 <a href="{{ url('/gestion/misiones') }}" class="dropdown-item-custom"><i class="bi bi-flag-fill text-danger"></i> Misiones</a>
                 @endif
                 <a href="{{ route('catalogo') }}#tab-auditoria" class="dropdown-item-custom"><i class="bi bi-shield-lock text-success"></i> Reportes de Auditoría</a>
+                <a href="{{ route('mapa.sucursales') }}" class="dropdown-item-custom"><i class="bi bi-geo-alt-fill text-danger"></i> Mapa de Sucursales</a>
                 <div style="height: 1px; background: rgba(255,255,255,0.05); margin: 8px 0;"></div>
                 <a href="{{ route('reporte.cierre') ?? '#' }}" class="dropdown-item-custom item-cierre"><i class="bi bi-file-earmark-check-fill"></i> Generar Cierre Diario</a>
                 @if(auth()->user()->tienePermiso('respaldar_bd'))
@@ -485,6 +486,7 @@
                     <div class="dd-email">{{ auth()->user()?->email ?? 'Sin correo' }}</div>
                     <div class="dd-role">{{ auth()->user()?->rol ?? 'empleado' }}</div>
                 </div>
+                <a href="{{ route('perfil') }}" class="dd-item" style="text-decoration:none;display:flex;"><i class="bi bi-trophy-fill" style="color:#ffd700;"></i> Mi Perfil</a>
                 <button class="dd-item" onclick="mostrarMiCuenta()"><i class="bi bi-person-circle"></i> Mi Cuenta</button>
                 <button class="dd-item" onclick="mostrarAtajos()"><i class="bi bi-keyboard"></i> Atajos de Teclado</button>
                 <button type="button" class="dd-item text-white" onclick="abrirSelectorPerfiles(event)"><i class="bi bi-arrow-left-right text-danger"></i> Cambiar de Cuenta</button>
