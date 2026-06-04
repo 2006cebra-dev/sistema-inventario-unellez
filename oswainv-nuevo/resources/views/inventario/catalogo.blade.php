@@ -1001,42 +1001,89 @@
         });
 
         function confirmarTransferencia() {
-            const cantidad = document.getElementById('transferCantidad').value;
+            const cantidad = parseInt(document.getElementById('transferCantidad').value);
             const sucursal = document.getElementById('transferSucursal').value;
+            const opt = document.querySelector('#transferSucursal option[value="' + sucursal + '"]');
+            const dist = opt ? parseInt(opt.getAttribute('data-dist')) : 0;
+            const flete = (dist * 0.25 * cantidad).toFixed(2);
             if (!cantidad || !sucursal) return;
 
-            const btn = document.getElementById('btnConfirmarTransferencia');
-            btn.disabled = true;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Transfiriendo...';
+            Swal.fire({
+                title: '¿Transferir ' + cantidad + ' uds?',
+                html:
+                    '<div style="text-align:left;color:#ccc;">' +
+                    '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #2a2a2a;"><span style="color:#888;">Producto</span><span style="color:#fff;font-weight:600;">' + transferProductoNombre + '</span></div>' +
+                    '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #2a2a2a;"><span style="color:#888;">Destino</span><span style="color:#fff;font-weight:600;">' + sucursal + '</span></div>' +
+                    '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #2a2a2a;"><span style="color:#888;">Distancia</span><span style="color:#fff;">' + dist.toLocaleString() + ' km</span></div>' +
+                    '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #2a2a2a;"><span style="color:#888;">Cantidad</span><span style="color:#fff;">' + cantidad + ' uds</span></div>' +
+                    '<div style="display:flex;justify-content:space-between;padding:6px 0;"><span style="color:#888;">Flete estimado</span><span style="color:#ffc107;font-weight:600;">$' + flete + '</span></div>' +
+                    '</div>',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#00b894',
+                cancelButtonColor: '#444',
+                confirmButtonText: '<i class="bi bi-check-lg me-1"></i>Sí, transferir',
+                cancelButtonText: 'Cancelar',
+                background: '#1a1a1a',
+                color: '#fff',
+                position: 'top-end',
+                toast: false,
+                showConfirmButton: true,
+                timer: undefined,
+                customClass: { popup: 'border border-secondary shadow-lg' }
+            }).then((result) => {
+                if (!result.isConfirmed) return;
 
-            fetch('/transferir-producto', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                },
-                body: JSON.stringify({
-                    producto_id: transferProductoId,
-                    cantidad: parseInt(cantidad),
-                    sucursal: sucursal
+                const btn = document.getElementById('btnConfirmarTransferencia');
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Transfiriendo...';
+
+                fetch('/transferir-producto', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify({
+                        producto_id: transferProductoId,
+                        cantidad: cantidad,
+                        sucursal: sucursal
+                    })
                 })
-            })
-            .then(r => r.json())
-            .then(data => {
-                btn.innerHTML = '<i class="bi bi-send-fill me-1"></i> Transferir';
-                btn.disabled = false;
-                if (data.success) {
-                    bootstrap.Modal.getInstance(document.getElementById('modalTransferir')).hide();
-                    mostrarToast('Transferido a ' + data.sucursal + ' | Flete: $' + data.costo_flete.toFixed(2), 'bi bi-send-fill');
-                    setTimeout(() => location.reload(), 1500);
-                } else {
-                    mostrarToast(data.message || 'Error al transferir', 'bi bi-exclamation-triangle-fill');
-                }
-            })
-            .catch(() => {
-                btn.innerHTML = '<i class="bi bi-send-fill me-1"></i> Transferir';
-                btn.disabled = false;
-                mostrarToast('Error de conexión', 'bi bi-exclamation-triangle-fill');
+                .then(r => r.json())
+                .then(data => {
+                    btn.innerHTML = '<i class="bi bi-send-fill me-1"></i> Transferir';
+                    btn.disabled = false;
+                    if (data.success) {
+                        bootstrap.Modal.getInstance(document.getElementById('modalTransferir')).hide();
+                        Swal.fire({
+                            title: '✅ Transferencia Exitosa',
+                            html:
+                                '<div style="text-align:left;color:#ccc;">' +
+                                '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #2a2a2a;"><span style="color:#888;">Producto</span><span style="color:#fff;font-weight:600;">' + transferProductoNombre + '</span></div>' +
+                                '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #2a2a2a;"><span style="color:#888;">Destino</span><span style="color:#00b894;font-weight:600;">' + sucursal + '</span></div>' +
+                                '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #2a2a2a;"><span style="color:#888;">Distancia</span><span style="color:#fff;">' + dist.toLocaleString() + ' km</span></div>' +
+                                '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #2a2a2a;"><span style="color:#888;">Cantidad</span><span style="color:#fff;">' + cantidad + ' uds</span></div>' +
+                                '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #2a2a2a;"><span style="color:#888;">Flete</span><span style="color:#ffc107;font-weight:600;">$' + data.costo_flete.toFixed(2) + '</span></div>' +
+                                '<div style="display:flex;justify-content:space-between;padding:8px 0;"><span style="color:#888;">Fecha</span><span style="color:#888;">' + new Date(data.fecha).toLocaleString('es-ES') + '</span></div>' +
+                                '</div>' +
+                                '<div class="mt-3 text-center" style="font-size:0.8rem;color:#555;">El stock se descontó del inventario local</div>',
+                            icon: 'success',
+                            confirmButtonColor: '#00b894',
+                            confirmButtonText: '<i class="bi bi-check-lg me-1"></i>Listo',
+                            background: '#1a1a1a',
+                            color: '#fff',
+                            customClass: { popup: 'border border-secondary shadow-lg' }
+                        }).then(() => location.reload());
+                    } else {
+                        mostrarToast(data.message || 'Error al transferir', 'bi bi-exclamation-triangle-fill');
+                    }
+                })
+                .catch(() => {
+                    btn.innerHTML = '<i class="bi bi-send-fill me-1"></i> Transferir';
+                    btn.disabled = false;
+                    mostrarToast('Error de conexión', 'bi bi-exclamation-triangle-fill');
+                });
             });
         }
 
