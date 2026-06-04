@@ -276,6 +276,9 @@
                                     <i class="bi bi-pencil-square"></i> Editar
                                 </button>
                                 
+                                <button type="button" class="btn btn-sm d-flex align-items-center justify-content-center" title="Transferir a Sucursal" style="width: 40px; height: 38px; background: rgba(0,184,148,0.1); color: #00b894; border: 1px solid rgba(0,184,148,0.2); border-radius: 8px; transition: all 0.2s;" onmouseover="this.style.background='rgba(0,184,148,0.2)'" onmouseout="this.style.background='rgba(0,184,148,0.1)'" onclick="abrirTransferencia({{ $producto->id }}, '{{ addslashes($producto->nombre) }}', {{ $producto->stock }})">
+                                    <i class="bi bi-send-fill"></i>
+                                </button>
                                 <button type="button" class="btn btn-sm d-flex align-items-center justify-content-center" title="Eliminar Producto" style="width: 40px; height: 38px; background: rgba(229, 9, 20, 0.1); color: #E50914; border: 1px solid rgba(229, 9, 20, 0.2); border-radius: 8px; transition: all 0.2s;" onmouseover="this.style.background='rgba(229, 9, 20, 0.2)'" onmouseout="this.style.background='rgba(229, 9, 20, 0.1)'" onclick="confirmarEliminacion({{ $producto->id }}, '{{ addslashes($producto->nombre) }}')">
                                     <i class="bi bi-trash-fill"></i>
                                 </button>
@@ -953,6 +956,90 @@
                 });
         }
 
+        let transferProductoId = null;
+        let transferProductoNombre = '';
+
+        function abrirTransferencia(id, nombre, stock) {
+            transferProductoId = id;
+            transferProductoNombre = nombre;
+            document.getElementById('transferProductoNombre').textContent = nombre;
+            document.getElementById('transferProductoStock').textContent = 'Stock: ' + stock + ' uds';
+            document.getElementById('transferCantidad').value = 1;
+            document.getElementById('transferCantidad').max = stock;
+            document.getElementById('transferSucursal').value = '';
+            document.getElementById('transferInfo').classList.add('d-none');
+            document.getElementById('btnConfirmarTransferencia').disabled = true;
+            new bootstrap.Modal(document.getElementById('modalTransferir')).show();
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const sel = document.getElementById('transferSucursal');
+            const cant = document.getElementById('transferCantidad');
+            const btn = document.getElementById('btnConfirmarTransferencia');
+            const info = document.getElementById('transferInfo');
+            const distEl = document.getElementById('transferDistancia');
+            const fleteEl = document.getElementById('transferFlete');
+
+            function actualizarInfo() {
+                const opt = sel.options[sel.selectedIndex];
+                if (opt && opt.value) {
+                    const dist = parseFloat(opt.getAttribute('data-dist')) || 0;
+                    const flete = (dist * 0.25).toFixed(2);
+                    const qty = parseInt(cant.value) || 1;
+                    distEl.textContent = dist.toLocaleString();
+                    fleteEl.textContent = '$' + (flete * qty).toFixed(2) + ' (a $0.25/km)';
+                    info.classList.remove('d-none');
+                    btn.disabled = false;
+                } else {
+                    info.classList.add('d-none');
+                    btn.disabled = true;
+                }
+            }
+
+            sel.addEventListener('change', actualizarInfo);
+            cant.addEventListener('input', actualizarInfo);
+        });
+
+        function confirmarTransferencia() {
+            const cantidad = document.getElementById('transferCantidad').value;
+            const sucursal = document.getElementById('transferSucursal').value;
+            if (!cantidad || !sucursal) return;
+
+            const btn = document.getElementById('btnConfirmarTransferencia');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Transfiriendo...';
+
+            fetch('/transferir-producto', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({
+                    producto_id: transferProductoId,
+                    cantidad: parseInt(cantidad),
+                    sucursal: sucursal
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                btn.innerHTML = '<i class="bi bi-send-fill me-1"></i> Transferir';
+                btn.disabled = false;
+                if (data.success) {
+                    bootstrap.Modal.getInstance(document.getElementById('modalTransferir')).hide();
+                    mostrarToast('Transferido a ' + data.sucursal + ' | Flete: $' + data.costo_flete.toFixed(2), 'bi bi-send-fill');
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    mostrarToast(data.message || 'Error al transferir', 'bi bi-exclamation-triangle-fill');
+                }
+            })
+            .catch(() => {
+                btn.innerHTML = '<i class="bi bi-send-fill me-1"></i> Transferir';
+                btn.disabled = false;
+                mostrarToast('Error de conexión', 'bi bi-exclamation-triangle-fill');
+            });
+        }
+
         function mostrarRequisicionesPendientes() {
             const reqs = @json($requisicionesPendientes ?? []);
             const body = document.getElementById('modalRequisicionesBody');
@@ -1251,6 +1338,48 @@
                             <p class="mt-2">Cargando historial...</p>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL TRANSFERIR A SUCURSAL -->
+    <div class="modal fade" id="modalTransferir" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-secondary shadow-lg" style="background: #1a1a1a;">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title text-white fw-bold"><i class="bi bi-send-fill text-success me-2"></i>Transferir a Sucursal</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label text-white-50" style="font-size:0.8rem;">Producto</label>
+                        <div class="text-white fw-bold" id="transferProductoNombre" style="font-size:1.1rem;">—</div>
+                        <div style="color:#888;font-size:0.8rem;" id="transferProductoStock">Stock: —</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-white-50" style="font-size:0.8rem;">Cantidad a transferir</label>
+                        <input type="number" id="transferCantidad" class="form-control bg-dark text-white border-secondary" value="1" min="1" style="border-radius:8px;">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-white-50" style="font-size:0.8rem;">Sucursal destino</label>
+                        <select id="transferSucursal" class="form-select bg-dark text-white border-secondary" style="border-radius:8px;">
+                            <option value="">Seleccionar sucursal...</option>
+                            @foreach(config('sucursales') as $nombre => $data)
+                            <option value="{{ $nombre }}" data-dist="{{ $data['dist'] }}">{{ $nombre }} @if($data['dist'] > 0)({{ number_format($data['dist']) }} km)@else (Sede Principal)@endif</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div id="transferInfo" class="p-3 rounded d-none" style="background:rgba(0,184,148,0.08);border:1px solid rgba(0,184,148,0.2);">
+                        <div style="color:#00b894;font-size:0.85rem;"><i class="bi bi-truck me-1"></i>Distancia: <strong id="transferDistancia">—</strong> km</div>
+                        <div style="color:#ffc107;font-size:0.85rem;"><i class="bi bi-cash me-1"></i>Costo flete estimado: <strong id="transferFlete">—</strong></div>
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-dark" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn fw-bold" id="btnConfirmarTransferencia" onclick="confirmarTransferencia()" disabled style="background:linear-gradient(135deg,#00b894,#00a381);color:#fff;border:none;border-radius:8px;">
+                        <i class="bi bi-send-fill me-1"></i> Transferir
+                    </button>
                 </div>
             </div>
         </div>
