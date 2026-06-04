@@ -206,12 +206,12 @@
                 </div>
                 <div class="user-info mb-3 d-flex align-items-center gap-2">
                     @if(auth()->user()?->profile_photo_path)
-                        <img src="{{ asset('storage/' . auth()->user()->profile_photo_path) }}" alt="{{ auth()->user()->name }}" style="width: 32px; height: 32px; object-fit: cover; border-radius: 4px; border: 1px solid #333;">
+                        <img src="{{ asset('storage/' . auth()->user()->profile_photo_path) }}" alt="{{ auth()->user()->display_name }}" style="width: 32px; height: 32px; object-fit: cover; border-radius: 4px; border: 1px solid #333;">
                     @else
-                        <div class="user-avatar">{{ strtoupper(substr(auth()->user()?->name ?? 'U', 0, 1)) }}</div>
+                        <div class="user-avatar">{{ strtoupper(substr(auth()->user()?->display_name ?? 'U', 0, 1)) }}</div>
                     @endif
                     <div>
-                        <div class="text-white fw-bold" style="font-size: 0.9rem;">{{ auth()->user()?->name ?? 'Usuario' }}</div>
+                        <div class="text-white fw-bold" style="font-size: 0.9rem;">{{ auth()->user()?->display_name ?? 'Usuario' }}</div>
                         <div class="text-secondary" style="font-size: 0.8rem;">{{ auth()->user()?->rol ?? 'empleado' }}</div>
                     </div>
                 </div>
@@ -227,12 +227,12 @@
         <div class="topbar-right d-none d-md-flex align-items-center gap-3">
             <div class="user-info d-flex align-items-center gap-2">
                 @if(auth()->user()?->profile_photo_path)
-                    <img src="{{ asset('storage/' . auth()->user()->profile_photo_path) }}" alt="{{ auth()->user()->name }}" style="width: 32px; height: 32px; object-fit: cover; border-radius: 4px; border: 1px solid #333;">
+                    <img src="{{ asset('storage/' . auth()->user()->profile_photo_path) }}" alt="{{ auth()->user()->display_name }}" style="width: 32px; height: 32px; object-fit: cover; border-radius: 4px; border: 1px solid #333;">
                 @else
-                    <div class="user-avatar">{{ strtoupper(substr(auth()->user()?->name ?? 'U', 0, 1)) }}</div>
+                    <div class="user-avatar">{{ strtoupper(substr(auth()->user()?->display_name ?? 'U', 0, 1)) }}</div>
                 @endif
                 <div>
-                    <div style="font-weight: 600; font-size: 0.85rem; color: white;">{{ auth()->user()?->name ?? 'Usuario' }}</div>
+                    <div style="font-weight: 600; font-size: 0.85rem; color: white;">{{ auth()->user()?->display_name ?? 'Usuario' }}</div>
                     <div style="font-size: 0.7rem; color: var(--text-secondary);">{{ auth()->user()?->rol ?? 'empleado' }}</div>
                 </div>
             </div>

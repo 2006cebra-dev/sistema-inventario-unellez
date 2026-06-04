@@ -73,7 +73,7 @@ class InventarioController extends Controller
         $stockCritico = $productos->filter(fn($p) => $p->stock_bajo)->count();
         $categorias = $productos->groupBy('categoria')->map(fn($group) => $group->count());
         $ultimoMovimiento = Movimiento::with('producto')->latest()->first();
-        $esAdmin = Auth::check() && Auth::user()->rol === 'admin';
+        $esAdmin = Auth::check() && Auth::user()->tienePermiso('gestionar_productos');
 
         $productosBajoStock = $productos->filter(fn($p) => $p->stock_bajo);
         $productosPorVencer = Producto::whereNotNull('fecha_vencimiento')
@@ -102,7 +102,7 @@ class InventarioController extends Controller
         $movimientosHoy = 0;
         $requisicionesHoy = 0;
         $notificaciones = collect();
-        if (Auth::check() && Auth::user()->rol === 'empleado') {
+        if (Auth::check() && !Auth::user()->tienePermiso('gestionar_usuarios')) {
             $userId = Auth::id();
             $misRequisiciones = Requisicion::with('producto')->where('user_id', $userId)->orderBy('created_at', 'desc')->take(5)->get();
             $movimientosHoy = Movimiento::where('user_id', $userId)->whereDate('created_at', today())->count();
@@ -213,7 +213,7 @@ class InventarioController extends Controller
     public function transferirProducto(Request $request)
     {
         $request->validate(['producto_id' => 'required|integer', 'cantidad' => 'required|integer|min:1', 'sucursal' => 'required|string']);
-        if (!Auth::check() || Auth::user()->rol !== 'admin') return response()->json(['success' => false], 403);
+        if (!Auth::check() || !Auth::user()->tienePermiso('gestionar_productos')) return response()->json(['success' => false], 403);
 
         $producto = Producto::find($request->producto_id);
         if (!$producto || $producto->stock < $request->cantidad) return response()->json(['success' => false, 'message' => 'Stock insuficiente'], 400);
@@ -265,7 +265,7 @@ class InventarioController extends Controller
             'tipo' => 'Salida',
             'cantidad' => $request->cantidad,
             'motivo' => $motivoTransfer,
-            'usuario_accion' => Auth::user()->name,
+            'usuario_accion' => Auth::user()->display_name,
         ]);
 
         $movimiento->firma_hash = $movimiento->generarFirma();
@@ -303,7 +303,7 @@ class InventarioController extends Controller
             }
 
             if (preg_match('/quien soy|mi perfil|mi rol|mi nombre/', $p)) {
-                return "Estás conectado como **{$usuario->name}** con privilegios de **{$usuario->rol}**.";
+                return "Estás conectado como **{$usuario->display_name}** con privilegios de **{$usuario->rol}**.";
             }
 
             if (preg_match('/precio de (.+)|cuanto cuesta (.+)/', $p, $matches)) {
@@ -421,7 +421,7 @@ class InventarioController extends Controller
     }
 
     public function exportarPdf() {
-        if (!Auth::check() || Auth::user()->rol !== 'admin') abort(403, 'No autorizado');
+        if (!Auth::check() || !Auth::user()->tienePermiso('exportar_pdf')) abort(403, 'No autorizado');
         $productos = Producto::all();
         return view('inventario.pdf', compact('productos'));
     }
@@ -440,26 +440,53 @@ class InventarioController extends Controller
 
     public function indexUsuarios()
     {
-        if (!Auth::check() || Auth::user()->rol !== 'admin') abort(403, 'No autorizado');
+        if (!Auth::check() || !Auth::user()->tienePermiso('gestionar_usuarios')) abort(403, 'No autorizado');
         $usuarios = User::orderBy('created_at', 'desc')->get();
         $logs = \App\Models\BitacoraAcceso::with('user')->latest()->take(20)->get();
-        return view('usuarios.index', compact('usuarios', 'logs'));
+        $rolesUsados = $usuarios->pluck('rol')->unique()->values();
+        $rolesCache = \Illuminate\Support\Facades\Cache::get('roles_custom', []);
+        $rolesExtra = collect(array_merge(
+            $rolesUsados->filter(fn($r) => !in_array($r, ['admin','empleado']))->toArray(),
+            $rolesCache,
+            ['desarrollador']
+        ))->unique()->values();
+
+        $rolesPermisos = \Illuminate\Support\Facades\Cache::get('roles_permisos', []);
+        $defaultPermisos = [
+            'admin' => ['ver_dashboard','ver_catalogo','ver_proveedores','gestionar_productos','aprobar_requisiciones','ver_auditoria','gestionar_misiones','exportar_pdf','chat'],
+            'empleado' => ['ver_dashboard','ver_catalogo','ver_proveedores','chat'],
+            'desarrollador' => ['ver_dashboard','ver_catalogo','ver_proveedores','gestionar_productos','gestionar_proveedores','aprobar_requisiciones','gestionar_usuarios','ver_auditoria','gestionar_misiones','gestionar_precios','exportar_pdf','respaldar_bd','chat'],
+        ];
+        $changed = false;
+        foreach ($defaultPermisos as $r => $perms) {
+            if (!isset($rolesPermisos[$r])) {
+                $rolesPermisos[$r] = $perms;
+                $changed = true;
+            }
+        }
+        if ($changed) {
+            \Illuminate\Support\Facades\Cache::forever('roles_permisos', $rolesPermisos);
+        }
+
+        return view('usuarios.index', compact('usuarios', 'logs', 'rolesExtra'));
     }
 
     public function guardarUsuario(Request $request)
     {
         $request->validate([
             'name' => 'required|string|max:255',
+            'nick' => 'nullable|string|max:50|unique:users,nick',
             'email' => 'required|email|unique:users',
             'cedula' => 'nullable|string|max:20',
             'telefono' => 'nullable|string|max:20',
-            'rol' => 'required|in:admin,empleado',
+            'rol' => 'required|string|max:50',
             'password' => 'required|min:6',
             'profile_photo' => 'nullable|image|max:5120'
         ]);
 
         $data = [
             'name' => $request->name,
+            'nick' => $request->nick,
             'email' => $request->email,
             'cedula' => $request->cedula,
             'telefono' => $request->telefono,
@@ -493,9 +520,145 @@ class InventarioController extends Controller
         return response()->json(['success' => true, 'message' => "Usuario {$accion}", 'is_active' => $usuario->is_active]);
     }
 
+    public function obtenerDatosUsuario($id)
+    {
+        $usuario = User::findOrFail($id);
+        return response()->json([
+            'success' => true,
+            'user' => [
+                'id' => $usuario->id,
+                'name' => $usuario->name,
+                'nick' => $usuario->nick,
+                'email' => $usuario->email,
+                'cedula' => $usuario->cedula,
+                'telefono' => $usuario->telefono,
+                'rol' => $usuario->rol,
+                'profile_photo_path' => $usuario->profile_photo_path,
+            ]
+        ]);
+    }
+
+    public function actualizarUsuario(Request $request)
+    {
+        $usuario = User::findOrFail($request->user_id);
+        $request->validate([
+            'user_id' => 'required|integer',
+            'name' => 'required|string|max:255',
+            'nick' => 'nullable|string|max:50|unique:users,nick,' . $usuario->id,
+            'email' => 'required|email|unique:users,email,' . $usuario->id,
+            'cedula' => 'nullable|string|max:20',
+            'telefono' => 'nullable|string|max:20',
+            'rol' => 'required|string|max:50',
+            'password' => 'nullable|min:6',
+            'profile_photo' => 'nullable|image|max:5120'
+        ]);
+
+        $usuario->name = $request->name;
+        $usuario->nick = $request->nick;
+        $usuario->email = $request->email;
+        $usuario->cedula = $request->cedula;
+        $usuario->telefono = $request->telefono;
+        $usuario->rol = $request->rol;
+
+        if ($request->filled('password')) {
+            $usuario->password = Hash::make($request->password);
+        }
+
+        if ($request->hasFile('profile_photo')) {
+            if ($usuario->profile_photo_path) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($usuario->profile_photo_path);
+            }
+            $path = $request->file('profile_photo')->store('profile-photos', 'public');
+            $usuario->profile_photo_path = $path;
+        }
+
+        $usuario->save();
+
+        return response()->json(['success' => true, 'message' => 'Usuario actualizado correctamente']);
+    }
+
+    public function eliminarUsuario(Request $request)
+    {
+        $request->validate(['id' => 'required|integer']);
+        if (Auth::id() == $request->id) {
+            return response()->json(['success' => false, 'message' => 'No puedes eliminarte a ti mismo']);
+        }
+        $usuario = User::findOrFail($request->id);
+        if ($usuario->profile_photo_path) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($usuario->profile_photo_path);
+        }
+        $usuario->delete();
+        return response()->json(['success' => true, 'message' => 'Usuario eliminado correctamente']);
+    }
+
+    public function guardarRol(Request $request)
+    {
+        $request->validate([
+            'nombre' => 'required|string|max:50|regex:/^[a-zA-Z0-9_]+$/',
+            'permisos' => 'nullable|array',
+            'permisos.*' => 'string|max:50',
+            'editar' => 'nullable|boolean',
+        ]);
+        $nombre = strtolower(trim($request->nombre));
+        if (in_array($nombre, ['admin', 'empleado']) && !$request->editar) {
+            return response()->json(['success' => false, 'message' => 'No puedes crear roles que ya existen (admin/empleado)']);
+        }
+        $roles = \Illuminate\Support\Facades\Cache::get('roles_custom', []);
+        $rolesPermisos = \Illuminate\Support\Facades\Cache::get('roles_permisos', []);
+
+        if (!$request->editar) {
+            if (in_array($nombre, $roles)) {
+                return response()->json(['success' => false, 'message' => "El rol '{$nombre}' ya existe"]);
+            }
+            $roles[] = $nombre;
+            \Illuminate\Support\Facades\Cache::forever('roles_custom', $roles);
+        }
+
+        $rolesPermisos[$nombre] = $request->permisos ?? [];
+        \Illuminate\Support\Facades\Cache::forever('roles_permisos', $rolesPermisos);
+
+        $msg = $request->editar
+            ? "Permisos de '{$nombre}' actualizados"
+            : "Rol '{$nombre}' creado con " . count($request->permisos ?? []) . " permiso(s)";
+        return response()->json(['success' => true, 'message' => $msg]);
+    }
+
+    public function obtenerPermisosRol($nombre)
+    {
+        $rolesPermisos = \Illuminate\Support\Facades\Cache::get('roles_permisos', []);
+
+        if (isset($rolesPermisos[$nombre])) {
+            return response()->json(['success' => true, 'permisos' => $rolesPermisos[$nombre]]);
+        }
+
+        $defaults = [
+            'admin' => ['ver_dashboard','ver_catalogo','ver_proveedores','gestionar_productos','aprobar_requisiciones','ver_auditoria','gestionar_misiones','exportar_pdf','chat'],
+            'empleado' => ['ver_dashboard','ver_catalogo','ver_proveedores','chat'],
+            'desarrollador' => ['ver_dashboard','ver_catalogo','ver_proveedores','gestionar_productos','gestionar_proveedores','aprobar_requisiciones','gestionar_usuarios','ver_auditoria','gestionar_misiones','gestionar_precios','exportar_pdf','respaldar_bd','chat'],
+        ];
+
+        return response()->json([
+            'success' => true,
+            'permisos' => $defaults[$nombre] ?? [],
+        ]);
+    }
+
+    public function exportarUsuarios()
+    {
+        $usuarios = User::orderBy('created_at', 'desc')->get();
+        $csv = "Nombre,Nick,Email,Cédula,Teléfono,Rol,Activo,XP,Nivel,Fecha Registro\n";
+        foreach ($usuarios as $u) {
+            $csv .= '"' . $u->name . '","' . ($u->nick ?? '') . '","' . $u->email . '","' . ($u->cedula ?? '') . '","' . ($u->telefono ?? '') . '","' . $u->rol . '","' . ($u->is_active ? 'Si' : 'No') . '","' . ($u->xp ?? 0) . '","' . ($u->nivel ?? 1) . '","' . $u->created_at->format('d/m/Y') . "\"\n";
+        }
+        return response($csv, 200, [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="usuarios_' . date('Y-m-d') . '.csv"',
+        ]);
+    }
+
     public function respaldarBaseDatos()
     {
-        if (Auth::user()->rol !== 'admin') {
+        if (!Auth::user()->tienePermiso('respaldar_bd')) {
             abort(403, 'No autorizado');
         }
 
@@ -568,7 +731,7 @@ class InventarioController extends Controller
         try {
             DB::beginTransaction();
 
-            $usuario = Auth::user()->name;
+            $usuario = Auth::user()->display_name;
             $userId = Auth::id();
 
             foreach ($request->items as $item) {
@@ -605,7 +768,7 @@ class InventarioController extends Controller
 
     public function revertirMovimiento(Request $request, $id)
     {
-        if (!Auth::check() || Auth::user()->rol !== 'admin') {
+        if (!Auth::check() || !Auth::user()->tienePermiso('gestionar_productos')) {
             return response()->json(['success' => false, 'message' => 'No autorizado'], 403);
         }
 
@@ -634,7 +797,7 @@ class InventarioController extends Controller
                 'tipo' => $tipoInverso,
                 'cantidad' => $movOriginal->cantidad,
                 'motivo' => "REVERSIÓN AUDITADA (Compensa Mov. #" . $movOriginal->id . ")",
-                'usuario_accion' => Auth::user()->name,
+                'usuario_accion' => Auth::user()->display_name,
                 'user_id' => Auth::id()
             ]);
 
@@ -682,7 +845,7 @@ class InventarioController extends Controller
 
     public function storeCompra(Request $request)
     {
-        if (Auth::user()->rol !== 'admin') {
+        if (!Auth::user()->tienePermiso('gestionar_productos')) {
             return response()->json(['success' => false, 'error' => 'No autorizado'], 403);
         }
         $request->validate([
@@ -708,7 +871,7 @@ class InventarioController extends Controller
                 'tipo' => 'Entrada',
                 'cantidad' => $request->cantidad,
                 'motivo' => $motivoCompra,
-                'usuario_accion' => Auth::user()->name,
+                'usuario_accion' => Auth::user()->display_name,
                 'user_id' => Auth::id()
             ]);
 

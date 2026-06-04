@@ -15,6 +15,8 @@ class PriceHistory extends Model
         'producto_id',
         'precio_anterior',
         'precio_nuevo',
+        'porcentaje_incremento',
+        'tasa_dolar',
         'user_id',
     ];
 

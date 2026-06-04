@@ -12,7 +12,7 @@ class MisionController extends Controller
 {
     public function index()
     {
-        if (Auth::user()->rol === 'admin') {
+        if (Auth::user()->tienePermiso('gestionar_misiones')) {
             $usuarios = User::where('rol', 'empleado')->get();
             $misiones = Mision::with('user')->orderBy('created_at', 'desc')->get();
             return view('inventario.misiones.gestion', compact('misiones', 'usuarios'));
@@ -25,7 +25,7 @@ class MisionController extends Controller
 
     public function store(Request $request)
     {
-        if (Auth::user()->rol !== 'admin') {
+        if (!Auth::user()->tienePermiso('gestionar_misiones')) {
             return response()->json(['success' => false, 'message' => 'No autorizado.'], 403);
         }
 
@@ -58,7 +58,7 @@ class MisionController extends Controller
 
     public function aprobar($id)
     {
-        if (Auth::user()->rol !== 'admin') {
+        if (!Auth::user()->tienePermiso('gestionar_misiones')) {
             return response()->json(['success' => false, 'message' => 'No autorizado.'], 403);
         }
 
@@ -79,7 +79,7 @@ class MisionController extends Controller
 
     public function rechazar($id)
     {
-        if (Auth::user()->rol !== 'admin') {
+        if (!Auth::user()->tienePermiso('gestionar_misiones')) {
             return response()->json(['success' => false, 'message' => 'No autorizado.'], 403);
         }
 
@@ -100,7 +100,7 @@ class MisionController extends Controller
 
     public function revertir($id)
     {
-        if (Auth::user()->rol !== 'admin') {
+        if (!Auth::user()->tienePermiso('gestionar_misiones')) {
             return response()->json(['success' => false, 'message' => 'No autorizado.'], 403);
         }
 
@@ -129,7 +129,7 @@ class MisionController extends Controller
             Notification::create([
                 'user_id' => $admin->id,
                 'type' => 'mission_completed',
-                'title' => '✅ Misión completada por ' . Auth::user()->name,
+                'title' => '✅ Misión completada por ' . Auth::user()->display_name,
                 'message' => "{$mision->titulo} — Revisa y aprueba",
                 'icon' => 'bi-check-circle-fill text-success',
                 'link' => route('misiones.gestion'),

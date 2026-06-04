@@ -7,6 +7,6 @@
     @if(auth()->user()->profile_photo_path)
         <img src="{{ asset('storage/'.auth()->user()->profile_photo_path) }}" class="rounded-circle" width="40" height="40" style="object-fit: cover;">
     @else
-        <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name) }}" class="rounded-circle" width="40" height="40">
+        <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->display_name) }}" class="rounded-circle" width="40" height="40">
     @endif
 </div>

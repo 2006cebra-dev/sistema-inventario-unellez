@@ -61,6 +61,12 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/usuarios', [InventarioController::class, 'indexUsuarios'])->name('usuarios.index');
     Route::post('/usuarios/guardar', [InventarioController::class, 'guardarUsuario'])->name('usuarios.guardar');
     Route::post('/usuarios/estatus', [InventarioController::class, 'cambiarEstatusUsuario'])->name('usuarios.cambiarEstatus');
+    Route::get('/usuarios/datos/{id}', [InventarioController::class, 'obtenerDatosUsuario'])->name('usuarios.datos');
+    Route::post('/usuarios/actualizar', [InventarioController::class, 'actualizarUsuario'])->name('usuarios.actualizar');
+    Route::post('/usuarios/eliminar', [InventarioController::class, 'eliminarUsuario'])->name('usuarios.eliminar');
+    Route::post('/roles/guardar', [InventarioController::class, 'guardarRol'])->name('roles.guardar');
+    Route::get('/roles/permisos/{nombre}', [InventarioController::class, 'obtenerPermisosRol'])->name('roles.permisos');
+    Route::get('/usuarios/exportar', [InventarioController::class, 'exportarUsuarios'])->name('usuarios.exportar');
     
     // --- SISTEMA DE REQUISICIONES ---
     Route::get('/requisiciones/crear', [RequisicionController::class, 'crearRequisicion'])->name('requisiciones.crear');
@@ -119,7 +125,7 @@ Route::middleware(['auth'])->group(function () {
 
         return response()->json([
             'success' => true,
-            'user_name' => $targetUser->name,
+            'user_name' => $targetUser->display_name,
             'redirect' => route('inventario')
         ]);
     })->name('perfil.cambiar');

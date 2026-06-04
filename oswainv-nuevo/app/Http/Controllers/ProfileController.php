@@ -11,12 +11,16 @@ class ProfileController extends Controller
     // Crear un nuevo perfil desde el modal
     public function store(Request $request)
     {
-        $request->validate(['name' => 'required|string|max:255']);
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'nick' => 'nullable|string|max:50',
+        ]);
 
         $emailFicticio = strtolower(str_replace(' ', '', $request->name)) . rand(1000, 9999) . '@oswainv.local';
 
         User::create([
             'name' => $request->name,
+            'nick' => $request->nick ?? null,
             'email' => $emailFicticio,
             'password' => bcrypt('12345678')
         ]);
@@ -24,13 +28,16 @@ class ProfileController extends Controller
         return response()->json(['success' => true]);
     }
 
-    // Actualizar perfil y subir/reemplazar foto
     public function update(Request $request, $id)
     {
         $user = User::findOrFail($id);
         
         if ($request->has('name')) {
             $user->name = $request->name;
+        }
+
+        if ($request->has('nick')) {
+            $user->nick = $request->nick;
         }
 
         if ($request->hasFile('profile_photo')) {

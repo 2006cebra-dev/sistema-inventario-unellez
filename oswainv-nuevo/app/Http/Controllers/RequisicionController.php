@@ -54,7 +54,7 @@ class RequisicionController extends Controller
                 Notification::create([
                     'user_id' => $admin->id,
                     'type' => 'requisition_created',
-                    'title' => '📋 Nueva requisición de ' . Auth::user()->name,
+                    'title' => '📋 Nueva requisición de ' . Auth::user()->display_name,
                     'message' => count($request->productos) . ' producto(s) solicitado(s)',
                     'icon' => 'bi-file-earmark-text-fill',
                     'link' => route('inventario'),
@@ -71,7 +71,7 @@ class RequisicionController extends Controller
 
     public function aprobarRequisicion($id)
     {
-        if (!Auth::check() || Auth::user()->rol !== 'admin') return response()->json(['success' => false, 'message' => 'No autorizado'], 403);
+        if (!Auth::check() || !Auth::user()->tienePermiso('aprobar_requisiciones')) return response()->json(['success' => false, 'message' => 'No autorizado'], 403);
 
         try {
             DB::beginTransaction();
@@ -101,7 +101,7 @@ class RequisicionController extends Controller
                 'tipo' => 'Salida',
                 'cantidad' => $requisicion->cantidad,
                 'motivo' => 'Requisición Aprobada #' . $requisicion->id,
-                'usuario_accion' => Auth::user()->name,
+                'usuario_accion' => Auth::user()->display_name,
             ]);
             
             $mov->firma_hash = $mov->generarFirma();
@@ -131,7 +131,7 @@ class RequisicionController extends Controller
 
     public function rechazarRequisicion($id)
     {
-        if (!Auth::check() || Auth::user()->rol !== 'admin') return response()->json(['success' => false, 'message' => 'No autorizado'], 403);
+        if (!Auth::check() || !Auth::user()->tienePermiso('aprobar_requisiciones')) return response()->json(['success' => false, 'message' => 'No autorizado'], 403);
 
         $requisicion = Requisicion::findOrFail($id);
         $requisicion->estado = 'Rechazada';

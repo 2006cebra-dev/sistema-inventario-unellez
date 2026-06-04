@@ -19,6 +19,7 @@ class ProveedorController extends Controller
 
     public function proveedores()
     {
+        if (!Auth::check() || !Auth::user()->tienePermiso('ver_proveedores')) abort(403, 'No autorizado');
         $proveedores = Proveedor::with('productos:id,codigo,nombre,stock,stock_minimo,precio,precio_costo,proveedor_id')->orderBy('created_at', 'desc')->get();
         $productos = Producto::all();
         return view('inventario.proveedores', compact('proveedores'));
@@ -26,7 +27,7 @@ class ProveedorController extends Controller
 
     public function storeProveedor(Request $request)
     {
-        if (Auth::user()->rol !== 'admin') {
+        if (!Auth::user()->tienePermiso('gestionar_proveedores')) {
             return response()->json(['success' => false, 'error' => 'No autorizado'], 403);
         }
         $request->validate([
@@ -54,7 +55,7 @@ class ProveedorController extends Controller
 
     public function updateProveedor(Request $request, $id)
     {
-        if (Auth::user()->rol !== 'admin') {
+        if (!Auth::user()->tienePermiso('gestionar_proveedores')) {
             return response()->json(['success' => false, 'error' => 'No autorizado'], 403);
         }
         $proveedor = Proveedor::findOrFail($id);
@@ -79,7 +80,7 @@ class ProveedorController extends Controller
 
     public function destroyProveedor($id)
     {
-        if (Auth::user()->rol !== 'admin') {
+        if (!Auth::user()->tienePermiso('gestionar_proveedores')) {
             return response()->json(['success' => false, 'error' => 'No autorizado'], 403);
         }
         $proveedor = Proveedor::findOrFail($id);
@@ -89,7 +90,7 @@ class ProveedorController extends Controller
 
     public function procesarAbastecimiento(Request $request)
     {
-        if (Auth::user()->rol !== 'admin') {
+        if (!Auth::user()->tienePermiso('gestionar_proveedores')) {
             return response()->json(['success' => false, 'error' => 'No autorizado'], 403);
         }
         $request->validate([ 'producto_id' => 'required', 'cantidad' => 'required|numeric|min:1' ]);
@@ -107,7 +108,7 @@ class ProveedorController extends Controller
             $movimiento->tipo = $tipoMovimiento;
             $movimiento->cantidad = $cantidadMovimiento;
             $movimiento->motivo = 'Orden de Abastecimiento';
-            $movimiento->usuario_accion = Auth::user()->name;
+            $movimiento->usuario_accion = Auth::user()->display_name;
             $movimiento->user_id = Auth::id();
             $movimiento->save();
 

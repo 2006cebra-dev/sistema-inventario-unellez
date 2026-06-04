@@ -39,7 +39,7 @@
                         @else
                             <li class="nav-item dropdown">
                                 <a id="navbarDropdown" class="nav-link dropdown-toggle fw-bold text-white" href="#" role="button" data-bs-toggle="modal" data-bs-target="#profileModal">
-                                    <i class="bi bi-person-circle me-1"></i> {{ Auth::user()->name }}
+                                    <i class="bi bi-person-circle me-1"></i> {{ Auth::user()->display_name }}
                                 </a>
 
                                 <div class="dropdown-menu dropdown-menu-end bg-dark border-secondary shadow" aria-labelledby="navbarDropdown">

@@ -151,8 +151,8 @@
                 @csrf
                 
                 <div class="form-group mb-3 anim-up-2">
-                    <label class="form-label text-secondary fw-bold mb-2" style="font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase;">Correo Electrónico</label>
-                    <input type="email" id="email" name="email" class="form-control form-control-lg" placeholder="correo@ejemplo.com" value="{{ old('email') }}" required autofocus>
+                    <label class="form-label text-secondary fw-bold mb-2" style="font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase;">Correo o Nick</label>
+                    <input type="text" id="login" name="login" class="form-control form-control-lg" placeholder="correo@ejemplo.com o nick" value="{{ old('login') }}" required autofocus>
                     @error('email')
                         <span class="text-danger" style="font-size: 0.8rem; margin-top: 5px; display: block;">{{ $message }}</span>
                     @enderror

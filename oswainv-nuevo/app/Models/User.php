@@ -20,6 +20,7 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'nick',
         'email',
         'cedula',
         'telefono',
@@ -33,6 +34,8 @@ class User extends Authenticatable
         'longest_streak',
         'last_activity_date',
     ];
+
+    protected $appends = ['display_name'];
 
     protected $hidden = [
         'password',
@@ -93,5 +96,20 @@ class User extends Authenticatable
     public function xpLogs()
     {
         return $this->hasMany(XpLog::class);
+    }
+
+    public function getDisplayNameAttribute()
+    {
+        return $this->nick ?? $this->name;
+    }
+
+    public function tienePermiso($permiso)
+    {
+        if ($this->rol === 'desarrollador') return true;
+
+        $rolesPermisos = \Illuminate\Support\Facades\Cache::get('roles_permisos', []);
+        $permisos = $rolesPermisos[$this->rol] ?? [];
+
+        return in_array($permiso, $permisos);
     }
 }

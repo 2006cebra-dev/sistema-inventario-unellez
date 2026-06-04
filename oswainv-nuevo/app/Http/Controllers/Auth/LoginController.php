@@ -12,7 +12,7 @@ class LoginController extends Controller
 {
     use AuthenticatesUsers;
 
-    protected $redirectTo = '/home';
+    protected $redirectTo = '/dashboard';
 
     public function __construct()
     {
@@ -20,11 +20,20 @@ class LoginController extends Controller
         $this->middleware('auth')->only('logout');
     }
 
+    public function username()
+    {
+        return 'login';
+    }
+
     protected function credentials(Request $request)
     {
-        $credentials = $request->only($this->username(), 'password');
-        $credentials['is_active'] = 1;
-        return $credentials;
+        $login = $request->input('login');
+        $field = filter_var($login, FILTER_VALIDATE_EMAIL) ? 'email' : 'nick';
+        return [
+            $field => $login,
+            'password' => $request->input('password'),
+            'is_active' => 1,
+        ];
     }
 
     protected function sendLoginResponse(Request $request)

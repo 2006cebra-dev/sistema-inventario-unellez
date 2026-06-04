@@ -9,28 +9,34 @@
         <i class="bi bi-chat-dots-fill"></i><span>Chat</span>
         <span class="mb-badge" id="mbChatBadge" style="display:none;">0</span>
     </a>
-    @if(auth()->check() && auth()->user()->rol === 'admin')
+    @if(auth()->check() && auth()->user()->tienePermiso('gestionar_usuarios'))
     <button class="mb-item mb-btn" onclick="toggleGestionMenu(event)" id="mbGestionBtn">
         <i class="bi bi-gear-fill"></i><span>Gestión</span>
     </button>
     @endif
+    @if(auth()->check() && auth()->user()->tienePermiso('ver_proveedores'))
     <a href="{{ route('proveedores') }}" class="mb-item {{ request()->routeIs('proveedores') ? 'active' : '' }}">
         <i class="bi bi-truck"></i><span>Proveedores</span>
     </a>
+    @endif
 </nav>
 
-<!-- POPUP GESTIÓN (solo admin) -->
-@if(auth()->check() && auth()->user()->rol === 'admin')
+<!-- POPUP GESTIÓN -->
+@if(auth()->check() && auth()->user()->tienePermiso('gestionar_usuarios'))
 <div class="inv-popup" id="gestionPopup">
     <div class="inv-popup-overlay" onclick="toggleGestionMenu()"></div>
     <div class="inv-popup-menu">
         <div class="inv-popup-header">Gestión</div>
         <a href="{{ route('usuarios.index') ?? '#' }}" class="inv-popup-item"><i class="bi bi-people-fill text-info"></i> Usuarios y Roles</a>
+        @if(auth()->user()->tienePermiso('gestionar_misiones'))
         <a href="{{ url('/gestion/misiones') }}" class="inv-popup-item"><i class="bi bi-flag-fill text-danger"></i> Misiones</a>
+        @endif
         <a href="{{ route('catalogo') }}#tab-auditoria" class="inv-popup-item"><i class="bi bi-shield-lock text-success"></i> Reportes de Auditoría</a>
         <div style="height:1px;background:rgba(255,255,255,0.05);margin:8px 0;"></div>
         <a href="{{ route('reporte.cierre') ?? '#' }}" class="inv-popup-item"><i class="bi bi-file-earmark-check-fill"></i> Generar Cierre Diario</a>
+        @if(auth()->user()->tienePermiso('respaldar_bd'))
         <a href="{{ route('respaldo.db') ?? '#' }}" class="inv-popup-item"><i class="bi bi-database-fill-down text-warning"></i> Respaldar Base de Datos</a>
+        @endif
     </div>
 </div>
 @endif

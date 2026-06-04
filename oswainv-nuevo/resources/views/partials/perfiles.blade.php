@@ -15,19 +15,19 @@
         <div class="oswa-netflix-profiles">
             @foreach(\App\Models\User::all() as $user)
             <div class="oswa-profile-card">
-                <div class="oswa-edit-icon edit-icon-overlay oswa-hidden" onclick="abrirModalEdicion({{ $user->id }}, '{{ $user->name }}')">
+                <div class="oswa-edit-icon edit-icon-overlay oswa-hidden" onclick="abrirModalEdicion({{ $user->id }}, '{{ $user->display_name }}')">
                     <i class="bi bi-pencil-fill"></i>
                 </div>
                 <div class="oswa-avatar-container" onclick="seleccionarPerfilConCarga({{ $user->id }})">
                     @if($user->profile_photo_path)
-                        <img src="{{ asset('storage/' . $user->profile_photo_path) }}" alt="{{ $user->name }}" class="oswa-avatar-img">
+                        <img src="{{ asset('storage/' . $user->profile_photo_path) }}" alt="{{ $user->display_name }}" class="oswa-avatar-img">
                     @else
                         <div class="oswa-avatar oswa-avatar-initials" style="background-color: {{ $loop->iteration == 1 ? '#E50914' : ($loop->iteration == 2 ? '#2b90d9' : '#4CAF50') }};">
-                            {{ strtoupper(substr($user->name, 0, 1)) }}
+                            {{ strtoupper(substr($user->display_name, 0, 1)) }}
                         </div>
                     @endif
                 </div>
-                <span class="oswa-name">{{ $user->name }}</span>
+                <span class="oswa-name">{{ $user->display_name }}</span>
             </div>
             @endforeach
             

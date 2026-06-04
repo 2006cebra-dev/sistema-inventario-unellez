@@ -86,7 +86,7 @@
             .mobile-brand { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-bottom: 1.5rem; }
             .mobile-brand img { height: 48px; filter: brightness(0) invert(1) drop-shadow(0 0 12px rgba(255,255,255,0.2)); }
             .mobile-brand .brand-name { font-size: 1.6rem; font-weight: 800; background: linear-gradient(90deg,#E50914,#ff6b6b,#B20710,#E50914); background-size: 300% 100%; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; letter-spacing: 2px; }
-            .anim-up-1, .anim-up-2, .anim-up-3, .anim-up-4, .anim-up-5, .anim-up-6, .anim-up-7, .anim-up-8 { opacity: 1 !important; animation: none !important; }
+            .anim-up-1, .anim-up-2, .anim-up-3, .anim-up-4, .anim-up-5, .anim-up-6, .anim-up-7, .anim-up-8, .anim-up-9 { opacity: 1 !important; animation: none !important; }
             .anim-left-1, .anim-left-2, .anim-left-3 { opacity: 1 !important; animation: none !important; }
         }
 
@@ -106,6 +106,7 @@
         .anim-up-6 { opacity: 0; animation: deslizarArriba 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 1.3s forwards; }
         .anim-up-7 { opacity: 0; animation: deslizarArriba 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 1.5s forwards; }
         .anim-up-8 { opacity: 0; animation: deslizarArriba 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 1.7s forwards; }
+        .anim-up-9 { opacity: 0; animation: deslizarArriba 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 1.9s forwards; }
     </style>
 </head>
 <body>
@@ -144,7 +145,7 @@
                 @csrf
                 
                 <div class="form-group mb-2 anim-up-2">
-                    <label class="form-label text-secondary fw-bold mb-1" style="font-size: 0.7rem; letter-spacing: 1px; text-transform: uppercase;">Nombre Completo</label>
+                    <label class="form-label text-secondary fw-bold mb-1" style="font-size: 0.7rem; letter-spacing: 1px; text-transform: uppercase;">Nombre Real</label>
                     <input type="text" id="name" name="name" class="form-control" placeholder="Ej. Yorgelys Blanco" value="{{ old('name') }}" required autofocus>
                     @error('name')
                         <span class="text-danger" style="font-size: 0.8rem; margin-top: 5px; display: block;">{{ $message }}</span>
@@ -152,6 +153,14 @@
                 </div>
 
                 <div class="form-group mb-2 anim-up-3">
+                    <label class="form-label text-secondary fw-bold mb-1" style="font-size: 0.7rem; letter-spacing: 1px; text-transform: uppercase;">Apodo / Nick</label>
+                    <input type="text" id="nick" name="nick" class="form-control" placeholder="Ej. yorgelys23" value="{{ old('nick') }}">
+                    @error('nick')
+                        <span class="text-danger" style="font-size: 0.8rem; margin-top: 5px; display: block;">{{ $message }}</span>
+                    @enderror
+                </div>
+
+                <div class="form-group mb-2 anim-up-4">
                     <label class="form-label text-secondary fw-bold mb-1" style="font-size: 0.7rem; letter-spacing: 1px; text-transform: uppercase;">Correo Electrónico</label>
                     <input type="email" id="email" name="email" class="form-control" placeholder="ejemplo@unellez.edu.ve" value="{{ old('email') }}" required>
                     @error('email')
@@ -159,7 +168,7 @@
                     @enderror
                 </div>
 
-                <div class="form-group mb-2 anim-up-4">
+                <div class="form-group mb-2 anim-up-5">
                     <label class="form-label text-secondary fw-bold mb-1" style="font-size: 0.7rem; letter-spacing: 1px; text-transform: uppercase;">Contraseña</label>
                     <input type="password" id="password" name="password" class="form-control" placeholder="Mínimo 8 caracteres" required>
                     @error('password')
@@ -167,21 +176,21 @@
                     @enderror
                 </div>
 
-                <div class="form-group mb-3 anim-up-5">
+                <div class="form-group mb-3 anim-up-6">
                     <label class="form-label text-secondary fw-bold mb-1" style="font-size: 0.7rem; letter-spacing: 1px; text-transform: uppercase;">Confirmar Contraseña</label>
                     <input type="password" id="password_confirmation" name="password_confirmation" class="form-control" placeholder="Repita contraseña" required>
                 </div>
 
-                <button type="submit" class="btn btn-danger btn-auth fw-bold w-100 mb-3 py-2 anim-up-6" style="background-color: #E50914; border-color: #E50914; font-size: 1rem; border-radius: 8px; letter-spacing: 0.5px;">
+                <button type="submit" class="btn btn-danger btn-auth fw-bold w-100 mb-3 py-2 anim-up-7" style="background-color: #E50914; border-color: #E50914; font-size: 1rem; border-radius: 8px; letter-spacing: 0.5px;">
                     <i class="bi bi-person-plus me-2"></i> Registrarse
                 </button>
 
-                <div class="auth-footer text-center text-secondary mb-4 anim-up-7" style="font-size: 0.95rem;">
+                <div class="auth-footer text-center text-secondary mb-4 anim-up-8" style="font-size: 0.95rem;">
                     ¿Ya tiene cuenta? <a href="{{ route('login') }}" class="text-white fw-bold text-decoration-none hover-red">Iniciar Sesión</a>
                 </div>
             </form>
 
-            <div class="auth-copyright text-center mt-auto pt-4 border-top border-secondary border-opacity-25 w-100 mx-auto anim-up-8" style="font-size: 0.75rem; color: #666; max-width: 420px;">
+            <div class="auth-copyright text-center mt-auto pt-4 border-top border-secondary border-opacity-25 w-100 mx-auto anim-up-9" style="font-size: 0.75rem; color: #666; max-width: 420px;">
                 &copy; <script>document.write(new Date().getFullYear())</script> <strong class="text-white">OSWA Inv</strong>. Todos los derechos reservados.<br>
                 Desarrollado con <i class="bi bi-code-slash text-secondary mx-1"></i> y <i class="bi bi-heart-fill text-danger mx-1"></i> por <strong class="text-white">Carlos Braca & Yorgelys Blanco</strong><br>
                 <span class="mt-1 d-block">Ingeniería en Informática — V Semestre | <strong class="text-white" style="letter-spacing: 0.5px;">UNELLEZ</strong></span>

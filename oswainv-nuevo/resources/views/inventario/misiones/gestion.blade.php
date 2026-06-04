@@ -102,7 +102,7 @@
                                 <select name="user_id" class="nf-select" required>
                                     <option value="">Seleccionar</option>
                                     @foreach($usuarios as $u)
-                                        <option value="{{ $u->id }}">{{ $u->name }}</option>
+                                        <option value="{{ $u->id }}">{{ $u->display_name }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -115,7 +115,7 @@
                         <div id="empleados-container">
                         @forelse($usuarios as $u)
                             <div class="employee-chip" data-user-id="{{ $u->id }}">
-                                <span><span class="presence-dot offline" id="dot-{{ $u->id }}"></span><i class="bi bi-person-circle me-2" style="color: #555;"></i>{{ $u->name }}</span>
+                                <span><span class="presence-dot offline" id="dot-{{ $u->id }}"></span><i class="bi bi-person-circle me-2" style="color: #555;"></i>{{ $u->display_name }}</span>
                                 <span class="count-badge">{{ $u->misiones()->where('estado', 'pendiente')->count() }} pendiente(s)</span>
                             </div>
                         @empty
@@ -164,7 +164,7 @@
                                     <div style="flex: 1;">
                                         <h6 class="mb-1" style="font-weight: 600; font-size: 0.95rem;">{{ $m->titulo }}</h6>
                                         <small style="color: #666;">
-                                            <i class="bi bi-person me-1"></i>{{ $m->user->name ?? '—' }}
+                                            <i class="bi bi-person me-1"></i>{{ $m->user->display_name ?? '—' }}
                                             @if($m->fecha_vencimiento)
                                                 <i class="bi bi-calendar ms-2 me-1"></i>{{ \Carbon\Carbon::parse($m->fecha_vencimiento)->format('d/m/Y') }}
                                             @endif

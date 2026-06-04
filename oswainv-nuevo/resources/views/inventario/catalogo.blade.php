@@ -143,7 +143,7 @@
                 </a>
                 @endif
 
-                @if(isset($esAdmin) && $esAdmin || (Auth::check() && Auth::user()->rol === 'admin'))
+                @if(isset($esAdmin) && $esAdmin || (Auth::check() && Auth::user()->tienePermiso('aprobar_requisiciones')))
                 <button type="button" class="btn btn-dark position-relative px-4 py-2 fw-bold" 
                     style="background-color: #1a1a1a; border: 1px solid #333; border-radius: 8px; transition: all 0.3s;" 
                     data-bs-toggle="modal" data-bs-target="#modalRequisiciones">
@@ -168,7 +168,7 @@
                     <i class="bi bi-grid-fill me-2"></i> Productos
                 </button>
             </li>
-            @if(Auth::check() && Auth::user()->rol === 'admin')
+            @if(Auth::check() && Auth::user()->tienePermiso('ver_auditoria'))
             <li class="nav-item" role="presentation">
                 <button class="nav-link fw-bold px-4 py-2" id="auditoria-tab" data-bs-toggle="pill" data-bs-target="#tab-auditoria" type="button" role="tab" style="border-radius: 8px;">
                     <i class="bi bi-clock-history me-2"></i> Historial de Movimientos
@@ -206,7 +206,7 @@
                             <div class="product-card-title">{{ $producto->nombre }}</div>
                             <div class="product-card-meta">{{ $producto->marca ?? 'Sin marca' }} • {{ $producto->categoria }}</div>
                             <div class="product-card-code"><i class="bi bi-upc-scan"></i> {{ $producto->codigo }} @if($producto->unidad_medida && $producto->unidad_medida !== 'unidad')<span class="badge ms-1" style="font-size:0.55rem;background:rgba(255,255,255,0.06);color:#888;vertical-align:middle;">{{ $producto->unidad_medida }}</span>@endif</div>
-                            @if($producto->precio_costo && auth()->user()->rol == 'admin')
+                            @if($producto->precio_costo && auth()->user()->tienePermiso('gestionar_precios'))
                             <div style="font-size:0.7rem;color:#666;margin-bottom:6px;">
                                 <i class="bi bi-currency-dollar me-1"></i>Costo: ${{ number_format($producto->precio_costo, 2) }}
                                 @if($producto->proveedor && $producto->proveedor->nombre)
@@ -215,15 +215,17 @@
                             </div>
                             @endif
                             <div class="d-flex justify-content-between align-items-center mb-3">
-                                @if(auth()->user()->rol == 'admin')
+                                @if(auth()->user()->tienePermiso('ver_catalogo'))
                                     <div class="fw-bold" style="color: #00b894; font-size: 1.1rem; display: flex; align-items: center; gap: 6px;">
                                         ${{ number_format($producto->precio, 2) }}
-                                        @if($producto->margen !== null)
+                                        @if(auth()->user()->tienePermiso('gestionar_precios') && $producto->margen !== null)
                                             <span class="badge" style="font-size:0.6rem;background:{{ $producto->margen >= 30 ? 'rgba(0,184,148,0.2)' : ($producto->margen >= 15 ? 'rgba(253,203,110,0.2)' : 'rgba(229,9,20,0.2)') }};color:{{ $producto->margen >= 30 ? '#00b894' : ($producto->margen >= 15 ? '#fdcb6e' : '#E50914') }};">
                                                 {{ $producto->margen }}%
                                             </span>
                                         @endif
+                                        @if(auth()->user()->tienePermiso('gestionar_precios'))
                                         <i class="bi bi-graph-up-arrow" style="font-size: 0.85rem; color: #666; cursor: pointer;" title="Ver historial de precios" onclick="verHistorialPrecios({{ $producto->id }}, '{{ addslashes($producto->nombre) }}')"></i>
+                                        @endif
                                     </div>
                                 @else
                                     <div class="fw-bold text-secondary" style="font-size: 0.9rem;">
@@ -254,7 +256,7 @@
                         </div>
                         
                         <div class="mt-3 pt-3 px-3 pb-3" style="border-top: 1px solid #2a2a2a; background-color: rgba(0,0,0,0.2);">
-                            @if(Auth::user()->rol === 'admin')
+                            @if(Auth::user()->tienePermiso('gestionar_productos'))
                             
                             <!-- Control de Stock VIP -->
                             <div class="d-flex justify-content-between align-items-center mb-2 px-2 py-1" style="background-color: #0a0a0a; border-radius: 12px; border: 1px solid #333; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);">
@@ -317,7 +319,7 @@
                 </div>
             </div>
 
-            @if(Auth::check() && Auth::user()->rol === 'admin')
+            @if(Auth::check() && Auth::user()->tienePermiso('ver_auditoria'))
             <div class="tab-pane fade" id="tab-auditoria" role="tabpanel" tabindex="0">
                 <div class="p-4" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
                     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -364,7 +366,7 @@
                                         <td class="text-light">{{ $audit->motivo ?? 'Ajuste de inventario' }}</td>
                                         <td>
                                             <span class="badge bg-secondary bg-opacity-25 text-light border border-secondary border-opacity-50 px-3 py-2" style="font-weight: 500;">
-                                                {{ $audit->usuario->name ?? 'Sistema' }}
+                                                {{ $audit->usuario->display_name ?? 'Sistema' }}
                                             </span>
                                         </td>
                                         <td>
@@ -842,7 +844,7 @@
 
         function verHistorialPrecios(productoId, nombre) {
             document.getElementById('priceHistoryTitle').textContent = nombre;
-            document.getElementById('priceHistoryContent').innerHTML = '<div class="text-center py-4" style="color:#666;"><i class="bi bi-hourglass-split" style="font-size:2rem;"></i><p class="mt-2">Cargando historial...</p></div>';
+            document.getElementById('priceHistoryContent').innerHTML = '<div class="text-center py-4" style="color:#666;"><i class="bi bi-hourglass-split" style="font-size:2rem;"></i><p class="mt-2">Cargando métricas...</p></div>';
             const modal = new bootstrap.Modal(document.getElementById('modalPriceHistory'));
             modal.show();
 
@@ -856,20 +858,34 @@
                     let html = '<div style="max-height:400px;overflow-y:auto;">';
                     data.forEach(h => {
                         const time = new Date(h.created_at).toLocaleString('es-ES', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'});
-                        const quien = h.user ? h.user.name : 'Sistema';
+                        const quien = h.user_name || 'Sistema';
                         const subio = parseFloat(h.precio_nuevo) >= parseFloat(h.precio_anterior);
+                        const pctLabel = h.incremento_label && h.incremento_label !== '—' ? h.incremento_label : '';
+                        const usdAnt = h.precio_usd_anterior != null ? parseFloat(h.precio_usd_anterior).toFixed(2) : null;
+                        const usdNew = h.precio_usd_nuevo != null ? parseFloat(h.precio_usd_nuevo).toFixed(2) : null;
+                        const bsAnt = h.precio_bs_anterior != null ? parseFloat(h.precio_bs_anterior).toFixed(2) : null;
+                        const bsNew = h.precio_bs_nuevo != null ? parseFloat(h.precio_bs_nuevo).toFixed(2) : null;
+                        const tasaLabel = h.tasa_dolar ? 'Bs.' + parseFloat(h.tasa_dolar).toFixed(2) : null;
+                        const diffUsd = (usdAnt && usdNew) ? (parseFloat(usdNew) - parseFloat(usdAnt)).toFixed(2) : null;
                         html += `<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:#181818;border-radius:8px;margin-bottom:6px;border-left:3px solid ${subio ? '#00b894' : '#E50914'};">
                             <div style="flex:1;">
-                                <div style="font-size:0.85rem;font-weight:600;color:#fff;">
-                                    <span style="color:#888;">$</span>${parseFloat(h.precio_anterior).toFixed(2)}
+                                <div style="font-size:0.9rem;font-weight:700;color:#fff;">
+                                    <span style="color:#00b894;">$</span>${usdAnt || '—'}
                                     <i class="bi bi-arrow-right" style="color:#666;margin:0 8px;"></i>
-                                    <span style="color:${subio ? '#00b894' : '#E50914'};">$${parseFloat(h.precio_nuevo).toFixed(2)}</span>
+                                    <span style="color:${subio ? '#00b894' : '#E50914'};">$${usdNew || '—'}</span>
                                 </div>
-                                <div style="font-size:0.75rem;color:#666;margin-top:2px;">
+                                <div style="font-size:0.7rem;color:#666;margin-top:2px;">
+                                    <span style="color:#888;">Bs.</span>${bsAnt || '—'} → <span style="color:#888;">Bs.</span>${bsNew || '—'}
+                                </div>
+                                <div style="font-size:0.7rem;color:#666;margin-top:1px;">
                                     <i class="bi bi-person me-1"></i>${quien} <i class="bi bi-clock ms-2 me-1"></i>${time}
+                                    ${tasaLabel ? ` <span style="font-size:0.65rem;color:#555;"><i class="bi bi-currency-exchange ms-2 me-1"></i>${tasaLabel}</span>` : ''}
                                 </div>
                             </div>
-                            <span style="font-size:0.7rem;font-weight:600;padding:2px 8px;border-radius:10px;background:${subio ? 'rgba(0,184,148,0.15)' : 'rgba(229,9,20,0.15)'};color:${subio ? '#00b894' : '#E50914'};">${subio ? '▲ +' : '▼ '}${(parseFloat(h.precio_nuevo) - parseFloat(h.precio_anterior)).toFixed(2)}</span>
+                            <div style="text-align:right;">
+                                <div style="font-size:0.7rem;font-weight:600;padding:2px 8px;border-radius:10px;background:${subio ? 'rgba(0,184,148,0.15)' : 'rgba(229,9,20,0.15)'};color:${subio ? '#00b894' : '#E50914'};">${subio ? '▲ +' : '▼ '}${diffUsd ? '$' + diffUsd : '—'}</div>
+                                ${pctLabel ? `<div style="font-size:0.65rem;color:#888;margin-top:2px;">${pctLabel}</div>` : ''}
+                            </div>
                         </div>`;
                     });
                     html += '</div>';
@@ -893,7 +909,7 @@
             let html = '<div style="max-height:450px; overflow-y:auto; padding-right: 10px;">';
             
             reqs.forEach(r => {
-                let userName = r.user ? r.user.name : 'Usuario Desconocido';
+                let userName = r.user ? (r.user.display_name || r.user.name) : 'Usuario Desconocido';
 
                 let timeBuster = r.user && r.user.updated_at ? new Date(r.user.updated_at).getTime() : Date.now();
 
@@ -1167,7 +1183,7 @@
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content border-secondary shadow-lg" style="background: #1a1a1a;">
                 <div class="modal-header border-secondary">
-                    <h5 class="modal-title text-white fw-bold"><i class="bi bi-graph-up-arrow text-danger me-2"></i>Historial de Precios</h5>
+                    <h5 class="modal-title text-white fw-bold"><i class="bi bi-graph-up-arrow text-danger me-2"></i>Métrica de Subida de Precio</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-4">

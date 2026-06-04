@@ -10,7 +10,7 @@ class BackupController extends Controller
 {
     public function download()
     {
-        if (!Auth::check() || Auth::user()->rol !== 'admin') {
+        if (!Auth::check() || !Auth::user()->tienePermiso('respaldar_bd')) {
             abort(403, 'No autorizado para realizar respaldos.');
         }
 

@@ -144,8 +144,8 @@
                 const data = await res.json();
                 const list = document.getElementById('conversationsList');
                 const q = document.getElementById('searchInput').value.toLowerCase();
-                list.innerHTML = data.filter(c => c.user.name.toLowerCase().includes(q)).map(c => {
-                    const initial = c.user.name.charAt(0).toUpperCase();
+                list.innerHTML = data.filter(c => (c.user.display_name || c.user.name).toLowerCase().includes(q)).map(c => {
+                    const initial = (c.user.display_name || c.user.name).charAt(0).toUpperCase();
                     const img = c.user.profile_photo_path
                         ? `<img src="${baseUrl}/storage/${c.user.profile_photo_path}" alt="" onerror="this.style.display='none';this.parentNode.textContent='${initial}'">`
                         : initial;
@@ -158,7 +158,7 @@
                     return `<div class="conv-item ${activeUserId == c.user.id ? 'active' : ''}" data-user-id="${c.user.id}">
                         <div class="conv-avatar">${img}</div>
                         <div class="conv-info">
-                            <div class="conv-name"><span class="presence-dot conv-presence-dot ${isOnline ? 'online' : 'offline'}" data-uid="${c.user.id}"></span> ${c.user.name} <small>${time}</small></div>
+                            <div class="conv-name"><span class="presence-dot conv-presence-dot ${isOnline ? 'online' : 'offline'}" data-uid="${c.user.id}"></span> ${c.user.display_name || c.user.name} <small>${time}</small></div>
                             <div class="conv-preview">${preview}</div>
                         </div>
                         ${c.unread > 0 ? `<span class="unread-badge">${c.unread}</span>` : ''}
@@ -188,13 +188,13 @@
                 if (gen !== chatGen) return;
                 const conv = data.find(c => Number(c.user.id) === userId);
                 if (conv) {
-                    document.getElementById('headerName').innerHTML = `${conv.user.name} <span class="presence-dot ${onlineIds.includes(userId) ? 'online' : 'offline'}" id="headerPresenceDot"></span>`;
+                    document.getElementById('headerName').innerHTML = `${conv.user.display_name || conv.user.name} <span class="presence-dot ${onlineIds.includes(userId) ? 'online' : 'offline'}" id="headerPresenceDot"></span>`;
                     document.getElementById('headerRole').textContent = conv.user.rol || 'empleado';
                     const avatar = document.getElementById('headerAvatar');
                     if (conv.user.profile_photo_path) {
-                        avatar.innerHTML = `<img src="${baseUrl}/storage/${conv.user.profile_photo_path}" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none';this.parentNode.textContent='${conv.user.name.charAt(0).toUpperCase()}'">`;
+                        avatar.innerHTML = `<img src="${baseUrl}/storage/${conv.user.profile_photo_path}" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none';this.parentNode.textContent='${(conv.user.display_name || conv.user.name).charAt(0).toUpperCase()}'">`;
                     } else {
-                        avatar.textContent = conv.user.name.charAt(0).toUpperCase();
+                        avatar.textContent = (conv.user.display_name || conv.user.name).charAt(0).toUpperCase();
                     }
                 }
             } catch(e) {}

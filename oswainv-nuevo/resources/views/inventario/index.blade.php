@@ -185,7 +185,7 @@
 
         <div id="panel-estadisticas">
         
-        @if(Auth::check() && Auth::user()->rol === 'admin')
+        @if(Auth::check() && Auth::user()->tienePermiso('gestionar_productos'))
 
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h4 class="text-white mb-0 font-weight-bold">Resumen de Inventario</h4>
@@ -221,7 +221,7 @@
                         <div class="stat-icon oswa-3d-icon" style="color: #10b981;"><i class="bi bi-currency-dollar"></i></div>
                         <div class="stat-value" id="capitalInvertido" style="color: #10b981; transform: translateZ(30px);">${{ number_format($capitalInvertido ?? 0, 2) }}</div>
                         <div class="stat-label" style="transform: translateZ(20px);">Capital Invertido</div>
-                        <div class="stat-sub" style="font-size:0.7rem;color:#64748b;margin-top:4px;font-family:'Consolas',monospace; transform: translateZ(20px);">Eqv: Bs. {{ number_format($capitalInvertidoBs ?? 0, 2) }}</div>
+                        <div class="stat-sub" id="capitalBsSub" style="font-size:0.7rem;color:#64748b;margin-top:4px;font-family:'Consolas',monospace; transform: translateZ(20px);">Eqv: Bs. {{ number_format($capitalInvertidoBs ?? 0, 2) }}</div>
                     </div>
                     <div class="stat-card oswa-3d-card" style="background-color: #1a1a1a; border: 1px solid #333; border-radius: 12px;">
                         <div class="stat-icon oswa-3d-icon" style="color: var(--accent-primary);"><i class="bi bi-bank2"></i></div>
@@ -325,41 +325,55 @@
 
         @endif
 
-        @if(Auth::check() && Auth::user()->rol === 'empleado')
+        @if(Auth::check() && !Auth::user()->tienePermiso('gestionar_usuarios'))
 
-            @php $misionEmpleado = Auth::user()->misiones()->where('estado', 'pendiente')->first(); @endphp
+            @php
+                $user = Auth::user();
+                $misionEmpleado = $user->misiones()->where('estado', 'pendiente')->first();
+                $xpActual = $user->xp ?? 0;
+                $nivel = $user->nivel ?? 1;
+                $xpSiguiente = $nivel * 100;
+                $xpBar = min(100, ($xpActual / max($xpSiguiente, 1)) * 100);
+                $saludo = match(true) { now()->hour < 12 => 'Buenos días', now()->hour < 18 => 'Buenas tardes', default => 'Buenas noches' };
+            @endphp
+
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="d-flex align-items-center gap-3 flex-wrap" style="padding:1.5rem;background:linear-gradient(135deg,#141414,#1c1c1c);border:1px solid #2a2a2a;border-radius:16px;">
+                        <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#E50914,#b20710);display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:700;color:#fff;flex-shrink:0;">{{ strtoupper(substr($user->display_name ?? 'U', 0, 1)) }}</div>
+                        <div style="flex:1;min-width:200px;">
+                            <div style="color:#fff;font-size:1.1rem;font-weight:600;">{{ $saludo }}, {{ $user->display_name }}</div>
+                            <div style="display:flex;align-items:center;gap:10px;margin-top:6px;">
+                                <div style="flex:1;height:6px;background:#2a2a2a;border-radius:4px;overflow:hidden;">
+                                    <div style="width:{{ $xpBar }}%;height:100%;background:linear-gradient(90deg,#E50914,#ff6b6b);border-radius:4px;"></div>
+                                </div>
+                                <span style="color:#888;font-size:0.7rem;white-space:nowrap;">Nv. {{ $nivel }} · {{ $xpActual }}/{{ $xpSiguiente }} XP</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             @if($misionEmpleado)
-            <div class="row mt-4 mb-4">
+            <div class="row mb-4">
                 <div class="col-12">
                     <div class="stat-card oswa-3d-card" style="padding: 1.5rem 2rem; border-left: 4px solid #ffc107; background: linear-gradient(135deg, #1c1c1c 0%, #1a1a1a 100%);">
-                        <div class="d-flex align-items-center gap-3">
+                        <div class="d-flex align-items-center gap-3 flex-wrap">
                             <div class="oswa-3d-icon" style="font-size: 2rem; color: #ffc107;"><i class="bi bi-flag-fill"></i></div>
-                            <div style="flex: 1;">
+                            <div style="flex: 1;min-width:200px;">
                                 <div style="font-size: 0.75rem; color: #ffc107; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Misión Activa</div>
                                 <div style="font-size: 1.3rem; font-weight: 700; color: #fff; margin: 2px 0 4px;">{{ $misionEmpleado->titulo }}</div>
                                 @if($misionEmpleado->descripcion)
                                     <div style="color: #888; font-size: 0.85rem; margin-bottom: 6px;">{{ $misionEmpleado->descripcion }}</div>
                                 @endif
                                 @if($misionEmpleado->fecha_vencimiento)
-                                    @php
-                                        $hoy = \Carbon\Carbon::now();
-                                        $venc = \Carbon\Carbon::parse($misionEmpleado->fecha_vencimiento);
-                                        $diasRestantes = $hoy->diffInDays($venc, false);
-                                    @endphp
-                                    <div style="display: flex; align-items: center; gap: 8px;">
-                                        <div style="font-size: 0.8rem; color: {{ $diasRestantes <= 1 ? '#E50914' : '#ffc107' }}; font-weight: 600;">
-                                            <i class="bi bi-clock me-1"></i>
-                                            @if($diasRestantes > 0)
-                                                {{ $diasRestantes }} día(s) restante(s)
-                                            @elseif($diasRestantes == 0)
-                                                Vence hoy
-                                            @else
-                                                Vencida
-                                            @endif
-                                        </div>
+                                    @php $diasRestantes = now()->diffInDays(\Carbon\Carbon::parse($misionEmpleado->fecha_vencimiento), false); @endphp
+                                    <div style="font-size: 0.8rem; color: {{ $diasRestantes <= 1 ? '#E50914' : '#ffc107' }}; font-weight: 600;">
+                                        <i class="bi bi-clock me-1"></i>
+                                        @if($diasRestantes > 0) {{ $diasRestantes }} día(s) restante(s)
+                                        @elseif($diasRestantes == 0) Vence hoy
+                                        @else Vencida @endif
                                     </div>
-                                @else
                                 @endif
                             </div>
                         </div>
@@ -368,119 +382,116 @@
             </div>
             @endif
 
-            <h5 class="text-white fw-bold mb-4 mt-4" style="font-size:1.1rem;">
-                <i class="bi bi-grid-3x3-gap me-2" style="color:var(--accent-primary);"></i>Acceso Rápido
-            </h5>
+            <div class="row g-3 mb-4">
+                <div class="col-md-3 col-6">
+                    <div style="background:linear-gradient(135deg,#1a1a1a,#141414);border:1px solid #2a2a2a;border-radius:12px;padding:1.2rem;text-align:center;">
+                        <div style="color:#0984e3;font-size:1.8rem;font-weight:800;">{{ $movimientosHoy }}</div>
+                        <div style="color:#666;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.5px;margin-top:2px;">Mov. Hoy</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div style="background:linear-gradient(135deg,#1a1a1a,#141414);border:1px solid #2a2a2a;border-radius:12px;padding:1.2rem;text-align:center;">
+                        <div style="color:#ffc107;font-size:1.8rem;font-weight:800;">{{ $requisicionesHoy }}</div>
+                        <div style="color:#666;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.5px;margin-top:2px;">Solicitudes</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div style="background:linear-gradient(135deg,#1a1a1a,#141414);border:1px solid #2a2a2a;border-radius:12px;padding:1.2rem;text-align:center;">
+                        <div style="color:#00b894;font-size:1.8rem;font-weight:800;">{{ $misRequisiciones->where('estado', 'Aprobada')->count() }}</div>
+                        <div style="color:#666;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.5px;margin-top:2px;">Aprobadas</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div style="background:linear-gradient(135deg,#1a1a1a,#141414);border:1px solid #2a2a2a;border-radius:12px;padding:1.2rem;text-align:center;">
+                        <div style="color:#E50914;font-size:1.8rem;font-weight:800;">{{ $misRequisiciones->where('estado', 'Rechazada')->count() }}</div>
+                        <div style="color:#666;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.5px;margin-top:2px;">Rechazadas</div>
+                    </div>
+                </div>
+            </div>
 
-            <div class="row g-4 mt-0">
+            <div class="row g-4">
                 <div class="col-md-4">
-                    <a href="{{ route('escaner') }}" style="text-decoration: none;">
-                        <div class="stat-card oswa-3d-card" style="text-align: center; cursor: pointer; display: block; padding: 2rem 1.5rem;">
-                            <div class="stat-icon oswa-3d-icon" style="color: #0984e3; font-size: 2.5rem;"><i class="bi bi-upc-scan"></i></div>
-                            <div class="stat-value" style="font-size: 1.2rem; color: #fff; font-weight: 600;">Escaner</div>
-                            <div class="stat-label" style="font-size: 0.8rem;">Lectura de códigos</div>
+                    <a href="{{ route('escaner') }}" class="text-decoration-none">
+                        <div class="stat-card oswa-3d-card" style="text-align:center;cursor:pointer;padding:2rem 1.5rem;">
+                            <div style="font-size:2.5rem;color:#0984e3;"><i class="bi bi-upc-scan"></i></div>
+                            <div style="font-size:1.2rem;color:#fff;font-weight:600;margin-top:8px;">Escaner</div>
+                            <div style="font-size:0.8rem;color:#666;">Lectura de códigos</div>
                         </div>
                     </a>
                 </div>
                 <div class="col-md-4">
-                    <a href="{{ route('catalogo') }}" style="text-decoration: none;">
-                        <div class="stat-card oswa-3d-card" style="text-align: center; cursor: pointer; display: block; padding: 2rem 1.5rem;">
-                            <div class="stat-icon oswa-3d-icon" style="color: #E50914; font-size: 2.5rem;"><i class="bi bi-box-seam"></i></div>
-                            <div class="stat-value" style="font-size: 1.2rem; color: #fff; font-weight: 600;">Catálogo</div>
-                            <div class="stat-label" style="font-size: 0.8rem;">Productos disponibles</div>
+                    <a href="{{ route('catalogo') }}" class="text-decoration-none">
+                        <div class="stat-card oswa-3d-card" style="text-align:center;cursor:pointer;padding:2rem 1.5rem;">
+                            <div style="font-size:2.5rem;color:#E50914;"><i class="bi bi-box-seam"></i></div>
+                            <div style="font-size:1.2rem;color:#fff;font-weight:600;margin-top:8px;">Catálogo</div>
+                            <div style="font-size:0.8rem;color:#666;">Productos disponibles</div>
                         </div>
                     </a>
                 </div>
                 <div class="col-md-4">
-                    <a href="{{ route('requisiciones.crear') }}" style="text-decoration: none;">
-                        <div class="stat-card oswa-3d-card" style="text-align: center; cursor: pointer; display: block; padding: 2rem 1.5rem;">
-                            <div class="stat-icon oswa-3d-icon" style="color: #ffc107; font-size: 2.5rem;"><i class="bi bi-file-earmark-text"></i></div>
-                            <div class="stat-value" style="font-size: 1.2rem; color: #fff; font-weight: 600;">Requisiciones</div>
-                            <div class="stat-label" style="font-size: 0.8rem;">Solicitar productos</div>
+                    <a href="{{ route('requisiciones.crear') }}" class="text-decoration-none">
+                        <div class="stat-card oswa-3d-card" style="text-align:center;cursor:pointer;padding:2rem 1.5rem;">
+                            <div style="font-size:2.5rem;color:#ffc107;"><i class="bi bi-file-earmark-text"></i></div>
+                            <div style="font-size:1.2rem;color:#fff;font-weight:600;margin-top:8px;">Requisiciones</div>
+                            <div style="font-size:0.8rem;color:#666;">Solicitar productos</div>
                         </div>
                     </a>
                 </div>
             </div>
 
-            <div class="row g-4 mt-4">
+            <div class="row g-4 mt-3">
                 <div class="col-md-5">
-                    <div class="stat-card" style="padding: 1.2rem;">
-                        <div style="font-size: 0.75rem; color: #E50914; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; margin-bottom: 1rem;">
-                            <i class="bi bi-bar-chart-fill me-1"></i> Resumen del Día
-                        </div>
-                        <div class="row g-2">
-                            <div class="col-6">
-                                <div style="background: #141414; border-radius: 8px; padding: 0.8rem; text-align: center;">
-                                    <div style="color: #0984e3; font-size: 1.5rem; font-weight: 800;">{{ $movimientosHoy }}</div>
-                                    <div style="color: #666; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px;">Movimientos</div>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div style="background: #141414; border-radius: 8px; padding: 0.8rem; text-align: center;">
-                                    <div style="color: #ffc107; font-size: 1.5rem; font-weight: 800;">{{ $requisicionesHoy }}</div>
-                                    <div style="color: #666; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px;">Solicitudes</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-7">
-                    <div class="stat-card" style="padding: 1.2rem;">
-                        <div style="font-size: 0.75rem; color: #E50914; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; margin-bottom: 0.8rem;">
+                    <div class="stat-card" style="padding:1.2rem;">
+                        <div style="font-size:0.75rem;color:#E50914;text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-bottom:0.8rem;">
                             <i class="bi bi-bell-fill me-1"></i> Notificaciones
                         </div>
                         @forelse($notificaciones as $notif)
-                            <div style="display: flex; align-items: center; gap: 10px; padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.03);">
-                                <i class="bi {{ $notif['icon'] }}" style="color: {{ $notif['color'] }}; font-size: 1.1rem;"></i>
-                                <span style="color: #ccc; font-size: 0.85rem;">{{ $notif['text'] }}</span>
+                            <div style="display:flex;align-items:center;gap:10px;padding:0.5rem 0;border-bottom:1px solid rgba(255,255,255,0.03);">
+                                <i class="bi {{ $notif['icon'] }}" style="color:{{ $notif['color'] }};font-size:1.1rem;"></i>
+                                <span style="color:#ccc;font-size:0.85rem;">{{ $notif['text'] }}</span>
                             </div>
                         @empty
-                            <div style="color: #555; font-size: 0.85rem; text-align: center; padding: 1rem 0;">
-                                <i class="bi bi-check2-circle" style="color: #00b894;"></i> Sin novedades
+                            <div style="color:#555;font-size:0.85rem;text-align:center;padding:1rem 0;">
+                                <i class="bi bi-check2-circle" style="color:#00b894;"></i> Sin novedades
                             </div>
                         @endforelse
                     </div>
                 </div>
-            </div>
-
-            <div class="row mt-4">
-                <div class="col-12">
-                    <div class="stat-card" style="padding: 1.2rem;">
-                        <div style="font-size: 0.75rem; color: #E50914; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; margin-bottom: 0.8rem;">
+                <div class="col-md-7">
+                    <div class="stat-card" style="padding:1.2rem;">
+                        <div style="font-size:0.75rem;color:#E50914;text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-bottom:0.8rem;">
                             <i class="bi bi-file-earmark-text me-1"></i> Mis Requisiciones
                         </div>
                         @if($misRequisiciones->count() > 0)
-                            <div style="overflow-x: auto;">
-                                <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+                            <div style="overflow-x:auto;">
+                                <table style="width:100%;border-collapse:collapse;font-size:0.85rem;">
                                     <thead>
-                                        <tr style="border-bottom: 1px solid #2b2b2b; color: #666; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.5px;">
-                                            <th style="padding: 0.6rem 0.8rem; text-align: left;">Producto</th>
-                                            <th style="padding: 0.6rem 0.8rem; text-align: center;">Cantidad</th>
-                                            <th style="padding: 0.6rem 0.8rem; text-align: center;">Estado</th>
-                                            <th style="padding: 0.6rem 0.8rem; text-align: right;">Fecha</th>
+                                        <tr style="border-bottom:1px solid #2b2b2b;color:#666;text-transform:uppercase;font-size:0.7rem;letter-spacing:0.5px;">
+                                            <th style="padding:0.6rem 0.8rem;text-align:left;">Producto</th>
+                                            <th style="padding:0.6rem 0.8rem;text-align:center;">Cant.</th>
+                                            <th style="padding:0.6rem 0.8rem;text-align:center;">Estado</th>
+                                            <th style="padding:0.6rem 0.8rem;text-align:right;">Fecha</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         @foreach($misRequisiciones as $req)
-                                            @php
-                                                $colorEstado = $req->estado === 'Aprobada' ? '#00b894' : ($req->estado === 'Rechazada' ? '#E50914' : '#ffc107');
-                                            @endphp
-                                            <tr style="border-bottom: 1px solid #1f1f1f;">
-                                                <td style="padding: 0.6rem 0.8rem; color: #fff;">{{ $req->producto->nombre ?? '—' }}</td>
-                                                <td style="padding: 0.6rem 0.8rem; text-align: center; color: #aaa;">{{ $req->cantidad }}</td>
-                                                <td style="padding: 0.6rem 0.8rem; text-align: center;">
-                                                    <span style="background: rgba({{ $req->estado === 'Aprobada' ? '0,184,148' : ($req->estado === 'Rechazada' ? '229,9,20' : '255,193,7') }},0.15); color: {{ $colorEstado }}; border: 1px solid rgba({{ $req->estado === 'Aprobada' ? '0,184,148' : ($req->estado === 'Rechazada' ? '229,9,20' : '255,193,7') }},0.3); border-radius: 12px; padding: 0.15rem 0.6rem; font-size: 0.7rem; font-weight: 600;">
+                                            @php $colorEstado = $req->estado === 'Aprobada' ? '#00b894' : ($req->estado === 'Rechazada' ? '#E50914' : '#ffc107'); @endphp
+                                            <tr style="border-bottom:1px solid #1f1f1f;">
+                                                <td style="padding:0.6rem 0.8rem;color:#fff;">{{ $req->producto->nombre ?? '—' }}</td>
+                                                <td style="padding:0.6rem 0.8rem;text-align:center;color:#aaa;">{{ $req->cantidad }}</td>
+                                                <td style="padding:0.6rem 0.8rem;text-align:center;">
+                                                    <span style="background:rgba({{ $req->estado === 'Aprobada' ? '0,184,148' : ($req->estado === 'Rechazada' ? '229,9,20' : '255,193,7') }},0.15);color:{{ $colorEstado }};border:1px solid rgba({{ $req->estado === 'Aprobada' ? '0,184,148' : ($req->estado === 'Rechazada' ? '229,9,20' : '255,193,7') }},0.3);border-radius:12px;padding:0.15rem 0.6rem;font-size:0.7rem;font-weight:600;">
                                                         {{ $req->estado }}
                                                     </span>
                                                 </td>
-                                                <td style="padding: 0.6rem 0.8rem; text-align: right; color: #666; font-size: 0.75rem;">{{ $req->created_at->format('d/m/Y') }}</td>
+                                                <td style="padding:0.6rem 0.8rem;text-align:right;color:#666;font-size:0.75rem;">{{ $req->created_at->format('d/m/Y') }}</td>
                                             </tr>
                                         @endforeach
                                     </tbody>
                                 </table>
                             </div>
                         @else
-                            <div style="color: #555; font-size: 0.85rem; text-align: center; padding: 1rem 0;">
+                            <div style="color:#555;font-size:0.85rem;text-align:center;padding:1rem 0;">
                                 <i class="bi bi-inbox"></i> No has realizado requisiciones aún
                             </div>
                         @endif
@@ -667,11 +678,12 @@
                     if (!data) return;
                     const el = id => document.getElementById(id);
                     const tp = el('totalProductos'), st = el('stockTotal'), as = el('alertasStock');
-                    const ci = el('capitalInvertido'), tb = el('tasaBcv');
+                    const ci = el('capitalInvertido'), cibs = el('capitalBsSub'), tb = el('tasaBcv');
                     if (tp) tp.innerText = data.totalProductos ?? tp.innerText;
                     if (st) st.innerText = data.stockTotal ?? st.innerText;
                     if (as) as.innerText = data.alertasStock ?? as.innerText;
                     if (ci) ci.innerText = data.capitalInvertido ? '$' + data.capitalInvertido : ci.innerText;
+                    if (cibs) cibs.innerText = 'Eqv: Bs. ' + (data.capitalBs ?? cibs.innerText.replace('Eqv: Bs. ', ''));
                     if (tb) tb.innerText = data.tasaBcv ?? tb.innerText;
                     if (typeof cargarGraficas === 'function') cargarGraficas();
                 })

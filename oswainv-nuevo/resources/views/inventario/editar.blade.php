@@ -158,15 +158,15 @@
             <div class="user-dropdown" id="userDropdown">
                 <div class="d-flex align-items-center gap-2" onclick="toggleUserDropdown()">
                     @if(auth()->user()?->profile_photo_path)
-                        <img src="{{ asset('storage/' . auth()->user()->profile_photo_path) }}" alt="{{ auth()->user()->name }}" style="width: 36px; height: 36px; object-fit: cover; border-radius: 4px; border: 1px solid #333;">
+                        <img src="{{ asset('storage/' . auth()->user()->profile_photo_path) }}" alt="{{ auth()->user()->display_name }}" style="width: 36px; height: 36px; object-fit: cover; border-radius: 4px; border: 1px solid #333;">
                     @else
-                        <div class="user-avatar">{{ strtoupper(substr(auth()->user()?->name ?? 'U', 0, 1)) }}</div>
+                        <div class="user-avatar">{{ strtoupper(substr(auth()->user()?->display_name ?? 'U', 0, 1)) }}</div>
                     @endif
                     <i class="bi bi-caret-down-fill" id="dropdownArrow" style="color:#888;font-size:0.7rem;"></i>
                 </div>
                 <div class="dropdown-menu-netflix" id="userDropdownMenu">
                     <div class="dropdown-header">
-                        <div class="dd-name">{{ auth()->user()?->name ?? 'Usuario' }}</div>
+                        <div class="dd-name">{{ auth()->user()?->display_name ?? 'Usuario' }}</div>
                         <div class="dd-email">{{ auth()->user()?->email ?? 'Sin correo' }}</div>
                         <div class="dd-role">{{ auth()->user()?->rol ?? 'empleado' }}</div>
                     </div>

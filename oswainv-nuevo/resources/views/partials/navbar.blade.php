@@ -393,7 +393,7 @@
             @if(auth()->user()?->profile_photo_path)
                 <img src="{{ asset('storage/' . auth()->user()->profile_photo_path) }}" style="width:32px;height:32px;object-fit:cover;border-radius:50%;border:2px solid rgba(255,255,255,0.1);">
             @else
-                <div style="width:32px;height:32px;border-radius:50%;background:#E50914;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:0.9rem;border:2px solid rgba(255,255,255,0.1);">{{ strtoupper(substr(auth()->user()?->name ?? 'U', 0, 1)) }}</div>
+                <div style="width:32px;height:32px;border-radius:50%;background:#E50914;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:0.9rem;border:2px solid rgba(255,255,255,0.1);">{{ strtoupper(substr(auth()->user()?->display_name ?? 'U', 0, 1)) }}</div>
             @endif
         </button>
     </div>
@@ -410,14 +410,18 @@
             </a>
             <div class="dropdown-menu-custom" id="inventarioDropdown">
                 <div class="dropdown-header-custom">Catálogo y Movimientos</div>
+                @if(auth()->check() && auth()->user()->tienePermiso('ver_catalogo'))
                 <a href="{{ route('catalogo') }}" class="dropdown-item-custom"><i class="bi bi-box-seam text-primary"></i> Catálogo de Productos</a>
+                @endif
                 <a href="{{ route('despacho.vista') ?? '#' }}" class="dropdown-item-custom"><i class="bi bi-upc-scan text-danger"></i> Despacho de Productos</a>
             </div>
         </div>
+        @if(auth()->check() && auth()->user()->tienePermiso('ver_proveedores'))
         <div class="topbar-nav-item">
             <a href="{{ route('proveedores') }}" class="nav-link-custom {{ request()->routeIs('proveedores') ? 'active' : '' }}">Proveedores</a>
         </div>
-        @if(auth()->check() && auth()->user()->rol === 'admin')
+        @endif
+        @if(auth()->check() && auth()->user()->tienePermiso('gestionar_usuarios'))
         <div class="topbar-nav-item">
             <a href="javascript:void(0)" class="nav-link-custom" onclick="toggleDropdown('gestionDropdown')">
                 Gestión <i class="bi bi-chevron-down ms-1" style="font-size: 0.7rem;"></i>
@@ -425,11 +429,15 @@
             <div class="dropdown-menu-custom" id="gestionDropdown">
                 <div class="dropdown-header-custom">Administración</div>
                 <a href="{{ route('usuarios.index') ?? '#' }}" class="dropdown-item-custom"><i class="bi bi-people-fill text-info"></i> Usuarios y Roles</a>
+                @if(auth()->user()->tienePermiso('gestionar_misiones'))
                 <a href="{{ url('/gestion/misiones') }}" class="dropdown-item-custom"><i class="bi bi-flag-fill text-danger"></i> Misiones</a>
+                @endif
                 <a href="{{ route('catalogo') }}#tab-auditoria" class="dropdown-item-custom"><i class="bi bi-shield-lock text-success"></i> Reportes de Auditoría</a>
                 <div style="height: 1px; background: rgba(255,255,255,0.05); margin: 8px 0;"></div>
                 <a href="{{ route('reporte.cierre') ?? '#' }}" class="dropdown-item-custom item-cierre"><i class="bi bi-file-earmark-check-fill"></i> Generar Cierre Diario</a>
+                @if(auth()->user()->tienePermiso('respaldar_bd'))
                 <a href="{{ route('respaldo.db') ?? '#' }}" class="dropdown-item-custom"><i class="bi bi-database-fill-down text-warning"></i> Respaldar Base de Datos</a>
+                @endif
             </div>
         </div>
         @endif
@@ -467,13 +475,13 @@
                 @if(auth()->user()?->profile_photo_path)
                     <img src="{{ asset('storage/' . auth()->user()->profile_photo_path) }}" style="width: 32px; height: 32px; object-fit: cover; border-radius: 4px; border: 1px solid #333;">
                 @else
-                    <div class="user-avatar">{{ strtoupper(substr(auth()->user()?->name ?? 'U', 0, 1)) }}</div>
+                    <div class="user-avatar">{{ strtoupper(substr(auth()->user()?->display_name ?? 'U', 0, 1)) }}</div>
                 @endif
                 <i class="bi bi-caret-down-fill" id="dropdownArrow" style="color:#888;font-size:0.7rem;"></i>
             </div>
             <div class="dropdown-menu-netflix" id="userDropdownMenu">
                 <div class="dropdown-header">
-                    <div class="dd-name">{{ auth()->user()?->name ?? 'Usuario' }}</div>
+                    <div class="dd-name">{{ auth()->user()?->display_name ?? 'Usuario' }}</div>
                     <div class="dd-email">{{ auth()->user()?->email ?? 'Sin correo' }}</div>
                     <div class="dd-role">{{ auth()->user()?->rol ?? 'empleado' }}</div>
                 </div>
@@ -738,15 +746,15 @@
                     @if(auth()->user()?->profile_photo_path)
                         <img src="{{ asset('storage/' . auth()->user()->profile_photo_path) }}" style="width:80px;height:80px;object-fit:cover;border-radius:50%;border:3px solid #E50914;box-shadow:0 0 20px rgba(229,9,20,0.3);">
                     @else
-                        <div style="width:80px;height:80px;background:linear-gradient(135deg,#E50914,#b20710);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:700;color:#fff;border:3px solid #E50914;box-shadow:0 0 20px rgba(229,9,20,0.3);margin:0 auto;">{{ strtoupper(substr(auth()->user()?->name ?? 'U', 0, 1)) }}</div>
+                        <div style="width:80px;height:80px;background:linear-gradient(135deg,#E50914,#b20710);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:700;color:#fff;border:3px solid #E50914;box-shadow:0 0 20px rgba(229,9,20,0.3);margin:0 auto;">{{ strtoupper(substr(auth()->user()?->display_name ?? 'U', 0, 1)) }}</div>
                     @endif
                     <div style="position:absolute;bottom:0;right:0;width:24px;height:24px;background:#00b894;border-radius:50%;border:3px solid #1c1c1c;display:flex;align-items:center;justify-content:center;"><i class="bi bi-check" style="color:#fff;font-size:0.7rem;"></i></div>
                 </div>
-                <div style="font-size:1.2rem;font-weight:700;color:#fff;margin-bottom:4px;">{{ auth()->user()?->name ?? 'Usuario' }}</div>
+                <div style="font-size:1.2rem;font-weight:700;color:#fff;margin-bottom:4px;">{{ auth()->user()?->display_name ?? 'Usuario' }}</div>
                 <div style="color:#888;font-size:0.85rem;margin-bottom:16px;">{{ auth()->user()?->email ?? 'Sin correo' }}</div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;text-align:center;">
                     <div style="background:#141414;border-radius:8px;padding:10px;">
-                        <div style="color:#E50914;font-size:1.1rem;font-weight:700;">{{ auth()->user()?->rol === 'admin' ? 'Admin' : 'Empleado' }}</div>
+                        <div style="color:#E50914;font-size:1.1rem;font-weight:700;">{{ auth()->user()?->rol === 'admin' ? 'Jefe' : (auth()->user()?->rol === 'desarrollador' ? 'Desarrollador' : 'Empleado') }}</div>
                         <div style="color:#666;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.5px;">Rol</div>
                     </div>
                     <div style="background:#141414;border-radius:8px;padding:10px;">

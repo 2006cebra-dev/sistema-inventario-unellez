@@ -24,7 +24,7 @@ class ProductoController extends Controller
     public function catalogo()
     {
         $productos = Producto::orderBy('created_at', 'desc')->paginate(48);
-        $esAdmin = Auth::check() && Auth::user()->rol === 'admin';
+        $esAdmin = Auth::check() && Auth::user()->tienePermiso('gestionar_productos');
         $auditorias = Movimiento::with(['producto', 'usuario'])->orderBy('created_at', 'desc')->limit(200)->get();
         $proveedores = Proveedor::all();
         $requisicionesPendientes = $esAdmin ? Requisicion::with(['user', 'producto'])->where('estado', 'Pendiente')->latest()->get() : [];
@@ -51,7 +51,7 @@ class ProductoController extends Controller
 
     public function guardarProducto(Request $request)
     {
-        if (Auth::user()->rol !== 'admin') {
+        if (!Auth::user()->tienePermiso('gestionar_productos')) {
             return response()->json(['success' => false, 'error' => 'No autorizado'], 403);
         }
         $request->validate([
@@ -129,7 +129,7 @@ class ProductoController extends Controller
                 'tipo' => 'Entrada',
                 'cantidad' => $request->stock,
                 'motivo' => 'Stock inicial',
-                'usuario_accion' => Auth::user()->name,
+                'usuario_accion' => Auth::user()->display_name,
             ]);
             $mov->firma_hash = $mov->generarFirma();
             $mov->save();
@@ -148,7 +148,7 @@ class ProductoController extends Controller
 
     public function actualizarProducto(Request $request, $id)
     {
-        if (Auth::user()->rol !== 'admin') {
+        if (!Auth::user()->tienePermiso('gestionar_productos')) {
             return response()->json(['success' => false, 'error' => 'No autorizado'], 403);
         }
         $producto = \App\Models\Producto::findOrFail($id);
@@ -200,10 +200,14 @@ class ProductoController extends Controller
         }
 
         if ((float)$oldPrice !== (float)$request->precio) {
+            $porcentaje = $oldPrice > 0 ? round((($request->precio - $oldPrice) / $oldPrice) * 100, 2) : 0;
+            $tasa = $this->obtenerTasaBcv();
             \App\Models\PriceHistory::create([
                 'producto_id' => $producto->id,
                 'precio_anterior' => $oldPrice,
                 'precio_nuevo' => $request->precio,
+                'porcentaje_incremento' => $porcentaje,
+                'tasa_dolar' => $tasa,
                 'user_id' => Auth::id(),
             ]);
         }
@@ -232,10 +236,14 @@ class ProductoController extends Controller
         $producto->update($request->all());
 
         if ((float)$oldPrice !== (float)$request->precio) {
+            $porcentaje = $oldPrice > 0 ? round((($request->precio - $oldPrice) / $oldPrice) * 100, 2) : 0;
+            $tasa = $this->obtenerTasaBcv();
             \App\Models\PriceHistory::create([
                 'producto_id' => $producto->id,
                 'precio_anterior' => $oldPrice,
                 'precio_nuevo' => $request->precio,
+                'porcentaje_incremento' => $porcentaje,
+                'tasa_dolar' => $tasa,
                 'user_id' => Auth::id(),
             ]);
         }
@@ -245,7 +253,7 @@ class ProductoController extends Controller
 
     public function updateStock(Request $request, $id)
     {
-        if (Auth::user()->rol !== 'admin') {
+        if (!Auth::user()->tienePermiso('gestionar_productos')) {
             return response()->json(['success' => false, 'error' => 'No autorizado'], 403);
         }
         $producto = Producto::findOrFail($id);
@@ -271,7 +279,7 @@ class ProductoController extends Controller
                 'tipo' => 'Salida',
                 'cantidad' => abs($diferencia),
                 'motivo' => 'Ajuste manual de stock',
-                'usuario_accion' => Auth::user()->name ?? 'Sistema',
+                'usuario_accion' => Auth::user()->display_name ?? 'Sistema',
                 'user_id' => Auth::id(),
             ]);
             $mov->firma_hash = $mov->generarFirma();
@@ -297,7 +305,7 @@ class ProductoController extends Controller
 
     public function destroy($id)
     {
-        if (Auth::user()->rol !== 'admin') {
+        if (!Auth::user()->tienePermiso('gestionar_productos')) {
             return redirect()->back()->with('error', 'No autorizado');
         }
         $producto = Producto::findOrFail($id);
@@ -307,7 +315,7 @@ class ProductoController extends Controller
 
     public function eliminarProducto(Request $request)
     {
-        if (Auth::user()->rol !== 'admin') {
+        if (!Auth::user()->tienePermiso('gestionar_productos')) {
             return response()->json(['success' => false, 'error' => 'No autorizado'], 403);
         }
         Producto::destroy($request->id);
@@ -323,7 +331,7 @@ class ProductoController extends Controller
     public function ajustarStock(Request $request)
     {
         $request->validate(['id' => 'required|integer', 'accion' => 'required|string']);
-        if (Auth::user()->rol !== 'admin') {
+        if (!Auth::user()->tienePermiso('gestionar_productos')) {
             return response()->json(['success' => false, 'error' => 'No autorizado'], 403);
         }
 
@@ -414,7 +422,7 @@ class ProductoController extends Controller
                 $movimiento->tipo = $tipoMovimiento;
                 $movimiento->cantidad = $cantidadMovimiento;
                 $movimiento->motivo = $motivo;
-                $movimiento->usuario_accion = Auth::user()->name;
+                $movimiento->usuario_accion = Auth::user()->display_name;
                 $movimiento->user_id = Auth::id();
                 $movimiento->save();
 
@@ -453,7 +461,7 @@ class ProductoController extends Controller
 
     public function escanearProducto(Request $request)
     {
-        if (Auth::user()->rol !== 'admin') {
+        if (!Auth::user()->tienePermiso('gestionar_productos')) {
             return response()->json(['success' => false, 'error' => 'No autorizado'], 403);
         }
         $p = Producto::where('codigo', $request->codigo)->first();
@@ -462,7 +470,7 @@ class ProductoController extends Controller
         try {
             $movimiento = Movimiento::create([
                 'codigo_producto' => $p->codigo, 'tipo' => 'Entrada', 'cantidad' => 1, 'motivo' => 'Escaneo (+1)',
-                'usuario_accion' => Auth::user()->name ?? 'Sistema',
+                'usuario_accion' => Auth::user()->display_name ?? 'Sistema',
                 'user_id' => Auth::id()
             ]);
 
@@ -481,7 +489,7 @@ class ProductoController extends Controller
 
     public function obtenerPreciosProveedor($id)
     {
-        if (Auth::user()->rol !== 'admin') {
+        if (!Auth::user()->tienePermiso('gestionar_productos')) {
             return response()->json(['error' => 'No autorizado'], 403);
         }
         $producto = \App\Models\Producto::with('proveedores')->findOrFail($id);
@@ -490,7 +498,7 @@ class ProductoController extends Controller
 
     public function guardarPreciosProveedor(Request $request, $id)
     {
-        if (Auth::user()->rol !== 'admin') {
+        if (!Auth::user()->tienePermiso('gestionar_productos')) {
             return response()->json(['success' => false, 'error' => 'No autorizado'], 403);
         }
         $producto = \App\Models\Producto::findOrFail($id);
