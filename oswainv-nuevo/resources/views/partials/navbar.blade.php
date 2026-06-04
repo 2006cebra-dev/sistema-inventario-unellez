@@ -434,6 +434,8 @@
                 @endif
                 <a href="{{ route('catalogo') }}#tab-auditoria" class="dropdown-item-custom"><i class="bi bi-shield-lock text-success"></i> Reportes de Auditoría</a>
                 <a href="{{ route('mapa.sucursales') }}" class="dropdown-item-custom"><i class="bi bi-geo-alt-fill text-danger"></i> Mapa de Sucursales</a>
+                <a href="{{ route('alertas') }}" class="dropdown-item-custom"><i class="bi bi-bell-fill text-warning"></i> Alertas de Stock</a>
+                <a href="{{ route('analytics') }}" class="dropdown-item-custom"><i class="bi bi-graph-up-arrow text-success"></i> Analytics</a>
                 <div style="height: 1px; background: rgba(255,255,255,0.05); margin: 8px 0;"></div>
                 <a href="{{ route('reporte.cierre') ?? '#' }}" class="dropdown-item-custom item-cierre"><i class="bi bi-file-earmark-check-fill"></i> Generar Cierre Diario</a>
                 @if(auth()->user()->tienePermiso('respaldar_bd'))

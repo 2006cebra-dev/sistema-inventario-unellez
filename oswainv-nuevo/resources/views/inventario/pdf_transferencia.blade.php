@@ -36,7 +36,7 @@
         </tr>
         <tr>
             <td class="title">Destino:</td>
-            <td>{{ $sucursal ?? $destino }}</td>
+            <td>{{ $sucursal ?? ($destino ?? '—') }}</td>
         </tr>
     </table>
 
@@ -44,11 +44,7 @@
     <table class="info-table">
         <tr>
             <td class="title">Distancia Recorrida:</td>
-            <td>{{ $distancia }} km</td>
-        </tr>
-        <tr>
-            <td class="title">Costo de Flete:</td>
-            <td>${{ number_format((float)$costo, 2) }}</td>
+            <td>{{ $distancia ?? '—' }} km</td>
         </tr>
         <tr>
             <td class="title">Fecha de Emisión:</td>

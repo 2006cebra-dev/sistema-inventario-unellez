@@ -142,7 +142,31 @@ class InventarioController extends Controller
     {
         $sucursales = config('sucursales');
         $productos = Producto::select('id', 'nombre', 'codigo', 'stock', 'stock_minimo', 'precio')->get();
-        return view('inventario.mapa-sucursales', compact('sucursales', 'productos'));
+
+        $transferencias = Movimiento::where('tipo', 'Salida')
+            ->where('motivo', 'like', 'Transferencia a %')
+            ->select('motivo', 'codigo_producto', 'cantidad', 'created_at', 'usuario_accion')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $transfersPorSucursal = [];
+        $transferCount = [];
+        foreach ($transferencias as $t) {
+            $nombre = str_replace('Transferencia a ', '', $t->motivo);
+            if (isset($sucursales[$nombre])) {
+                $transfersPorSucursal[$nombre][] = $t;
+                $transferCount[$nombre] = ($transferCount[$nombre] ?? 0) + 1;
+            }
+        }
+
+        $productoMasTransferido = $transferencias->groupBy('codigo_producto')
+            ->map(fn($g) => $g->sum('cantidad'))
+            ->sortDesc()
+            ->take(5);
+
+        return view('inventario.mapa-sucursales', compact(
+            'sucursales', 'productos', 'transfersPorSucursal', 'transferCount', 'productoMasTransferido'
+        ));
     }
 
     public function getChartsData(Request $request)
@@ -263,6 +287,16 @@ class InventarioController extends Controller
             'sucursal' => $request->sucursal,
             'sucursales_full' => $sucursales
         ]);
+    }
+
+    public function vistaTransferir($id)
+    {
+        $producto = Producto::findOrFail($id);
+        $sucursales = config('sucursales');
+        $ultimasTransferencias = Movimiento::where('motivo', 'like', 'Transferencia a %')
+            ->where('codigo_producto', $producto->codigo)
+            ->latest()->take(5)->get();
+        return view('inventario.transferir', compact('producto', 'sucursales', 'ultimasTransferencias'));
     }
 
     public function generarPdfTransferencia(Request $request)
@@ -868,6 +902,20 @@ class InventarioController extends Controller
         }
     }
 
+    public function alertas()
+    {
+        $productos = Producto::all();
+        $bajoStock = $productos->filter(fn($p) => $p->stock_bajo);
+        $porVencer = $productos->filter(fn($p) =>
+            $p->fecha_vencimiento && \Carbon\Carbon::parse($p->fecha_vencimiento)->diffInDays(now(), false) <= 30
+        );
+        $sinStock = $productos->where('stock', 0);
+        $saludable = $productos->filter(fn($p) => !$p->stock_bajo && $p->stock > 0)->count();
+        $todasAlertas = $bajoStock->merge($porVencer)->merge($sinStock)->unique('id');
+
+        return view('inventario.alertas', compact('bajoStock', 'porVencer', 'sinStock', 'saludable', 'todasAlertas'));
+    }
+
     public function perfil()
     {
         $user = Auth::user();
@@ -894,6 +942,58 @@ class InventarioController extends Controller
             'user', 'xpActual', 'nivel', 'xpSiguiente', 'xpBar',
             'achievements', 'desbloqueados', 'totalLogros',
             'activityLabels', 'activityData'
+        ));
+    }
+
+    public function analytics()
+    {
+        $productos = Producto::where('precio_costo', '>', 0)->get();
+
+        $topRentables = $productos->filter(fn($p) => $p->ganancia > 0)->sortByDesc(fn($p) => $p->ganancia)->take(5)->values();
+
+        $perdidas = $productos->filter(fn($p) => $p->ganancia < 0)->sortBy(fn($p) => $p->ganancia)->take(5)->values();
+
+        $topVendidos = Movimiento::select('codigo_producto', DB::raw('SUM(cantidad) as total_salidas'))
+            ->where('tipo', 'Salida')
+            ->groupBy('codigo_producto')
+            ->orderByDesc('total_salidas')
+            ->take(5)
+            ->get()
+            ->map(fn($m) => [
+                'producto' => Producto::where('codigo', $m->codigo_producto)->first(),
+                'total_salidas' => $m->total_salidas,
+            ])
+            ->filter(fn($i) => $i['producto']);
+
+        $bajaRotacion = Producto::whereDoesntHave('movimientos', function ($q) {
+            $q->where('tipo', 'Salida')->where('created_at', '>=', now()->subDays(60));
+        })->where('stock', '>', 0)->take(5)->get();
+
+        $gananciasPorCategoria = Producto::where('precio_costo', '>', 0)
+            ->whereColumn('precio', '>', 'precio_costo')
+            ->select('categoria', DB::raw('SUM((precio - precio_costo) * stock) as ganancia_total'))
+            ->groupBy('categoria')
+            ->orderByDesc('ganancia_total')
+            ->get();
+
+        $tasaBcv = $this->obtenerTasaBcv();
+        $totalProductos = Producto::count();
+        $totalStock = Producto::sum('stock');
+
+        $totalGananciaPotencial = $productos->sum(fn($p) => $p->ganancia * $p->stock);
+
+        $labelsCategorias = $gananciasPorCategoria->pluck('categoria');
+        $dataCategorias = $gananciasPorCategoria->pluck('ganancia_total');
+
+        $labelsRentables = $topRentables->pluck('nombre');
+        $dataRentables = $topRentables->map(fn($p) => $p->ganancia);
+
+        return view('inventario.analytics', compact(
+            'topRentables', 'perdidas', 'topVendidos', 'bajaRotacion',
+            'gananciasPorCategoria', 'tasaBcv',
+            'totalProductos', 'totalStock', 'totalGananciaPotencial',
+            'labelsCategorias', 'dataCategorias',
+            'labelsRentables', 'dataRentables'
         ));
     }
 }

@@ -276,9 +276,9 @@
                                     <i class="bi bi-pencil-square"></i> Editar
                                 </button>
                                 
-                                <button type="button" class="btn btn-sm d-flex align-items-center justify-content-center" title="Transferir a Sucursal" style="width: 40px; height: 38px; background: rgba(0,184,148,0.1); color: #00b894; border: 1px solid rgba(0,184,148,0.2); border-radius: 8px; transition: all 0.2s;" onmouseover="this.style.background='rgba(0,184,148,0.2)'" onmouseout="this.style.background='rgba(0,184,148,0.1)'" onclick="abrirTransferencia({{ $producto->id }}, '{{ addslashes($producto->nombre) }}', {{ $producto->stock }})">
+                                <a href="{{ route('transferir.vista', $producto->id) }}" target="_blank" class="btn btn-sm d-flex align-items-center justify-content-center" title="Transferir a Sucursal" style="width: 40px; height: 38px; background: rgba(0,184,148,0.1); color: #00b894; border: 1px solid rgba(0,184,148,0.2); border-radius: 8px; transition: all 0.2s; text-decoration:none;" onmouseover="this.style.background='rgba(0,184,148,0.2)'" onmouseout="this.style.background='rgba(0,184,148,0.1)'">
                                     <i class="bi bi-send-fill"></i>
-                                </button>
+                                </a>
                                 <button type="button" class="btn btn-sm d-flex align-items-center justify-content-center" title="Eliminar Producto" style="width: 40px; height: 38px; background: rgba(229, 9, 20, 0.1); color: #E50914; border: 1px solid rgba(229, 9, 20, 0.2); border-radius: 8px; transition: all 0.2s;" onmouseover="this.style.background='rgba(229, 9, 20, 0.2)'" onmouseout="this.style.background='rgba(229, 9, 20, 0.1)'" onclick="confirmarEliminacion({{ $producto->id }}, '{{ addslashes($producto->nombre) }}')">
                                     <i class="bi bi-trash-fill"></i>
                                 </button>

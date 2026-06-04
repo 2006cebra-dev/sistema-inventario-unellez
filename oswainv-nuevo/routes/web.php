@@ -28,6 +28,7 @@ Route::get('/home', fn() => redirect()->to('/dashboard'))->name('home');
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [InventarioController::class, 'index'])->name('inventario');
     Route::get('/perfil', [InventarioController::class, 'perfil'])->name('perfil');
+    Route::get('/alertas', [InventarioController::class, 'alertas'])->name('alertas');
     Route::get('/api/dashboard/graficas', [InventarioController::class, 'getChartsData'])->name('api.graficas');
     // --- CATÁLOGO Y PRODUCTOS ---
     Route::get('/catalogo', [ProductoController::class, 'catalogo'])->name('catalogo');
@@ -43,6 +44,7 @@ Route::middleware(['auth'])->group(function () {
     Route::patch('/productos/{id}/stock', [ProductoController::class, 'updateStock'])->name('productos.stock');
     Route::delete('/productos/{id}', [ProductoController::class, 'destroy'])->name('productos.destroy');
     Route::post('/transferir-producto', [InventarioController::class, 'transferirProducto'])->name('transferir.producto');
+    Route::get('/transferir/{id}', [InventarioController::class, 'vistaTransferir'])->name('transferir.vista');
     Route::get('/orden-compra/{id}', [InventarioController::class, 'generarOrdenCompra'])->name('orden.compra');
     // --- PROVEEDORES ---
     Route::get('/proveedores', [ProveedorController::class, 'proveedores'])->name('proveedores');
@@ -69,6 +71,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/roles/permisos/{nombre}', [InventarioController::class, 'obtenerPermisosRol'])->name('roles.permisos');
     Route::get('/usuarios/exportar', [InventarioController::class, 'exportarUsuarios'])->name('usuarios.exportar');
     Route::get('/mapa-sucursales', [InventarioController::class, 'mapaSucursales'])->name('mapa.sucursales');
+    Route::get('/analytics', [InventarioController::class, 'analytics'])->name('analytics');
     
     // --- SISTEMA DE REQUISICIONES ---
     Route::get('/requisiciones/crear', [RequisicionController::class, 'crearRequisicion'])->name('requisiciones.crear');
