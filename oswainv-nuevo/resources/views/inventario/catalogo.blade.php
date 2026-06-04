@@ -984,10 +984,7 @@
                 const opt = sel.options[sel.selectedIndex];
                 if (opt && opt.value) {
                     const dist = parseFloat(opt.getAttribute('data-dist')) || 0;
-                    const flete = (dist * 0.25).toFixed(2);
-                    const qty = parseInt(cant.value) || 1;
                     distEl.textContent = dist.toLocaleString();
-                    fleteEl.textContent = '$' + (flete * qty).toFixed(2) + ' (a $0.25/km)';
                     info.classList.remove('d-none');
                     btn.disabled = false;
                 } else {
@@ -1005,7 +1002,6 @@
             const sucursal = document.getElementById('transferSucursal').value;
             const opt = document.querySelector('#transferSucursal option[value="' + sucursal + '"]');
             const dist = opt ? parseInt(opt.getAttribute('data-dist')) : 0;
-            const flete = (dist * 0.25 * cantidad).toFixed(2);
             if (!cantidad || !sucursal) return;
 
             Swal.fire({
@@ -1015,8 +1011,7 @@
                     '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #2a2a2a;"><span style="color:#888;">Producto</span><span style="color:#fff;font-weight:600;">' + transferProductoNombre + '</span></div>' +
                     '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #2a2a2a;"><span style="color:#888;">Destino</span><span style="color:#fff;font-weight:600;">' + sucursal + '</span></div>' +
                     '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #2a2a2a;"><span style="color:#888;">Distancia</span><span style="color:#fff;">' + dist.toLocaleString() + ' km</span></div>' +
-                    '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #2a2a2a;"><span style="color:#888;">Cantidad</span><span style="color:#fff;">' + cantidad + ' uds</span></div>' +
-                    '<div style="display:flex;justify-content:space-between;padding:6px 0;"><span style="color:#888;">Flete estimado</span><span style="color:#ffc107;font-weight:600;">$' + flete + '</span></div>' +
+                    '<div style="display:flex;justify-content:space-between;padding:6px 0;"><span style="color:#888;">Cantidad</span><span style="color:#fff;">' + cantidad + ' uds</span></div>' +
                     '</div>',
                 icon: 'question',
                 showCancelButton: true,
@@ -1063,8 +1058,7 @@
                                 '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #2a2a2a;"><span style="color:#888;">Producto</span><span style="color:#fff;font-weight:600;">' + transferProductoNombre + '</span></div>' +
                                 '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #2a2a2a;"><span style="color:#888;">Destino</span><span style="color:#00b894;font-weight:600;">' + sucursal + '</span></div>' +
                                 '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #2a2a2a;"><span style="color:#888;">Distancia</span><span style="color:#fff;">' + dist.toLocaleString() + ' km</span></div>' +
-                                '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #2a2a2a;"><span style="color:#888;">Cantidad</span><span style="color:#fff;">' + cantidad + ' uds</span></div>' +
-                                '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #2a2a2a;"><span style="color:#888;">Flete</span><span style="color:#ffc107;font-weight:600;">$' + data.costo_flete.toFixed(2) + '</span></div>' +
+                                '<div style="display:flex;justify-content:space-between;padding:8px 0;"><span style="color:#888;">Cantidad</span><span style="color:#fff;">' + cantidad + ' uds</span></div>' +
                                 '<div style="display:flex;justify-content:space-between;padding:8px 0;"><span style="color:#888;">Fecha</span><span style="color:#888;">' + new Date(data.fecha).toLocaleString('es-ES') + '</span></div>' +
                                 '</div>' +
                                 '<div class="mt-3 text-center" style="font-size:0.8rem;color:#555;">El stock se descontó del inventario local</div>',
@@ -1418,8 +1412,7 @@
                         </select>
                     </div>
                     <div id="transferInfo" class="p-3 rounded d-none" style="background:rgba(0,184,148,0.08);border:1px solid rgba(0,184,148,0.2);">
-                        <div style="color:#00b894;font-size:0.85rem;"><i class="bi bi-truck me-1"></i>Distancia: <strong id="transferDistancia">—</strong> km</div>
-                        <div style="color:#ffc107;font-size:0.85rem;"><i class="bi bi-cash me-1"></i>Costo flete estimado: <strong id="transferFlete">—</strong></div>
+                        <div style="color:#00b894;font-size:0.85rem;"><i class="bi bi-geo-alt me-1"></i>Distancia: <strong id="transferDistancia">—</strong> km</div>
                     </div>
                 </div>
                 <div class="modal-footer border-secondary">

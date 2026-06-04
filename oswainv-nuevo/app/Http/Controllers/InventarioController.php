@@ -227,7 +227,6 @@ class InventarioController extends Controller
 
         $sucursales = config('sucursales');
         $destino = $sucursales[$request->sucursal] ?? ['lat' => 10.48, 'lng' => -66.89, 'dist' => 500];
-        $costoFlete = $destino['dist'] * 0.25;
         $fecha = now()->toDateTimeString();
 
         $producto->decrement('stock', $request->cantidad);
@@ -258,7 +257,6 @@ class InventarioController extends Controller
             'success' => true,
             'producto' => $producto->nombre,
             'distancia' => $destino['dist'],
-            'costo_flete' => $costoFlete,
             'lat' => $destino['lat'],
             'lng' => $destino['lng'],
             'fecha' => $fecha,
