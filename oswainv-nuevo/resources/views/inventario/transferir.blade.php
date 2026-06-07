@@ -301,7 +301,6 @@ function confirmarTransferencia() {
                             '&distancia=' + dist +
                             '&fecha=' + encodeURIComponent(data.fecha);
                         window.open(pdfUrl, '_blank');
-                        setTimeout(() => { window.location.href = '{{ route('catalogo') }}'; }, 500);
                     }
                 });
             } else {
