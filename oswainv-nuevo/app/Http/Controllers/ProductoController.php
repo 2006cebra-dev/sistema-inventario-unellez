@@ -59,7 +59,7 @@ class ProductoController extends Controller
             'codigo' => 'required|string|unique:productos,codigo',
             'precio' => 'required|numeric',
             'precio_costo' => 'nullable|numeric|min:0',
-            'categoria' => 'required|string|max:255',
+            'categoria' => 'nullable|string|max:255',
             'stock' => 'required|integer',
             'stock_minimo' => 'nullable|integer|min:0',
             'stock_maximo' => 'nullable|integer|min:0',

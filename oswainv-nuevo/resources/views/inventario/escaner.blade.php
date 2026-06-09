@@ -226,7 +226,10 @@
     <div class="result-overlay" id="resultOverlay">
         <div class="code-badge">Código</div>
         <div class="code-value" id="resultCode">—</div>
-        <img class="prod-img" id="resultImg" src="" alt="" style="display:none;">
+        <div class="prod-img-wrapper" style="width:120px;height:120px;margin:0 auto 1rem;border-radius:16px;background:#0a0a0a;border:1px solid #1f1f1f;overflow:hidden;display:flex;align-items:center;justify-content:center;">
+            <div id="resultImgPlaceholder" style="font-size:3rem;color:#333;"><i class="bi bi-box-seam"></i></div>
+            <img class="prod-img" id="resultImg" src="" alt="" style="max-width:100%;max-height:100%;object-fit:contain;display:none;">
+        </div>
         <div class="loading-spinner" id="loadingSpinner"></div>
         <div class="loading-text" id="loadingText">Buscando producto...</div>
         <div class="prod-name" id="resultName" style="display:none;"></div>
@@ -305,6 +308,31 @@
             window.location.href = '{{ route("catalogo") }}?nuevo_codigo=' + encodeURIComponent(codigo);
         }
 
+        async function buscarImagenApi(codigo) {
+            const img = document.getElementById('resultImg');
+            const placeholder = document.getElementById('resultImgPlaceholder');
+            // Intentar Open Food Facts
+            try {
+                const r1 = await fetch(`https://world.openfoodfacts.org/api/v0/product/${codigo}.json`);
+                const d1 = await r1.json();
+                if (d1.status === 1) {
+                    const url = d1.product.image_front_url || d1.product.image_url;
+                    if (url) { img.onerror=()=>{img.style.display='none';placeholder.style.display='flex'}; img.src=url; img.style.display='block'; placeholder.style.display='none'; return; }
+                }
+            } catch(e) {}
+            // Intentar UPCItemDB (cubre Latinoamérica)
+            try {
+                const r2 = await fetch(`https://api.upcitemdb.com/prod/trial/lookup?upc=${codigo}`);
+                const d2 = await r2.json();
+                if (d2.items && d2.items.length > 0) {
+                    const images = d2.items[0].images;
+                    if (images && images.length > 0) {
+                        img.onerror=()=>{img.style.display='none';placeholder.style.display='flex'}; img.src=images[0]; img.style.display='block'; placeholder.style.display='none'; return;
+                    }
+                }
+            } catch(e) {}
+        }
+
         function mostrarResultado(producto, nuevoStock) {
             document.getElementById('loadingSpinner').style.display = 'none';
             document.getElementById('loadingText').style.display = 'none';
@@ -320,12 +348,20 @@
             document.getElementById('resultEditBtn').style.display = producto.id ? '' : 'none';
             document.getElementById('overlayActions').style.display = 'flex';
             const img = document.getElementById('resultImg');
-            if (producto.imagen) {
-                img.src = '/storage/' + producto.imagen;
-                img.style.display = 'block';
-            } else {
-                img.style.display = 'none';
+            const placeholder = document.getElementById('resultImgPlaceholder');
+            function mostrarImagenLocal() {
+                if (producto.imagen) {
+                    img.src = '/storage/' + producto.imagen;
+                    img.style.display = 'block';
+                    placeholder.style.display = 'none';
+                    img.onerror = function() { img.style.display = 'none'; placeholder.style.display = 'flex'; buscarImagenApi(producto.codigo); };
+                } else {
+                    img.style.display = 'none';
+                    placeholder.style.display = 'flex';
+                    buscarImagenApi(producto.codigo);
+                }
             }
+            mostrarImagenLocal();
             document.getElementById('resultOverlay').classList.add('show');
         }
 
@@ -433,21 +469,34 @@
                         document.getElementById('resultEditBtn').style.display = 'none';
                         document.getElementById('overlayActions').style.display = 'flex';
                         const img = document.getElementById('resultImg');
+                        const placeholder = document.getElementById('resultImgPlaceholder');
                         if (imagenInternet) {
+                            img.onerror = function() { img.style.display = 'none'; placeholder.style.display = 'flex'; };
                             img.src = imagenInternet;
                             img.style.display = 'block';
+                            placeholder.style.display = 'none';
                         } else {
                             img.style.display = 'none';
+                            placeholder.style.display = 'flex';
                         }
                         mostrarToast('Producto encontrado en internet', 'bi bi-cloud-check-fill');
                         ultimoProducto = { codigo: codigo, nombre: nombreInternet, imagen: imagenInternet, id: null };
                     } else {
                         document.getElementById('loadingSpinner').style.display = 'none';
-                        document.getElementById('loadingText').textContent = 'Producto no encontrado';
+                        document.getElementById('loadingText').style.display = 'none';
+                        document.getElementById('resultName').textContent = 'Producto Nuevo';
+                        document.getElementById('resultName').style.display = 'block';
+                        document.getElementById('resultStock').textContent = 'No registrado';
+                        document.getElementById('resultStock').style.display = 'block';
+                        document.getElementById('resultPrice').style.display = 'none';
                         document.getElementById('btnAddStock').style.display = 'none';
                         document.getElementById('btnRegistrar').style.display = '';
                         document.getElementById('resultEditBtn').style.display = 'none';
                         document.getElementById('overlayActions').style.display = 'flex';
+                        const img = document.getElementById('resultImg');
+                        const placeholder = document.getElementById('resultImgPlaceholder');
+                        img.style.display = 'none';
+                        placeholder.style.display = 'flex';
                         ultimoProducto = { codigo: codigo, nombre: 'Producto Nuevo', imagen: null, id: null };
                         mostrarToast('Código no encontrado', 'bi bi-question-circle-fill');
                     }

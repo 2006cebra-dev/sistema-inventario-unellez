@@ -14,6 +14,8 @@ class Movimiento extends Model
         'tipo',
         'cantidad',
         'motivo',
+        'estado',
+        'fecha_llegada',
         'usuario_accion',
         'firma_digital',
         'user_id',

@@ -145,7 +145,7 @@ class InventarioController extends Controller
 
         $transferencias = Movimiento::where('tipo', 'Salida')
             ->where('motivo', 'like', 'Transferencia a %')
-            ->select('motivo', 'codigo_producto', 'cantidad', 'created_at', 'usuario_accion')
+            ->select('motivo', 'codigo_producto', 'cantidad', 'created_at', 'usuario_accion', 'estado', 'fecha_llegada', 'id')
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -289,14 +289,179 @@ class InventarioController extends Controller
         ]);
     }
 
-    public function vistaTransferir($id)
+    public function vistaTransferir($id = null)
     {
-        $producto = Producto::findOrFail($id);
         $sucursales = config('sucursales');
+        $productos = Producto::where('stock', '>', 0)->orderBy('nombre')->get();
+        $producto = $id ? Producto::find($id) : null;
+
         $ultimasTransferencias = Movimiento::where('motivo', 'like', 'Transferencia a %')
-            ->where('codigo_producto', $producto->codigo)
-            ->latest()->take(5)->get();
-        return view('inventario.transferir', compact('producto', 'sucursales', 'ultimasTransferencias'));
+            ->latest()->take(8)->get();
+
+        return view('inventario.transferir', compact('producto', 'productos', 'sucursales', 'ultimasTransferencias'));
+    }
+
+    public function transferirProductos(Request $request)
+    {
+        $request->validate([
+            'items' => 'required|array|min:1',
+            'items.*.id' => 'required|integer|exists:productos,id',
+            'items.*.cantidad' => 'required|integer|min:1',
+            'sucursal' => 'required|string',
+        ]);
+
+        if (!Auth::check() || !Auth::user()->tienePermiso('gestionar_productos')) {
+            return response()->json(['success' => false, 'error' => 'No autorizado'], 403);
+        }
+
+        $sucursales = config('sucursales');
+        $destino = $sucursales[$request->sucursal] ?? ['lat' => 8.6226, 'lng' => -70.2071, 'dist' => 0];
+        $fecha = now()->toDateTimeString();
+        $resultados = [];
+        $errores = [];
+
+        foreach ($request->items as $item) {
+            $producto = Producto::find($item['id']);
+            if (!$producto || $producto->stock < $item['cantidad']) {
+                $errores[] = ($producto->nombre ?? 'ID ' . $item['id']) . ' — stock insuficiente (disponible: ' . ($producto->stock ?? 0) . ')';
+                continue;
+            }
+
+            $producto->decrement('stock', $item['cantidad']);
+
+            $motivo = 'Transferencia a ' . $request->sucursal;
+            if ($request->filled('nota')) {
+                $motivo .= ' | Nota: ' . $request->nota;
+            }
+            if ($request->filled('soporte_base64')) {
+                $image_parts = explode(";base64,", $request->soporte_base64);
+                if (isset($image_parts[1])) {
+                    $image_base64 = base64_decode($image_parts[1]);
+                    $nameSoporte = time() . '_' . $producto->codigo . '.jpg';
+                    Storage::disk('public')->put('soportes/' . $nameSoporte, $image_base64);
+                    $motivo .= " | Soporte: " . $nameSoporte;
+                }
+            }
+
+            $movimiento = Movimiento::create([
+                'codigo_producto' => $producto->codigo,
+                'tipo' => 'Salida',
+                'cantidad' => $item['cantidad'],
+                'motivo' => $motivo,
+                'estado' => 'en_camino',
+                'usuario_accion' => Auth::user()->display_name,
+            ]);
+
+            $movimiento->firma_hash = $movimiento->generarFirma();
+            $movimiento->save();
+
+            $resultados[] = [
+                'nombre' => $producto->nombre,
+                'cantidad' => $item['cantidad'],
+                'codigo' => $producto->codigo,
+                'id' => $movimiento->id,
+            ];
+        }
+
+        return response()->json([
+            'success' => true,
+            'resultados' => $resultados,
+            'errores' => $errores,
+            'distancia' => $destino['dist'],
+            'fecha' => $fecha,
+            'sucursal' => $request->sucursal,
+        ]);
+    }
+
+    public function confirmarLlegadaPorQr(Request $request)
+    {
+        if (!Auth::check() || !Auth::user()->tienePermiso('gestionar_productos')) {
+            return response()->json(['success' => false, 'message' => 'No autorizado'], 403);
+        }
+
+        $request->validate(['data' => 'required|string']);
+        $decoded = json_decode($request->data, true);
+        if (!$decoded || !isset($decoded['ids']) || !is_array($decoded['ids'])) {
+            return response()->json(['success' => false, 'message' => 'QR inválido']);
+        }
+
+        try {
+            DB::beginTransaction();
+            $confirmados = 0;
+            foreach ($decoded['ids'] as $id) {
+                $mov = Movimiento::find($id);
+                if ($mov && $mov->estado === 'en_camino') {
+                    $mov->update(['estado' => 'llegado', 'fecha_llegada' => now()]);
+                    $confirmados++;
+                }
+            }
+            DB::commit();
+            return response()->json([
+                'success' => true,
+                'message' => "{$confirmados} transferencia(s) confirmada(s) como llegada(s)."
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['success' => false, 'message' => $e->getMessage()]);
+        }
+    }
+
+    public function buscarTransferenciaPorCodigo(Request $request)
+    {
+        $codigo = $request->input('codigo');
+        if (!$codigo) {
+            return response()->json(['success' => false, 'message' => 'Código requerido']);
+        }
+
+        $producto = Producto::where('codigo', $codigo)->first();
+
+        if (!$producto) {
+            return response()->json(['success' => false, 'message' => 'Producto no encontrado']);
+        }
+
+        $transferencias = Movimiento::where('codigo_producto', $producto->codigo)
+            ->where('tipo', 'Salida')
+            ->where('motivo', 'like', 'Transferencia a %')
+            ->where('estado', 'en_camino')
+            ->select('id', 'codigo_producto', 'cantidad', 'motivo', 'created_at')
+            ->latest()
+            ->get()
+            ->map(function ($m) {
+                return [
+                    'id' => $m->id,
+                    'codigo_producto' => $m->codigo_producto,
+                    'cantidad' => $m->cantidad,
+                    'sucursal' => str_replace('Transferencia a ', '', $m->motivo),
+                    'fecha' => $m->created_at->format('d/m/Y'),
+                ];
+            });
+
+        return response()->json([
+            'success' => true,
+            'producto' => $producto->nombre,
+            'transferencias' => $transferencias,
+        ]);
+    }
+
+    public function confirmarLlegadaTransferencia($id)
+    {
+        if (!Auth::check() || !Auth::user()->tienePermiso('gestionar_productos')) {
+            return response()->json(['success' => false, 'message' => 'No autorizado'], 403);
+        }
+
+        try {
+            $movimiento = Movimiento::findOrFail($id);
+            if ($movimiento->estado === 'llegado') {
+                return response()->json(['success' => false, 'message' => 'Esta transferencia ya fue marcada como llegada.']);
+            }
+            $movimiento->update([
+                'estado' => 'llegado',
+                'fecha_llegada' => now(),
+            ]);
+            return response()->json(['success' => true, 'message' => 'Llegada confirmada correctamente.']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()]);
+        }
     }
 
     public function generarPdfTransferencia(Request $request)
@@ -731,8 +896,12 @@ class InventarioController extends Controller
 
     public function vistaDespacho()
     {
-        $productos = Producto::where('stock', '>', 0)->get(['id', 'codigo', 'nombre', 'precio', 'stock']);
-        return view('inventario.despacho', compact('productos'));
+        $productos = Producto::where('stock', '>', 0)->get(['id', 'codigo', 'nombre', 'precio', 'stock', 'imagen']);
+        $sucursales = config('sucursales');
+        $ultimosDespachos = Movimiento::where('tipo', 'Salida')
+            ->where('motivo', 'not like', 'Transferencia a %')
+            ->latest()->take(8)->get();
+        return view('inventario.despacho', compact('productos', 'sucursales', 'ultimosDespachos'));
     }
 
     public function procesarDespachoBatch(Request $request)
@@ -749,6 +918,26 @@ class InventarioController extends Controller
             $usuario = Auth::user()->display_name;
             $userId = Auth::id();
 
+            $motivoBase = $request->motivo ?: 'Despacho Rápido (Lote)';
+
+            if ($request->filled('sucursal')) {
+                $motivoBase .= ' | Destino: ' . $request->sucursal;
+            }
+            if ($request->filled('nota')) {
+                $motivoBase .= ' | Nota: ' . $request->nota;
+            }
+            if ($request->filled('soporte_base64')) {
+                $image_parts = explode(";base64,", $request->soporte_base64);
+                if (isset($image_parts[1])) {
+                    $image_base64 = base64_decode($image_parts[1]);
+                    $nameSoporte = time() . '_despacho_' . $userId . '.jpg';
+                    Storage::disk('public')->put('soportes/' . $nameSoporte, $image_base64);
+                    $motivoBase .= " | Soporte: " . $nameSoporte;
+                }
+            }
+
+            $resultados = [];
+
             foreach ($request->items as $item) {
                 $producto = Producto::find($item['id']);
 
@@ -762,18 +951,31 @@ class InventarioController extends Controller
                     'codigo_producto' => $producto->codigo,
                     'tipo' => 'Salida',
                     'cantidad' => $item['cantidad'],
-                    'motivo' => 'Despacho Rápido (Lote)',
+                    'motivo' => $motivoBase,
                     'usuario_accion' => $usuario,
                     'user_id' => $userId
                 ]);
 
-                $cadena = $movimiento->id . $movimiento->codigo_producto . $movimiento->tipo . $movimiento->cantidad . $movimiento->motivo . $movimiento->usuario_accion;
-                $movimiento->firma_hash = hash('sha256', $cadena);
+                $movimiento->firma_hash = $movimiento->generarFirma();
                 $movimiento->save();
+
+                $resultados[] = [
+                    'nombre' => $producto->nombre,
+                    'cantidad' => $item['cantidad'],
+                    'codigo' => $producto->codigo,
+                ];
             }
 
             DB::commit();
-            return response()->json(['success' => true, 'message' => 'Despacho procesado y encriptado exitosamente.']);
+
+            $html = view('inventario._despacho_result', [
+                'resultados' => $resultados,
+                'motivo' => $request->motivo,
+                'sucursal' => $request->sucursal,
+                'total' => collect($request->items)->sum('cantidad'),
+            ])->render();
+
+            return response()->json(['success' => true, 'message' => 'Despacho procesado y encriptado exitosamente.', 'html' => $html]);
 
         } catch (\Exception $e) {
             DB::rollBack();

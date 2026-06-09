@@ -44,7 +44,8 @@ Route::middleware(['auth'])->group(function () {
     Route::patch('/productos/{id}/stock', [ProductoController::class, 'updateStock'])->name('productos.stock');
     Route::delete('/productos/{id}', [ProductoController::class, 'destroy'])->name('productos.destroy');
     Route::post('/transferir-producto', [InventarioController::class, 'transferirProducto'])->name('transferir.producto');
-    Route::get('/transferir/{id}', [InventarioController::class, 'vistaTransferir'])->name('transferir.vista');
+    Route::get('/transferir/{id?}', [InventarioController::class, 'vistaTransferir'])->name('transferir.vista');
+    Route::post('/transferir-productos', [InventarioController::class, 'transferirProductos'])->name('transferir.productos');
     Route::get('/orden-compra/{id}', [InventarioController::class, 'generarOrdenCompra'])->name('orden.compra');
     // --- PROVEEDORES ---
     Route::get('/proveedores', [ProveedorController::class, 'proveedores'])->name('proveedores');
@@ -71,6 +72,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/roles/permisos/{nombre}', [InventarioController::class, 'obtenerPermisosRol'])->name('roles.permisos');
     Route::get('/usuarios/exportar', [InventarioController::class, 'exportarUsuarios'])->name('usuarios.exportar');
     Route::get('/mapa-sucursales', [InventarioController::class, 'mapaSucursales'])->name('mapa.sucursales');
+    Route::post('/transferencias/confirmar-llegada/{id}', [InventarioController::class, 'confirmarLlegadaTransferencia'])->name('transferencias.confirmarLlegada');
+    Route::post('/transferencias/confirmar-por-qr', [InventarioController::class, 'confirmarLlegadaPorQr'])->name('transferencias.confirmarPorQr');
+    Route::post('/transferencias/buscar-por-codigo', [InventarioController::class, 'buscarTransferenciaPorCodigo'])->name('transferencias.buscarPorCodigo');
     Route::get('/analytics', [InventarioController::class, 'analytics'])->name('analytics');
     
     // --- SISTEMA DE REQUISICIONES ---

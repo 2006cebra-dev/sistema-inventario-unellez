@@ -273,6 +273,24 @@
             </div>
         </div>
 
+        @php
+            $transferenciasDemoradas = \App\Models\Movimiento::where('motivo', 'like', 'Transferencia a %')
+                ->where('estado', 'en_camino')
+                ->where('created_at', '<=', now()->subDays(7))
+                ->count();
+        @endphp
+        @if($transferenciasDemoradas > 0)
+        <div class="mb-4" style="background:rgba(229,9,20,0.08);border:1px solid rgba(229,9,20,0.3);border-radius:12px;padding:12px 20px;display:flex;align-items:center;gap:12px;animation:pulse 2s infinite;">
+            <div style="width:36px;height:36px;border-radius:50%;background:rgba(229,9,20,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <i class="bi bi-exclamation-triangle-fill" style="color:#E50914;"></i>
+            </div>
+            <div style="flex:1;">
+                <div style="font-weight:600;color:#fff;font-size:0.9rem;">{{ $transferenciasDemoradas }} transferencia(s) demorada(s)</div>
+                <div style="font-size:0.75rem;color:#888;">Hay envíos con más de 7 días sin confirmar llegada. <a href="{{ route('mapa.sucursales') }}" style="color:#E50914;text-decoration:none;font-weight:600;">Ver en mapa →</a></div>
+            </div>
+        </div>
+        @endif
+
         <div class="oswa-chart-card full-width mb-5">
             <div class="oswa-chart-header d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
                 <div class="d-flex align-items-center gap-3">

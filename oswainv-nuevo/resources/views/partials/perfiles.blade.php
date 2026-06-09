@@ -5,7 +5,7 @@
 <!-- Pantalla de Selección de Perfiles -->
 <div id="oswa-profile-selector" class="oswa-netflix-overlay oswa-hidden" style="display:none">
     <div class="oswa-netflix-content">
-<div style="text-align: left; padding-left: 20px; margin-bottom: -40px; position: relative; z-index: 10;">
+<div style="text-align: left; padding-left: 20px; margin-bottom: 10px; position: relative; z-index: 10;">
             <button onclick="cerrarSelectorPerfiles()" style="background: transparent; border: none; color: #b3b3b3; font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: color 0.3s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#b3b3b3'">
                 <i class="bi bi-arrow-left"></i> <span style="font-size: 1.2rem;">Volver</span>
             </button>

@@ -413,6 +413,7 @@
                 @if(auth()->check() && auth()->user()->tienePermiso('ver_catalogo'))
                 <a href="{{ route('catalogo') }}" class="dropdown-item-custom"><i class="bi bi-box-seam text-primary"></i> Catálogo de Productos</a>
                 @endif
+                <a href="{{ route('transferir.vista') }}" class="dropdown-item-custom"><i class="bi bi-send-plus-fill text-success"></i> Transferencia Múltiple</a>
                 <a href="{{ route('despacho.vista') ?? '#' }}" class="dropdown-item-custom"><i class="bi bi-upc-scan text-danger"></i> Despacho de Productos</a>
             </div>
         </div>
