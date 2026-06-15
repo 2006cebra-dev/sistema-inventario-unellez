@@ -48,12 +48,15 @@
             flex: 1; position: relative; display: flex; flex-direction: column;
             align-items: center; justify-content: center; text-align: center;
             border-right: 1px solid rgba(255,255,255,0.05);
-            background: linear-gradient(160deg, #0d0d0d 0%, #1a0505 40%, #0a0a0a 100%);
+            background-image: url('{{ asset("img/fondo-login.jpg") }}');
+            background-position: center; background-size: cover; background-repeat: no-repeat;
         }
-        .auth-left::before {
-            content: ''; position: absolute; inset: 0;
-            background: radial-gradient(ellipse at 40% 30%, rgba(229,9,20,0.08) 0%, transparent 70%);
+        .auth-left-overlay {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(to right, rgba(0,0,0,0.3), rgba(18,18,18,0.92));
+            z-index: 0;
         }
+        .auth-left-content { position: relative; z-index: 1; padding: 3rem; }
         .auth-left-content { position: relative; z-index: 1; padding: 3rem; }
         .auth-title-brand { font-size: 2.8rem; font-weight: 800; letter-spacing: 5px; color: #fff; margin-bottom: 0.5rem; }
         .auth-subtitle-brand { font-size: 0.95rem; letter-spacing: 2px; color: #999; text-transform: uppercase; }
@@ -118,6 +121,7 @@
     <div class="auth-container">
 
         <div class="auth-left">
+            <div class="auth-left-overlay"></div>
             <div class="auth-left-content">
                 <div class="auth-title-brand anim-l">OSWA INV</div>
                 <div class="auth-subtitle-brand anim-l2">Sistema de Gestión Exclusivo</div>
