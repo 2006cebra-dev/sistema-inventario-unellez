@@ -64,7 +64,7 @@ class ProductoController extends Controller
             'stock_minimo' => 'nullable|integer|min:0',
             'stock_maximo' => 'nullable|integer|min:0',
             'unidad_medida' => 'nullable|string|max:20',
-            'imagen' => 'nullable|image|max:2048',
+            'imagen' => 'nullable|image|max:51200',
             'imagen_url' => 'nullable|url',
             'fecha_vencimiento' => 'nullable|date'
         ]);
@@ -161,7 +161,7 @@ class ProductoController extends Controller
             'stock_minimo' => 'nullable|integer|min:0',
             'stock_maximo' => 'nullable|integer|min:0',
             'unidad_medida' => 'nullable|string|max:20',
-            'imagen' => 'nullable|image|max:2048',
+            'imagen' => 'nullable|image|max:51200',
             'fecha_vencimiento' => 'nullable|date'
         ]);
 

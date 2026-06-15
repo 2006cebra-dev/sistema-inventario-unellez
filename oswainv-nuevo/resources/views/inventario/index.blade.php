@@ -5,12 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>OSWA Inv - Gestión de Inventario</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --bg-main: #121212; --bg-card: #1c1c1c; --n-red: #E50914; --n-border: #2b2b2b;
@@ -27,14 +26,14 @@
         @media (max-width: 1199px) { .stats-grid { grid-template-columns: repeat(3, 1fr); } }
         @media (max-width: 767px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
         
-        .stat-card { background: #1c1c1c !important; border: 1px solid #2b2b2b !important; border-radius: 15px !important; padding: 1.5rem; transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1); animation: fadeInUp 0.5s ease forwards; opacity: 0; overflow: hidden; position: relative; }
-        .stat-card:nth-child(1) { animation-delay: 0.05s; }
-        .stat-card:nth-child(2) { animation-delay: 0.1s; }
-        .stat-card:nth-child(3) { animation-delay: 0.15s; }
-        .stat-card:nth-child(4) { animation-delay: 0.2s; }
-        .stat-card:nth-child(5) { animation-delay: 0.25s; }
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .stat-card:hover { transform: translateY(-8px) scale(1.05); border-color: #E50914 !important; z-index: 100; box-shadow: 0 15px 30px rgba(0,0,0,0.6); }
+        .stat-card { background: #1c1c1c !important; border: 1px solid #2b2b2b !important; border-radius: 15px !important; padding: 1.5rem; transition: transform 0.25s ease, box-shadow 0.25s ease; animation: fadeInUp 0.4s ease forwards; opacity: 0; overflow: hidden; position: relative; }
+        .stat-card:nth-child(1) { animation-delay: 0.03s; }
+        .stat-card:nth-child(2) { animation-delay: 0.06s; }
+        .stat-card:nth-child(3) { animation-delay: 0.09s; }
+        .stat-card:nth-child(4) { animation-delay: 0.12s; }
+        .stat-card:nth-child(5) { animation-delay: 0.15s; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        .stat-card:hover { transform: translateY(-4px); border-color: #E50914 !important; z-index: 100; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
         .stat-icon { font-size: 2rem; opacity: 0.8; margin-bottom: 10px; }
         .stat-value { font-family: 'Consolas', 'Monaco', 'Courier New', monospace; font-size: 1.8rem; font-weight: 800; }
         .stat-label { text-transform: uppercase; letter-spacing: 1px; font-size: 0.75rem; color: #888; }
@@ -52,12 +51,11 @@
         
         /* --- GRID DE GRÁFICAS PREMIUM --- */
         .oswa-charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 1.5rem; margin-top: 2rem; }
-        .oswa-chart-card { background: rgba(28, 28, 28, 0.6); backdrop-filter: blur(20px); border: 1px solid rgba(43, 43, 43, 0.8); border-radius: 16px; padding: 1.5rem; transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1); animation: fadeInUp 0.5s ease forwards; opacity: 0; position: relative; overflow: hidden; }
+        .oswa-chart-card { background: #1c1c1c; border: 1px solid #2b2b2b; border-radius: 16px; padding: 1.5rem; transition: transform 0.25s ease, box-shadow 0.25s ease; animation: fadeInUp 0.4s ease forwards; opacity: 0; position: relative; overflow: hidden; }
         .oswa-chart-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(229, 9, 20, 0.3), transparent); }
-        .oswa-chart-card:nth-child(1) { animation-delay: 0.1s; }
-        .oswa-chart-card:nth-child(2) { animation-delay: 0.2s; }
-        .oswa-chart-card:nth-child(3) { animation-delay: 0.3s; }
-        .oswa-chart-card:hover { transform: translateY(-5px); border-color: rgba(229, 9, 20, 0.4); box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 30px rgba(229, 9, 20, 0.1); }
+        .oswa-chart-card:nth-child(1) { animation-delay: 0.08s; }
+        .oswa-chart-card:nth-child(2) { animation-delay: 0.15s; }
+        .oswa-chart-card:nth-child(3) { animation-delay: 0.22s; }
         .oswa-chart-card.full-width { grid-column: 1 / -1; }
         .oswa-chart-header { margin-bottom: 1rem; }
         .oswa-chart-title { color: #fff; font-size: 1.1rem; font-weight: 600; margin: 0; }
@@ -112,72 +110,24 @@
         .btn-more:hover { background: rgba(109, 109, 110, 0.4); }
         @media (max-width: 768px) { .netflix-hero { height: 50vh; } .hero-title { font-size: 2.5rem; } .hero-description { font-size: 0.95rem; } .btn-play, .btn-more { padding: 6px 16px; font-size: 0.95rem; } }
 
-        /* ANIMACIONES PREMIUM PARA EL HERO */
-        .hero-content > .d-flex { opacity: 0; animation: fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
-        .hero-content .hero-title { opacity: 0; animation: fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.2s forwards; }
-        .hero-content .hero-description { opacity: 0; animation: fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.4s forwards; }
-        .hero-content .hero-buttons { opacity: 0; animation: fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.6s forwards; }
-        .hero-subtitle-rgb { background: linear-gradient(90deg, #E50914, #ff6b6b, #B20710, #E50914); background-size: 300% 100%; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: rgbText 4s ease infinite; letter-spacing: 2px; font-size: 0.9rem; font-weight: 800; margin-left: 8px; text-transform: uppercase; }
-
         /* ESTILOS DE LA ENTRADA CINEMÁTICA */
-        .cinematic-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: #000000; z-index: 99999; display: flex; justify-content: center; align-items: center; transition: opacity 1.5s cubic-bezier(0.4, 0, 0.2, 1); }
-        .cinematic-content { text-align: center; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .intro-logo { width: 180px; filter: brightness(0) invert(1) drop-shadow(0 0 15px rgba(255,255,255,0.5)); opacity: 0; animation: pulseGlow 3s forwards; }
-        .intro-quote { opacity: 0; transform: scale(0.9); }
-        .intro-quote.show { animation: textExplosion 3.5s forwards; }
-        .quote-text { color: var(--text-secondary); font-size: 1.5rem; font-weight: 300; margin-bottom: 10px; letter-spacing: 2px; }
-        .quote-highlight { color: #ffffff; font-size: 3rem; font-weight: 800; text-transform: uppercase; letter-spacing: 4px; text-shadow: 0 0 20px rgba(229, 9, 20, 0.8), 0 0 40px rgba(229, 9, 20, 0.4); }
-        @keyframes pulseGlow { 0% { opacity: 0; transform: scale(0.8); } 30% { opacity: 1; transform: scale(1.05); filter: brightness(0) invert(1) drop-shadow(0 0 30px rgba(255,255,255,1)); } 80% { opacity: 1; transform: scale(1); filter: brightness(0) invert(1) drop-shadow(0 0 10px rgba(255,255,255,0.3)); } 100% { opacity: 0; transform: scale(1.1); } }
-        @keyframes textExplosion { 0% { opacity: 0; transform: scale(0.8); filter: blur(10px); } 20% { opacity: 1; transform: scale(1.1); filter: blur(0); } 80% { opacity: 1; transform: scale(1); filter: blur(0); } 100% { opacity: 0; transform: scale(1.2); filter: blur(10px); } }
-        .cinematic-overlay.fade-out { opacity: 0; pointer-events: none; }
+
 
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: #0a0a0a; border-left: 1px solid #1a1a1a; }
         ::-webkit-scrollbar-thumb { background: #B20710; border-radius: 10px; border: 2px solid #0a0a0a; }
         ::-webkit-scrollbar-thumb:hover { background: #E50914; }
 
-        .oswa-3d-wrapper { perspective: 1000px; }
-        .oswa-3d-card { transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease; transform-style: preserve-3d; background-color: #1a1a1a; border: 1px solid #333; border-radius: 12px; }
-        .oswa-3d-card:hover { transform: translateY(-10px) rotateX(2deg) rotateY(2deg); box-shadow: -10px 20px 30px rgba(0, 0, 0, 0.8), inset 0 0 15px rgba(255, 255, 255, 0.02); border-color: #444; }
-        .oswa-3d-icon { display: inline-block; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), text-shadow 0.4s; transform: translateZ(0) scale(1); backface-visibility: hidden; will-change: transform; }
-        .oswa-3d-card:hover .oswa-3d-icon { transform: translateZ(60px) scale(1.2); text-shadow: 0 15px 10px rgba(0,0,0,0.5); }
+        .oswa-3d-card { transition: transform 0.25s ease, box-shadow 0.25s ease; background-color: #1a1a1a; border: 1px solid #333; border-radius: 12px; }
+        .oswa-3d-card:hover { transform: translateY(-4px); box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5); border-color: #444; }
+        .oswa-3d-icon { display: inline-block; transition: transform 0.25s ease; }
+        .oswa-3d-card:hover .oswa-3d-icon { transform: scale(1.15); }
 
-        .stat-card.oswa-3d-card { animation-fill-mode: forwards; transform-style: preserve-3d; }
-        .stat-card.oswa-3d-card:hover { transform: translateY(-10px) rotateX(2deg) rotateY(2deg) !important; box-shadow: -10px 20px 30px rgba(0, 0, 0, 0.8), inset 0 0 15px rgba(255, 255, 255, 0.02) !important; border-color: #444 !important; }
-        .stat-card .stat-icon.oswa-3d-icon { transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), text-shadow 0.4s; backface-visibility: hidden; will-change: transform; }
-        .stat-card.oswa-3d-card:hover .stat-icon.oswa-3d-icon { transform: translateZ(60px) scale(1.2); text-shadow: 0 15px 10px rgba(0,0,0,0.5); }
 
-        .oswa-loader-wrapper { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: #000000; z-index: 999999; display: flex; align-items: center; justify-content: center; flex-direction: column; transition: opacity 0.5s ease, visibility 0.5s ease; }
-        .loader-content { text-align: center; width: 350px; max-width: 90%; }
-        .loader-logo { height: 120px; filter: brightness(0) invert(1); margin-bottom: 25px; }
-        .loader-bar-container { width: 100%; height: 4px; background-color: #222; margin-bottom: 15px; position: relative; }
-        .loader-bar { width: 0%; height: 100%; background-color: #E50914; transition: width 0.1s linear; }
-        .loader-text { font-family: 'Courier New', Courier, monospace; color: #fff; font-size: 0.85rem; letter-spacing: 1px; margin-bottom: 10px; text-transform: uppercase; }
-        .loader-percentage { font-family: 'Courier New', Courier, monospace; color: #fff; font-size: 0.95rem; font-weight: bold; }
     </style>
 </head>
 <body data-theme="dark">
 
-    <!-- PANTALLA DE CARGA (LOADER OSWA INV) -->
-    <div id="oswa-loader" class="oswa-loader-wrapper">
-        <div class="loader-content">
-            <div class="loader-logo" style="height:80px;"></div>
-            <div class="loader-bar-container"><div id="loader-bar" class="loader-bar"></div></div>
-            <div id="loader-text" class="loader-text">INICIANDO MÓDULOS DEL SISTEMA...</div>
-            <div id="loader-percentage" class="loader-percentage">0%</div>
-        </div>
-    </div>
-
-    <!-- OVERLAY DE ENTRADA CINEMÁTICA -->
-    <div id="cinematic-intro" class="cinematic-overlay">
-        <div class="cinematic-content">
-            <div id="intro-logo" class="intro-logo" style="height:80px;"></div>
-            <div id="intro-quote" class="intro-quote d-none">
-                <h2 class="quote-text">La ingeniería no es solo código.</h2>
-                <h1 class="quote-highlight">Es diseñar el futuro.</h1>
-            </div>
-        </div>
-    </div>
     
     @include('partials.navbar')
     
@@ -185,7 +135,7 @@
 
         <div id="panel-estadisticas">
         
-        @if(Auth::check() && Auth::user()->tienePermiso('gestionar_productos'))
+        @if(Auth::check() && in_array(Auth::user()->rol, ['admin', 'desarrollador']))
 
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h4 class="text-white mb-0 font-weight-bold">Resumen de Inventario</h4>
@@ -343,7 +293,7 @@
 
         @endif
 
-        @if(Auth::check() && !Auth::user()->tienePermiso('gestionar_usuarios'))
+        @if(Auth::check() && Auth::user()->rol === 'empleado')
 
             @php
                 $user = Auth::user();
@@ -712,57 +662,7 @@
         setInterval(sincronizarDashboard, 10000);
     </script>
 
-    <!-- SCRIPT DEL LOADER OSWA -->
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            const loader = document.getElementById('oswa-loader');
-            if (!loader) return;
 
-            if (sessionStorage.getItem('oswa_loaded')) {
-                loader.style.display = 'none';
-                return;
-            }
-
-            let progress = 0;
-            const bar = document.getElementById('loader-bar');
-            const percentageText = document.getElementById('loader-percentage');
-            const statusText = document.getElementById('loader-text');
-
-            const messages = [
-                "INICIANDO MÓDULOS DE OSWA INV...",
-                "SINCRONIZANDO BASE DE DATOS...",
-                "CARGANDO CATÁLOGO DE PRODUCTOS...",
-                "VALIDANDO CREDENCIALES DE USUARIO...",
-                "SISTEMA LISTO Y OPERATIVO."
-            ];
-
-            const interval = setInterval(() => {
-                progress += Math.floor(Math.random() * 5) + 1; 
-                if (progress > 100) progress = 100;
-
-                if(bar) bar.style.width = progress + '%';
-                if(percentageText) percentageText.innerText = progress + '%';
-
-                if(statusText) {
-                    if (progress < 25) statusText.innerText = messages[0];
-                    else if (progress < 50) statusText.innerText = messages[1];
-                    else if (progress < 75) statusText.innerText = messages[2];
-                    else if (progress < 95) statusText.innerText = messages[3];
-                    else statusText.innerText = messages[4];
-                }
-
-                if (progress === 100) {
-                    clearInterval(interval);
-                    sessionStorage.setItem('oswa_loaded', 'true'); 
-                    setTimeout(() => {
-                        loader.style.opacity = '0';
-                        loader.style.visibility = 'hidden';
-                        setTimeout(() => { loader.style.display = 'none'; }, 500); 
-                    }, 600); 
-                }
-            }, 40); 
-        });
-    </script>
 
 <!-- FOOTER GLOBAL OSWA INV -->
 <footer class="professional-footer mt-5 pt-4 pb-4" style="text-align: center; border-top: 1px solid #2b2b2b; color: #a3a3a3; font-size: 0.85rem; background-color: transparent;">

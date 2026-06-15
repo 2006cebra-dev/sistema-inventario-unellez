@@ -190,13 +190,6 @@ body.manage-mode .oswa-avatar-img, body.manage-mode .oswa-avatar { opacity: 0.5;
 
         if (!password) return;
 
-        const loader = document.getElementById('oswa-loader');
-        if (loader) {
-            loader.style.opacity = '1';
-            loader.style.visibility = 'visible';
-            loader.style.display = 'flex';
-        }
-
         try {
             const response = await fetch('/cambiar-perfil-netflix', {
                 method: 'POST',

@@ -102,7 +102,7 @@ class InventarioController extends Controller
         $movimientosHoy = 0;
         $requisicionesHoy = 0;
         $notificaciones = collect();
-        if (Auth::check() && !Auth::user()->tienePermiso('gestionar_usuarios')) {
+        if (Auth::check() && Auth::user()->rol === 'empleado') {
             $userId = Auth::id();
             $misRequisiciones = Requisicion::with('producto')->where('user_id', $userId)->orderBy('created_at', 'desc')->take(5)->get();
             $movimientosHoy = Movimiento::where('user_id', $userId)->whereDate('created_at', today())->count();

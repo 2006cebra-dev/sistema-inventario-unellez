@@ -54,13 +54,12 @@
             z-index: 0;
         }
         .auth-left-content { position: relative; z-index: 1; padding: 3rem; }
-        .auth-left-content { position: relative; z-index: 1; padding: 3rem; }
         .auth-title-brand { font-size: 2.8rem; font-weight: 800; letter-spacing: 5px; color: #fff; margin-bottom: 0.5rem; }
         .auth-subtitle-brand { font-size: 0.95rem; letter-spacing: 2px; color: #999; text-transform: uppercase; }
 
         .auth-right {
-            flex: 1; padding: 2.5rem 3.5rem; display: flex; flex-direction: column;
-            justify-content: center; background: transparent;
+            flex: 1; padding: 2rem 3rem; display: flex; flex-direction: column;
+            justify-content: flex-start; overflow-y: auto; background: transparent;
         }
 
         .form-control {
@@ -84,7 +83,7 @@
             body { overflow-y: auto; height: auto; align-items: flex-start; padding: 0; }
             .auth-container { flex-direction: column; height: auto; min-height: 100vh; max-width: 100vw; width: 100%; border-radius: 0; border: none; animation: none; opacity: 1; }
             .auth-left { display: none; }
-            .auth-right { padding: 2rem 1.5rem; flex: none; width: 100%; }
+            .auth-right { padding: 1.5rem 1.25rem; flex: none; width: 100%; }
             .auth-header h2 { font-size: 1.4rem; }
             .auth-header p { font-size: 0.85rem; }
             .form-control { font-size: 16px; padding: 10px 14px; }
@@ -131,9 +130,9 @@
                 <span class="brand-name">OSWA INV</span>
             </div>
 
-            <div class="auth-header text-center mb-3 anim-1">
-                <h2 class="fw-bold text-white mb-1" style="font-size: 1.7rem;">Crear Cuenta</h2>
-                <p class="text-secondary" style="font-size: 0.85rem;">Registre sus datos para acceder al sistema</p>
+            <div class="auth-header text-center mb-2 anim-1">
+                <h2 class="fw-bold text-white mb-0" style="font-size: 1.5rem;">Crear Cuenta</h2>
+                <p class="text-secondary" style="font-size: 0.8rem;">Registre sus datos para acceder al sistema</p>
             </div>
 
             <form method="POST" action="{{ route('register') }}" class="w-100 mx-auto" style="max-width: 400px;">

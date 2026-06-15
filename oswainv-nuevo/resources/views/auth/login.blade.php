@@ -57,14 +57,13 @@
             z-index: 0;
         }
         .auth-left-content { position: relative; z-index: 1; padding: 3rem; }
-        .auth-left-content { position: relative; z-index: 1; padding: 3rem; }
         .auth-title-brand { font-size: 2.8rem; font-weight: 800; letter-spacing: 5px; color: #fff; margin-bottom: 0.5rem; }
         .auth-subtitle-brand { font-size: 0.95rem; letter-spacing: 2px; color: #999; text-transform: uppercase; }
 
         /* LADO DERECHO */
         .auth-right {
             flex: 1; padding: 3rem 4rem; display: flex; flex-direction: column;
-            justify-content: center; background: transparent;
+            justify-content: center; overflow-y: auto; background: transparent;
         }
 
         .form-control {
@@ -88,7 +87,7 @@
             body { overflow-y: auto; height: auto; align-items: flex-start; padding: 0; }
             .auth-container { flex-direction: column; height: auto; min-height: 100vh; max-width: 100vw; width: 100%; border-radius: 0; border: none; animation: none; opacity: 1; }
             .auth-left { display: none; }
-            .auth-right { padding: 2.5rem 1.5rem; flex: none; width: 100%; }
+            .auth-right { padding: 2rem 1.5rem; flex: none; width: 100%; }
             .auth-header h2 { font-size: 1.5rem; }
             .auth-header p { font-size: 0.85rem; }
             .form-control { font-size: 16px; padding: 12px 14px; }

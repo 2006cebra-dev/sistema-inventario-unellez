@@ -40,24 +40,7 @@
         .stat-card .stat-icon.oswa-3d-icon { transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), text-shadow 0.4s; backface-visibility: hidden; will-change: transform; }
         .stat-card.oswa-3d-card:hover .stat-icon.oswa-3d-icon { transform: translateZ(60px) scale(1.2); text-shadow: 0 15px 10px rgba(0,0,0,0.5); }
 
-        .oswa-loader-wrapper { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: #000000; z-index: 999999; display: flex; align-items: center; justify-content: center; flex-direction: column; transition: opacity 0.5s ease, visibility 0.5s ease; }
-        .loader-content { text-align: center; width: 350px; max-width: 90%; }
-        .loader-logo { height: 120px; filter: brightness(0) invert(1); margin-bottom: 25px; }
-        .loader-bar-container { width: 100%; height: 4px; background-color: #222; margin-bottom: 15px; position: relative; }
-        .loader-bar { width: 0%; height: 100%; background-color: #E50914; transition: width 0.1s linear; }
-        .loader-text { font-family: 'Courier New', Courier, monospace; color: #fff; font-size: 0.85rem; letter-spacing: 1px; margin-bottom: 10px; text-transform: uppercase; }
-        .loader-percentage { font-family: 'Courier New', Courier, monospace; color: #fff; font-size: 0.95rem; font-weight: bold; }
 
-        .cinematic-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: #000000; z-index: 99999; display: flex; justify-content: center; align-items: center; transition: opacity 1.5s cubic-bezier(0.4, 0, 0.2, 1); }
-        .cinematic-content { text-align: center; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .intro-logo { width: 180px; filter: brightness(0) invert(1) drop-shadow(0 0 15px rgba(255,255,255,0.5)); opacity: 0; animation: pulseGlow 3s forwards; }
-        .intro-quote { opacity: 0; transform: scale(0.9); }
-        .intro-quote.show { animation: textExplosion 3.5s forwards; }
-        .quote-text { color: var(--text-secondary); font-size: 1.5rem; font-weight: 300; margin-bottom: 10px; letter-spacing: 2px; }
-        .quote-highlight { color: #ffffff; font-size: 3rem; font-weight: 800; text-transform: uppercase; letter-spacing: 4px; text-shadow: 0 0 20px rgba(229, 9, 20, 0.8), 0 0 40px rgba(229, 9, 20, 0.4); }
-        @keyframes pulseGlow { 0% { opacity: 0; transform: scale(0.8); } 30% { opacity: 1; transform: scale(1.05); filter: brightness(0) invert(1) drop-shadow(0 0 30px rgba(255,255,255,1)); } 80% { opacity: 1; transform: scale(1); filter: brightness(0) invert(1) drop-shadow(0 0 10px rgba(255,255,255,0.3)); } 100% { opacity: 0; transform: scale(1.1); } }
-        @keyframes textExplosion { 0% { opacity: 0; transform: scale(0.8); filter: blur(10px); } 20% { opacity: 1; transform: scale(1.1); filter: blur(0); } 80% { opacity: 1; transform: scale(1); filter: blur(0); } 100% { opacity: 0; transform: scale(1.2); filter: blur(10px); } }
-        .cinematic-overlay.fade-out { opacity: 0; pointer-events: none; }
 
         .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 10px; animation: fadeInUp 0.5s ease forwards; opacity: 0; }
         .page-title { font-size: 1.6rem; font-weight: 700; display: flex; align-items: center; gap: 12px; }
@@ -155,25 +138,7 @@
 </head>
 <body data-theme="dark">
 
-    <div id="oswa-loader" class="oswa-loader-wrapper">
-        <div class="loader-content">
-            <div class="loader-logo" style="height:80px;"></div>
-            <div class="loader-bar-container"><div id="loader-bar" class="loader-bar"></div></div>
-            <div id="loader-text" class="loader-text">CARGANDO GESTIÓN DE USUARIOS...</div>
-            <div id="loader-percentage" class="loader-percentage">0%</div>
-        </div>
-    </div>
-
-    <div id="cinematic-intro" class="cinematic-overlay">
-        <div class="cinematic-content">
-            <div id="intro-logo" class="intro-logo" style="height:80px;"></div>
-            <div id="intro-quote" class="intro-quote d-none">
-                <h2 class="quote-text">El talento es el activo más valioso.</h2>
-                <h1 class="quote-highlight">Gestiona tu equipo.</h1>
-            </div>
-        </div>
-    </div>
-
+    
     @include('partials.navbar')
 
     <main class="main-content">
@@ -639,48 +604,7 @@
     <script>
         const csrfToken = '{{ csrf_token() }}';
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const overlay = document.getElementById('cinematic-intro');
-            if (!overlay) return;
-            if (sessionStorage.getItem('oswaIntroPlayed') === 'true') {
-                overlay.remove();
-                return;
-            }
-            const logo = document.getElementById('intro-logo');
-            const quote = document.getElementById('intro-quote');
-            setTimeout(() => {
-                if (logo) logo.classList.add('d-none');
-                if (quote) { quote.classList.remove('d-none'); quote.classList.add('show'); }
-            }, 1000);
-            setTimeout(() => {
-                overlay.classList.add('fade-out');
-                sessionStorage.setItem('oswaIntroPlayed', 'true');
-            }, 2500);
-            setTimeout(() => overlay.remove(), 3500);
-        });
 
-        (function() {
-            const loader = document.getElementById('oswa-loader');
-            if (!loader) return;
-            const bar = document.getElementById('loader-bar');
-            const pct = document.getElementById('loader-percentage');
-            const txt = document.getElementById('loader-text');
-            let p = 0;
-            const msgs = ['CARGANDO GESTIÓN DE USUARIOS...', 'CARGANDO PERFILES...', 'SINCRONIZANDO DATOS...', 'LISTO'];
-            const iv = setInterval(() => {
-                p += Math.floor(Math.random() * 15) + 3;
-                if (p > 100) p = 100;
-                if (bar) bar.style.width = p + '%';
-                if (pct) pct.textContent = p + '%';
-                if (p >= 30 && p < 60) { if (txt) txt.textContent = msgs[1]; }
-                else if (p >= 60 && p < 90) { if (txt) txt.textContent = msgs[2]; }
-                else if (p >= 100) {
-                    if (txt) txt.textContent = msgs[3];
-                    clearInterval(iv);
-                    setTimeout(() => { loader.style.opacity = '0'; setTimeout(() => loader.remove(), 500); }, 300);
-                }
-            }, 120);
-        })();
 
         function filtrarUsuarios() {
             const q = document.getElementById('searchInput').value.toLowerCase();
