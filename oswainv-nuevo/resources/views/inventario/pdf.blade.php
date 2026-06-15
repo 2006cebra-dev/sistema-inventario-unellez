@@ -136,21 +136,12 @@
         $unidades = $productos->sum('stock');
         $capital = $productos->sum(function($p) { return $p->stock * $p->precio; });
 
-        // Truco seguro para cargar la imagen en DomPDF
-        $rutaLogo = public_path('img/logo-unellez.png');
         $imagenBase64 = '';
-        if(file_exists($rutaLogo)) {
-            $tipo = pathinfo($rutaLogo, PATHINFO_EXTENSION);
-            $data = file_get_contents($rutaLogo);
-            $imagenBase64 = 'data:image/' . $tipo . ';base64,' . base64_encode($data);
-        }
     @endphp
 
     <!-- CABECERA DEL REPORTE -->
     <div class="header">
-        @if($imagenBase64)
-            <img src="{{ $imagenBase64 }}" class="logo" alt="Logo UNELLEZ">
-        @endif
+        <div class="logo" style="width:80px;height:80px;"></div>
         <div class="title-container">
             <h1 class="title">Reporte de <span>Inventario</span></h1>
             <p class="subtitle">Generado el: {{ \Carbon\Carbon::now()->format('d/m/Y h:i A') }} &nbsp;|&nbsp; Sistema: OSWA Inv</p>
@@ -216,7 +207,7 @@
 
     <!-- PIE DE PÁGINA (Se repite en todas las hojas) -->
     <div class="footer">
-        <span class="bold-foot">OSWA Inv</span> - Sistema de Gestión de Inventario | Desarrollado por: <span class="bold-foot">Carlos Braca & Yorgelys Blanco</span> | UNELLEZ
+        <span class="bold-foot">OSWA Inv</span> - Sistema de Gestión de Inventario | Desarrollado por: <span class="bold-foot">Carlos Braca & Yorgelys Blanco</span>
     </div>
     
     <!-- NUMERACIÓN DE PÁGINAS (Script nativo de DomPDF) -->

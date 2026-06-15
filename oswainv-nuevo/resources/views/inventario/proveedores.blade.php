@@ -84,7 +84,7 @@
                                 <!-- Logo de la Empresa (CORREGIDO) -->
                                 <div class="me-3 flex-shrink-0">
                                     @if($proveedor->logo)
-                                        <img src="{{ asset('storage/' . $proveedor->logo) }}" alt="{{ $proveedor->nombre }}" style="width: 65px; height: 65px; object-fit: cover; border-radius: 12px; border: 2px solid #333;" onerror="this.onerror=null;this.src='{{ asset('img/logo-unellez.png') }}';">
+                                        <img src="{{ asset('storage/' . $proveedor->logo) }}" alt="{{ $proveedor->nombre }}" style="width: 65px; height: 65px; object-fit: cover; border-radius: 12px; border: 2px solid #333;" onerror="this.onerror=null;this.parentElement.innerHTML='<div style=\'width:65px;height:65px;background:linear-gradient(135deg,#2b2b2b,#1a1a1a);border-radius:12px;display:flex;align-items:center;justify-content:center;border:2px solid #333;color:#ffc107;font-size:1.8rem;font-weight:bold;\'>{{ strtoupper(substr($proveedor->nombre, 0, 1)) }}</div>'">
                                     @else
                                         <!-- Placeholder si no hay logo -->
                                         <div style="width: 65px; height: 65px; background: linear-gradient(135deg, #2b2b2b, #1a1a1a); border-radius: 12px; display: flex; align-items: center; justify-content: center; border: 2px solid #333; color: var(--accent-warning); font-size: 1.8rem; font-weight: bold; box-shadow: inset 0 0 10px rgba(0,0,0,0.5);">
@@ -248,8 +248,7 @@
         <div style="width: 1px; height: 16px; background-color: #444444;"></div>
         
         <div class="d-flex align-items-center gap-2">
-            <img src="{{ asset('img/logo-unellez.png') }}" alt="UNELLEZ" style="height: 22px; filter: brightness(0) invert(1) opacity(0.9);">
-            <strong class="text-white" style="letter-spacing: 1px;">UNELLEZ</strong>
+            <strong class="text-white" style="letter-spacing: 1px;">OSWA Inv</strong>
         </div>
     </div>
 </footer>

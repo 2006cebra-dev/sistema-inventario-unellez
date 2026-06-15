@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>OSWA Inv - Sistema de Inventario UNELLEZ</title>
+    <title>OSWA Inv - Sistema de Inventario</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
@@ -666,7 +666,6 @@
     <!-- NAVBAR -->
     <nav class="navbar-landing">
         <a href="/" class="navbar-brand">
-            <img src="{{ asset('img/logo-unellez.png') }}" alt="UNELLEZ">
             <span>OSWA Inv</span>
         </a>
 
@@ -701,7 +700,7 @@
     <!-- HERO -->
     <section class="hero" id="inicio">
         <div class="hero-content">
-            <img src="{{ asset('img/logo-unellez.png') }}" alt="UNELLEZ" class="hero-logo">
+            <div class="hero-logo" style="height:80px;"></div>
 
             <div class="hero-badge">
                 <span class="badge-dot"></span>
@@ -713,7 +712,7 @@
             </h1>
 
             <p class="hero-subtitle">
-                Control total de inventario para la <em>UNELLEZ</em>
+                Control total de inventario para tu empresa
             </p>
 
             <p class="hero-description">
@@ -841,7 +840,7 @@
     <!-- CTA -->
     <section class="cta-section">
         <h2>¿Listo para empezar?</h2>
-        <p>Únete al sistema de gestión de inventario de la UNELLEZ. Controla, audita y optimiza tus recursos.</p>
+        <p>Únete al sistema de gestión de inventario. Controla, audita y optimiza tus recursos.</p>
         @if (Route::has('login'))
             @auth
                 <a href="{{ url('/inventario') }}" class="btn-primary-custom">
@@ -859,8 +858,7 @@
     <footer class="footer">
         <div class="footer-grid">
             <div class="footer-brand">
-                <img src="{{ asset('img/logo-unellez.png') }}" alt="UNELLEZ">
-                <p>OSWA Inv es el sistema oficial de gestión de inventario de la Universidad Nacional Experimental de los Llanos Occidentales "Ezequiel Zamora".</p>
+                <p>OSWA Inv es un sistema de gestión de inventario diseñado para optimizar, asegurar y registrar cada movimiento en el almacén.</p>
             </div>
             <div class="footer-col">
                 <h4>Plataforma</h4>
@@ -874,14 +872,10 @@
                 <a href="#">Soporte</a>
                 <a href="#">Reportar Error</a>
             </div>
-            <div class="footer-col">
-                <h4>UNELLEZ</h4>
-                <a href="https://unellez.edu.ve" target="_blank">Portal Web</a>
-                <a href="https://unellez.edu.ve/contacto" target="_blank">Contacto</a>
-            </div>
+
         </div>
         <div class="footer-bottom">
-            <p>&copy; {{ date('Y') }} <strong>OSWA Inv</strong> — UNELLEZ. Todos los derechos reservados.</p>
+            <p>&copy; {{ date('Y') }} <strong>OSWA Inv</strong>. Todos los derechos reservados.</p>
             <div class="footer-social">
                 <a href="#" title="GitHub"><i class="bi bi-github"></i></a>
                 <a href="#" title="Correo"><i class="bi bi-envelope-fill"></i></a>

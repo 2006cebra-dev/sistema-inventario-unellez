@@ -161,7 +161,7 @@
     <!-- PANTALLA DE CARGA (LOADER OSWA INV) -->
     <div id="oswa-loader" class="oswa-loader-wrapper">
         <div class="loader-content">
-            <img src="{{ asset('img/logo-unellez.png') }}" alt="UNELLEZ" class="loader-logo">
+            <div class="loader-logo" style="height:80px;"></div>
             <div class="loader-bar-container"><div id="loader-bar" class="loader-bar"></div></div>
             <div id="loader-text" class="loader-text">INICIANDO MÓDULOS DEL SISTEMA...</div>
             <div id="loader-percentage" class="loader-percentage">0%</div>
@@ -171,7 +171,7 @@
     <!-- OVERLAY DE ENTRADA CINEMÁTICA -->
     <div id="cinematic-intro" class="cinematic-overlay">
         <div class="cinematic-content">
-            <img src="{{ asset('img/logo-unellez.png') }}" id="intro-logo" class="intro-logo" alt="UNELLEZ">
+            <div id="intro-logo" class="intro-logo" style="height:80px;"></div>
             <div id="intro-quote" class="intro-quote d-none">
                 <h2 class="quote-text">La ingeniería no es solo código.</h2>
                 <h1 class="quote-highlight">Es diseñar el futuro.</h1>
@@ -779,8 +779,7 @@
         <div style="width: 1px; height: 16px; background-color: #444444;"></div>
         
         <div class="d-flex align-items-center gap-2">
-            <img src="{{ asset('img/logo-unellez.png') }}" alt="UNELLEZ" style="height: 22px; filter: brightness(0) invert(1) opacity(0.9);">
-            <strong class="text-white" style="letter-spacing: 1px;">UNELLEZ</strong>
+            <strong class="text-white" style="letter-spacing: 1px;">OSWA Inv</strong>
         </div>
     </div>
 </footer>
@@ -790,10 +789,9 @@
         <div class="modal-dialog modal-xl modal-dialog-centered">
             <div class="modal-content" style="background-color: #121212; border: 1px solid #333; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.8);">
                 
-                <!-- Header con gradiente UNELLEZ -->
+                <!-- Header modal -->
                 <div class="modal-header border-0" style="background: linear-gradient(135deg, #E50914 0%, #8B0000 100%); padding: 20px 30px;">
                     <h4 class="modal-title text-white fw-bold d-flex align-items-center gap-3">
-                        <img src="{{ asset('img/logo-unellez.png') }}" style="height: 35px; filter: brightness(0) invert(1);" alt="UNELLEZ">
                         OSWA Inv - Arquitectura del Sistema
                     </h4>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -806,7 +804,7 @@
                         <div class="col-md-5 p-4 p-lg-5" style="background: #1a1a1a; border-right: 1px solid #2a2a2a;">
                             <h4 class="text-white fw-bold mb-3">Proyecto de Ingeniería</h4>
                             <p class="text-secondary" style="font-size: 1rem; line-height: 1.6;">
-                                Desarrollado por <strong class="text-light">Carlos Braca</strong> y <strong class="text-light">Yorgelys Blanco</strong> (V Semestre, UNELLEZ).<br><br>
+                                Desarrollado por <strong class="text-light">Carlos Braca</strong> y <strong class="text-light">Yorgelys Blanco</strong> (V Semestre).<br><br>
                                 OSWA Inv no es solo un gestor de inventario visual; es una solución de grado empresarial diseñada con un enfoque estricto en la <strong>trazabilidad de transacciones</strong> y la prevención de fraudes internos.
                             </p>
                             

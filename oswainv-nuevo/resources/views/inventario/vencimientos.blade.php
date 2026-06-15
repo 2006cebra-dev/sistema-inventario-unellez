@@ -136,16 +136,7 @@
         .status-indicator.offline .status-dot { background: #e74c3c; box-shadow: 0 0 6px rgba(231,76,60,0.6); }
         .status-indicator.offline .status-text { color: #e74c3c; }
         
-        .logo-nav-unellez {
-            height: 40px;
-            filter: drop-shadow(0 0 6px rgba(229,9,20,0.4)) brightness(0) invert(1);
-            transform: perspective(400px) rotateY(-5deg);
-            transition: transform 0.4s ease, filter 0.4s ease;
-        }
-        .logo-nav-unellez:hover {
-            transform: perspective(400px) rotateY(0deg) scale(1.05);
-            filter: drop-shadow(0 0 12px rgba(229,9,20,0.7)) brightness(0) invert(1);
-        }
+
         .professional-footer {
             text-align: center;
             padding: 1.5rem 4%;
@@ -176,8 +167,7 @@
     <nav class="topbar" id="topbar">
         <div class="topbar-left d-flex align-items-center gap-3">
             <div class="topbar-logo d-flex align-items-center gap-2">
-                <img src="{{ asset('img/logo-unellez.png') }}" class="logo-nav-unellez" alt="Logo"> 
-                <span class="logo-text">OSWA Inv</span>
+            <span class="logo-text">OSWA Inv</span>
             </div>
             <div class="status-indicator online d-none d-md-flex ms-2 me-4">
                 <span class="status-dot" style="width: 8px; height: 8px; border-radius: 50%; background: #00b894; box-shadow: 0 0 6px rgba(0,184,148,0.6);"></span>
@@ -378,8 +368,7 @@
         <div style="width: 1px; height: 16px; background-color: #444444;"></div>
         
         <div class="d-flex align-items-center gap-2">
-            <img src="{{ asset('img/logo-unellez.png') }}" alt="UNELLEZ" style="height: 22px; filter: brightness(0) invert(1) opacity(0.9);">
-            <strong class="text-white" style="letter-spacing: 1px;">UNELLEZ</strong>
+            <strong class="text-white" style="letter-spacing: 1px;">OSWA Inv</strong>
         </div>
     </div>
 </footer>

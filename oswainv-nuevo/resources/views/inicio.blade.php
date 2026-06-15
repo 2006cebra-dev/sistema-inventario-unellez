@@ -166,7 +166,6 @@
     <nav class="navbar navbar-expand-lg navbar-dark navbar-oswa fixed-top py-3">
         <div class="container">
             <a class="navbar-brand d-flex align-items-center" href="#">
-                <img src="{{ asset('img/logo-unellez.png') }}" alt="Logo" height="40" class="me-2" style="filter: brightness(0) invert(1);">
                 <span class="fw-bold" style="letter-spacing: 2px;">OSWA <span class="text-danger">INV</span></span>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -217,7 +216,6 @@
     <section id="descubre" class="py-5" style="margin-top: 2rem;">
         <div class="container">
             <div class="text-center mb-5 reveal">
-                <img src="{{ asset('img/logo-unellez.png') }}" alt="Logo" height="50" class="mb-3" style="filter: brightness(0) invert(1);">
                 <h2 class="display-5 fw-bold text-white">Ingeniería Aplicada al Inventario</h2>
                 <p class="text-oswa-muted fs-5" style="color: #bbb !important;">Diseñado para optimizar, asegurar y registrar cada movimiento en el almacén.</p>
             </div>
@@ -519,7 +517,7 @@
                         <h3 class="fw-bold text-white mb-1">Carlos Braca</h3>
                         <p class="text-oswa-muted mb-4">
                             Estudiante de Ingeniería Informática<br>
-                            <span class="text-danger fw-bold">5to Semestre - UNELLEZ</span><br>
+                            <span class="text-danger fw-bold">5to Semestre</span><br>
                             <small>Backend & Seguridad SHA-256</small>
                         </p>
                         <a href="https://wa.me/584122266083" target="_blank" class="btn btn-success rounded-pill px-4 py-2 fw-bold" style="background-color: #25D366; border: none;">
@@ -537,7 +535,7 @@
                         <h3 class="fw-bold text-white mb-1">Yorgelys Blanco</h3>
                         <p class="text-oswa-muted mb-4">
                             Estudiante de Ingeniería Informática<br>
-                            <span class="text-danger fw-bold">5to Semestre - UNELLEZ</span><br>
+                            <span class="text-danger fw-bold">5to Semestre</span><br>
                             <small>Frontend & Diseño UI/UX</small>
                         </p>
                         <a href="https://wa.me/584145207044" target="_blank" class="btn btn-success rounded-pill px-4 py-2 fw-bold" style="background-color: #25D366; border: none;">
@@ -564,8 +562,7 @@
         <div style="width: 1px; height: 16px; background-color: #444444;"></div>
         
         <div class="d-flex align-items-center gap-2">
-            <img src="{{ asset('img/logo-unellez.png') }}" alt="UNELLEZ" style="height: 22px; filter: brightness(0) invert(1) opacity(0.9);">
-            <strong class="text-white" style="letter-spacing: 1px;">UNELLEZ</strong>
+            <strong class="text-white" style="letter-spacing: 1px;">OSWA Inv</strong>
         </div>
     </div>
 </footer>

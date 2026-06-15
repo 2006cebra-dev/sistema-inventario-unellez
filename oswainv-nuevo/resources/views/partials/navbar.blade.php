@@ -39,16 +39,7 @@
         0% { background-position: 0% 50%; }
         100% { background-position: 300% 50%; }
     }
-    .logo-nav-unellez {
-        height: 40px;
-        filter: drop-shadow(0 0 6px rgba(229,9,20,0.4)) brightness(0) invert(1);
-        transform: perspective(400px) rotateY(-5deg);
-        transition: transform 0.4s ease, filter 0.4s ease;
-    }
-    .logo-nav-unellez:hover {
-        transform: perspective(400px) rotateY(0deg) scale(1.05);
-        filter: drop-shadow(0 0 12px rgba(229,9,20,0.7)) brightness(0) invert(1);
-    }
+
     
     /* Menús */
     .topbar-nav { display: flex; align-items: center; gap: 1rem; height: 100%; }
@@ -261,7 +252,7 @@
         .oswa-chat-window { bottom: calc(58px + 76px) !important; }
         .topbar { padding: 0 2%; height: 56px; }
         .topbar-logo { font-size: 1.2rem; gap: 8px; }
-        .logo-nav-unellez { height: 30px; }
+
         .status-indicator { padding: 3px 8px; font-size: 0.6rem; }
         .status-indicator .status-dot { width: 6px; height: 6px; }
         :root { --topbar-height: 56px; }
@@ -368,7 +359,6 @@
 <nav class="topbar" id="topbar">
     <div class="topbar-left d-flex align-items-center gap-3">
         <div class="topbar-logo d-flex align-items-center gap-2">
-            <img src="{{ asset('img/logo-unellez.png') }}" class="logo-nav-unellez" alt="Logo">
             <span class="logo-text">OSWA Inv</span>
         </div>
         <!-- INDICADOR DE CONEXIÓN -->

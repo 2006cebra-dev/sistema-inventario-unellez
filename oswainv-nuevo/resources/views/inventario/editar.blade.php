@@ -40,16 +40,7 @@
         }
         @keyframes rgbText { 0% { background-position: 0% 50%; } 100% { background-position: 300% 50%; } }
 
-        .logo-nav-unellez {
-            height: 40px;
-            filter: drop-shadow(0 0 6px rgba(229,9,20,0.4)) brightness(0) invert(1);
-            transform: perspective(400px) rotateY(-5deg);
-            transition: transform 0.4s ease, filter 0.4s ease;
-        }
-        .logo-nav-unellez:hover {
-            transform: perspective(400px) rotateY(0deg) scale(1.05);
-            filter: drop-shadow(0 0 12px rgba(229,9,20,0.7)) brightness(0) invert(1);
-        }
+
 
         .topbar-nav { display: flex; align-items: center; gap: 1.5rem; }
         .topbar-nav a { color: #b3b3b3; text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: color 0.2s ease; position: relative; padding: 4px 0; }
@@ -131,8 +122,7 @@
     <nav class="topbar" id="topbar">
         <div class="topbar-left d-flex align-items-center gap-3">
             <div class="topbar-logo d-flex align-items-center gap-2">
-                <img src="{{ asset('img/logo-unellez.png') }}" class="logo-nav-unellez" alt="Logo">
-                <span class="logo-text">OSWA Inv</span>
+            <span class="logo-text">OSWA Inv</span>
             </div>
             <div class="status-indicator online d-none d-md-flex">
                 <span class="status-dot" style="width: 8px; height: 8px; border-radius: 50%; background: #00b894; box-shadow: 0 0 6px rgba(0,184,148,0.6);"></span>

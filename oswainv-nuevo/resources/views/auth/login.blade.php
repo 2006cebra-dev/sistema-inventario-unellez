@@ -127,9 +127,7 @@
         <div class="auth-left" style="background-image: url('{{ asset('img/fondo-login.jpg') }}');">
             <div class="auth-left-overlay"></div>
             <div class="auth-left-content">
-                <div class="auth-logo-icon anim-left-1">
-                    <img src="{{ asset('img/logo-unellez.png') }}" alt="UNELLEZ" style="height: 110px; filter: brightness(0) invert(1) drop-shadow(0 0 15px rgba(255,255,255,0.3)); margin-bottom: 15px;">
-                </div>
+                <div class="auth-logo-icon anim-left-1" style="height:110px;"></div>
                 <div class="auth-title-brand anim-left-2">OSWA INV</div>
                 <div class="auth-subtitle-brand anim-left-3">Sistema de Gestión Exclusivo</div>
             </div>
@@ -138,7 +136,6 @@
         <div class="auth-right">
             
             <div class="mobile-brand">
-                <img src="{{ asset('img/logo-unellez.png') }}" alt="UNELLEZ">
                 <span class="brand-name">OSWA INV</span>
             </div>
             
@@ -189,7 +186,7 @@
             <div class="auth-copyright text-center mt-auto pt-4 border-top border-secondary border-opacity-25 w-100 mx-auto anim-up-8" style="font-size: 0.75rem; color: #666; max-width: 420px;">
                 &copy; <script>document.write(new Date().getFullYear())</script> <strong class="text-white">OSWA Inv</strong>. Todos los derechos reservados.<br>
                 Desarrollado con <i class="bi bi-code-slash text-secondary mx-1"></i> y <i class="bi bi-heart-fill text-danger mx-1"></i> por <strong class="text-white">Carlos Braca & Yorgelys Blanco</strong><br>
-                <span class="mt-1 d-block">Ingeniería en Informática — V Semestre | <strong class="text-white" style="letter-spacing: 0.5px;">UNELLEZ</strong></span>
+                <span class="mt-1 d-block">Ingeniería en Informática — V Semestre</span>
             </div>
         </div>
     </div>

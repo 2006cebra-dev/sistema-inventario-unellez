@@ -157,7 +157,7 @@
 
     <div id="oswa-loader" class="oswa-loader-wrapper">
         <div class="loader-content">
-            <img src="{{ asset('img/logo-unellez.png') }}" alt="UNELLEZ" class="loader-logo">
+            <div class="loader-logo" style="height:80px;"></div>
             <div class="loader-bar-container"><div id="loader-bar" class="loader-bar"></div></div>
             <div id="loader-text" class="loader-text">CARGANDO GESTIÓN DE USUARIOS...</div>
             <div id="loader-percentage" class="loader-percentage">0%</div>
@@ -166,7 +166,7 @@
 
     <div id="cinematic-intro" class="cinematic-overlay">
         <div class="cinematic-content">
-            <img src="{{ asset('img/logo-unellez.png') }}" id="intro-logo" class="intro-logo" alt="UNELLEZ">
+            <div id="intro-logo" class="intro-logo" style="height:80px;"></div>
             <div id="intro-quote" class="intro-quote d-none">
                 <h2 class="quote-text">El talento es el activo más valioso.</h2>
                 <h1 class="quote-highlight">Gestiona tu equipo.</h1>

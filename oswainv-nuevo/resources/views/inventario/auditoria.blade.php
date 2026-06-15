@@ -236,8 +236,7 @@
         <div style="width: 1px; height: 16px; background-color: #444444;"></div>
         
         <div class="d-flex align-items-center gap-2">
-            <img src="{{ asset('img/logo-unellez.png') }}" alt="UNELLEZ" style="height: 22px; filter: brightness(0) invert(1) opacity(0.9);">
-            <strong class="text-white" style="letter-spacing: 1px;">UNELLEZ</strong>
+            <strong class="text-white" style="letter-spacing: 1px;">OSWA Inv</strong>
         </div>
     </div>
 </footer>
